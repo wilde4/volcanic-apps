@@ -1,0 +1,9 @@
+%script{src: "http://www.skypeassets.com/i/scom/js/skype-uri.js", type: "text/javascript"}
+%div{id: "SkypeButton_Call_#{@skype_username}_1"}
+  :javascript
+    Skype.ui({
+      "name": "dropdown",
+      "element": "SkypeButton_Call_#{@skype_username}_1",
+      "participants": ["#{@skype_username}"],
+      "imageSize": 32
+    });
