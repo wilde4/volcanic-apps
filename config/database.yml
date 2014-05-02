@@ -6,3 +6,12 @@ development:
   password:
   pool: 5
   socket: /tmp/mysql.sock
+  
+production:
+  adapter: mysql2
+  encoding: utf8
+  database: volcanic_apps_production
+  user: root
+  password:
+  pool: 5
+  socket: /tmp/mysql.sock
