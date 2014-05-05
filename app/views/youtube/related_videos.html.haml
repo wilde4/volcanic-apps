@@ -1,0 +1,3 @@
+.youtube_app
+  -@response.videos.each do |video|
+    %iframe#ytplayer{frameborder: "0", height: "390", src: "#{video.media_content.first.url}", type: "text/html", width: "100%"}

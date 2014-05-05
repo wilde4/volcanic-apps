@@ -1,0 +1,3 @@
+.flickr_list
+  -@response.each do |photo|
+    %img{:src => "#{FlickRaw.url_b(photo)}"}

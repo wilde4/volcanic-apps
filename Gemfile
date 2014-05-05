@@ -12,6 +12,8 @@ gem 'haml'
 
 #API gems
 gem 'gibbon'
+gem 'flickraw'
+gem 'youtube_it'
 gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
 
