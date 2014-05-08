@@ -3,4 +3,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-VolcanicApps::Application.load_tasks
+Apps::Application.load_tasks

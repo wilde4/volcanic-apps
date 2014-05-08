@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-VolcanicApps::Application.config.secret_key_base = '52cad6ec9461d8475a10c2100bd61028900e91cc7f81f5fb31033108cb78964d915d66bda3bb3ce4a7c492bc3c93cd15c3026dff280bf2f2aada32842896c46d'
+Apps::Application.config.secret_key_base = '52cad6ec9461d8475a10c2100bd61028900e91cc7f81f5fb31033108cb78964d915d66bda3bb3ce4a7c492bc3c93cd15c3026dff280bf2f2aada32842896c46d'
