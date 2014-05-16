@@ -2,7 +2,7 @@ development:
   adapter: mysql2
   encoding: utf8
   database: apps_development
-  user: root
+  username: root
   password:
   pool: 5
   socket: /tmp/mysql.sock
@@ -10,8 +10,9 @@ development:
 production:
   adapter: mysql2
   encoding: utf8
-  database: volcanic_apps_production
-  user: root
-  password:
+  database: apps_production
+  username: apps
+  host: ec2-54-216-5-67.eu-west-1.compute.amazonaws.com
+  password: 4Y423gEO44ZE2zW
   pool: 5
   socket: /tmp/mysql.sock

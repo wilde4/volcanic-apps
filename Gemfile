@@ -17,9 +17,6 @@ gem 'youtube_it'
 gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
 
-gem "figaro"
-
-
 group :development do
   gem 'sqlite3'
 end
