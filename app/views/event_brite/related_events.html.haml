@@ -1,7 +1,7 @@
 %script{src: "http://evbdn.eventbrite.com/s3-s3/static/js/platform/Eventbrite.jquery.js", type: "text/javascript"}
 :javascript
   $(document).ready(function(){
-    var params = {'keywords': '#{@job['job_title']}','city': '#{@job['job_location']}', 'max':5};
+    var params = {'keywords': '#{@job['job_title']}','city': '#{@job['job_location'].split(',').first', 'max':5};
     Eventbrite({'app_key': '#{@settings['key']}'}, function(eb){
       eb.event_search( params, function( response ){
         $(".eventbrite").append(eb.utils.eventList(response,eb.utils.eventListRow));
