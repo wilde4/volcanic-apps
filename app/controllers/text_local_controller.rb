@@ -12,7 +12,7 @@ class TextLocalController < ApplicationController
     http = Net::HTTP.start(uri.host, uri.port)
     request = Net::HTTP::Get.new(uri.request_uri)
    
-    res = Net::HTTP.post_form(uri, 'username' => @settings['email'], 'hash' => '', 'message' => @hook['message'], 'sender' => @settings['sender'], 'numbers' => '34659344594')
+    res = Net::HTTP.post_form(uri, 'username' => @settings['email'], 'hash' => @settings['key'], 'message' => @settings['message'], 'sender' => @settings['sender'], 'numbers' => '07871548440')
     response = JSON.parse(res.body)
   
     respond_to do |format|
