@@ -4,7 +4,13 @@ class MailChimpController < ApplicationController
     @users = JSON.parse(params[:users]) if params[:users]
     @settings = JSON.parse(params[:settings]) if params[:settings]
     gb = Gibbon::API.new(@settings["key"])
-    @batch = @users.collect{|user|{:email => {:email => user["email"]}, :merge_vars => {:FNAME => user["first_name"], :LNAME => user["last_name"]}}}
+    # @batch = @users.collect{|user|{:email => {:email => user["email"]}, :merge_vars => {:FNAME => user["first_name"], :LNAME => user["last_name"]}}}
+    
+    @batch = @users.collect{|user|{:email => {:email => (user["email"] rescue nil)}, 
+                                   :merge_vars => {
+                                     :FNAME => (user["li_entry"].split("\n")[3].gsub("firstName:", "").strip rescue nil), 
+                                     :LNAME => (user["li_entry"].split("\n")[7].gsub("lastName:", "").strip rescue nil) }}}
+    
     response = gb.lists.batch_subscribe(:id => @settings["list_key"], :batch => @batch, :double_optin => false, :update_existing => true)
     respond_to do |format|
       if response["error_count"] > 0
