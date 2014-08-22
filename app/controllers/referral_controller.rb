@@ -1,15 +1,18 @@
 require 'securerandom'
 
 class ReferralController < ApplicationController
+  protect_from_forgery with: :null_session
+  respond_to :json
 
   # POST /referrals/create_referral
   # Creates a referral for a User ID
   # Params:
   #   * user - User ID to associate with
   #   * token_length - Length of the token to generate
+  # curl -X POST -H "Content-Type: application/json" -d '{"user" : {"id" : "2435"}}' http://0.0.0.0:3001/referrals/create_referral.json
   def create_referral
     referral = Referral.new
-    referral.user_id = params[:user]
+    referral.user_id = params[:user][:id]
     referral.generate_token(params[:token_length].to_i)
 
     respond_to do |format|
