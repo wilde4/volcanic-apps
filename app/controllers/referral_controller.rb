@@ -1,7 +1,9 @@
 require 'securerandom'
 class ReferralController < ApplicationController
+  protect_from_forgery with: :null_session
+  respond_to :json
 
-  before_action :set_referral, only: [:referral_token_confirmed]
+  before_action :set_referral, only: [:get_referral, :generate, :confirmed, :confirm, :revoke]
 
   # POST /referrals/create_referral
   # Creates a referral for a User ID
@@ -9,123 +11,144 @@ class ReferralController < ApplicationController
   #   * user - User ID to associate with
   #   * referred_by - User ID that referred the new person
   #   * token_length - Length of the token to generate
+  # curl -X POST -H "Content-Type: application/json" -d '{"user" : {"id" : "2435"}}' http://0.0.0.0:3001/referrals/create_referral.json
   def create_referral
     referral = Referral.new
-    referral.user_id = params[:user]
-    referral.referred_by = params[:referred_by]
-    referral.generate_token(params[:token_length].to_i)
+    referral.user_id = params[:user][:id]
+
+    # find the referring user if we have to:
+    if params[:referrer_token]
+      referer = Referrer.find_by(token: params[:referrer_token])
+      referral.referred_by = referrer.user_id if referrer
+    end
 
     respond_to do |format|
       if referral.save
-        format.json { render json: {
-            status: "OK", referral_token: referral.token
-          } }
+        format.json { render json: { status: "OK", referral_token: referral.token } }
       else
-        format.json { render json: {
-            status: "Error: #{referral.errors.full_messages.join(', ')}"
-          } }
+        format.json { render json: { status: "Error: #{referral.errors.full_messages.join(', ')}" } }
       end
     end
   end
 
-  # GET /referrals/referral
-  # Grabs the record for the referral token
-  # Params:
-  #   * token - Referral token to lookup
+  # GET /referrals(/:id)/referral
   def get_referral
-    referral = Referral.find_by(token: params[:token])
+    respond_to do |format|
+      format.json { render json: { status: "OK", referral: @referral } }
+    end
+  end
+
+  # GET /referrals(/:id)/referred
+  # Get who the User referred
+  # Params:
+  #   * user - User ID to find as referred_by
+  def get_referred
+    referrals = Referral.where(referred_by: params[:user])
 
     respond_to do |format|
       format.json { render json: { 
-          status: "OK", referral: referral
+          status: "OK", count: referrals.count, referrals: referrals
         } }
     end
   end
 
-  # GET /referrals/referred_by
-  # Get all users that another user has referred
-  # Params:
-  #   * user - User ID to find as referred_by
-  def get_referred_by
-    referrals = Referral.where(referred_by: params[:user])
-    
-
-
-
   # GET /referrals(/:id)/confirmed
   # Params:
   #   * id - Target user to load
-  def referral_confirmed
-    referral = Referral.find_by(user_id: params[:id])
-
-    status = !referral.nil? ? "OK" : "Error: Record not found"
-    confirmed = !referral.nil? && referral.confirmed ? true : false
+  def confirmed
+    status = !@referral.nil? ? "OK" : "Error: Record not found"
+    confirmed = !@referral.nil? && @referral.confirmed ? true : false
 
     respond_to do |format|
       format.json { render json: { status: status, confirmed: confirmed } }
     end
   end
 
-  # GET /referrals(/:id)/generate_referral_token
+  # GET /referrals(/:id)/generate
   # Params:
   #   * length - Number of bytes to generate
   def generate
-    length = params[:length] ? params[:length].to_i : 16
-    referral_token = SecureRandom.hex(length).upcase
+    if @referral
+      referral.generate_token
+      status = "OK"
+    else
+      status = "Error: Record not found"
+    end
 
     respond_to do |format|
-      format.json { render json: { 
-          status: "OK",
-          referral_token: referral_token
-        }
-      }
+      format.json { render json: { status: status, referral: @referral } }
     end
   end
 
+  # POST /referrals(/:id)/confirm
+  # Confirms a user's referral token
+  def confirm
+    if @referral
+      @referral.confirmed = true
+      @referral.confirmed_at = DateTime.now
+      @referral.save
+      status = "OK"
+    else
+      status = "Error: Record not found"
+    end
+
+    respond_to do |format|
+      format.json { render json: { status: status } }
+    end
+  end
+
+  # GET /referrals(/:id)/revoke
+  # Revokes a user's referral token
+  def revoke
+    if @referral
+      @referral.revoked = true
+      @referral.revoked_at = DateTime.now
+      status = "OK"
+    else
+      status = "Error: Record not found"
+    end
+
+    respond_to do |format|
+      format.json { render json: { status: status } }
+    end
+  end
   
   # GET /referrals/referrals_for_period
+  # Gets the referrals that occurred within a time period
   # Params:
   #   * start_date - Start of reporting period
   #   * end_date   - End of reporting period
   def referrals_for_period
-    referrals = Referral.where(created_at: params[:start_date]...params[:end_date])
+    start_date = params[:start_date] || Date.parse("2000-01-01")
+    end_date = params[:end_date] || Date.parse("2050-01-01")
+
+    referrals = Referral.where(created_at: start_date...end_date)
 
     respond_to do |format|
       format.json { render json: {
-          status: "OK",
-          length: referrals.count,
-          referrals: referrals
+          status: "OK", length: referrals.count, referrals: referrals
         }
       }
     end
   end
 
   # GET /referrals/most_referrals
+  # Returns a list of users who referred the most people
   # Params:
   #   * limit - Number of users to take
   def most_referrals
+    metrics = Referral.group(:referred_by).count.sort_by{|k,v| v}.reverse
+    metrics.delete(nil)
+
+    limit = params[:limit].to_i || metrics.count / 10
 
     respond_to do |format|
-      format.json { render json: {
-          status: "OK",
-          confirmed: true || false
-        }
-      }
+      format.json { render json: { status: "OK", referrals: metrics[0...limit] } }
     end
   end
 
-
-  # POST /referrals(/:id)/confirm_referral_token
-  # Params:
-  #   * referral_token - Token to confirm
-  def confirm_referral_token
-  end
-
-  # POST /referrals(/:id)/revoke_referral
-  def revoke_referral
-  end
-
 private
-
-
+  def set_referral
+    @referral = Referral.find_by(user_id: params[:id])
+  end
 end

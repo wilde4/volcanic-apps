@@ -10,17 +10,15 @@ Apps::Application.routes.draw do
   get 'author', :to => "google_plus#author", :as => :author
 
   scope :referrals do
-    post "create_referral"         => 'referral#create_referral',          as: :create_referral
-
-    get "referral"                 => 'referral#get_referral',             as: :get_referral
-    get "(/:id)/confirmed"         => 'referral#referral_confirmed',       as: :referral_confirmed
-    get "generate_token"           => 'referral#generate_token',           as: :generate_token
-    get "referrals_for_period"     => 'referral#referrals_for_period',     as: :referrals_for_period
-    
-    get "most_referrals"           => 'referral#most_referrals',           as: :most_referrals
-    get "(/:id)/referral_token_confirmed" => 'referral#referral_token_confirmed', as: :referral_token_confirmed
-    post "(/:id)/confirm_referral_token"  => 'referral#confirm_referral_token',   as: :confirm_referral_token
-    post "(/:id)/revoke_referral"         => 'referral#revoke_referral',          as: :revoke_referral
+    post "create_referral"      => 'referral#create_referral',      as: :create_referral
+    get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
+    get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
+    get "(/:id)/confirmed"      => 'referral#confirmed',            as: :confirmed
+    get "(/:id)/generate"       => 'referral#generate',             as: :generate
+    get "(/:id)/confirm"       => 'referral#confirm',              as: :confirm
+    get "(/:id)/revoke"        => 'referral#revoke',               as: :revoke
+    get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
+    get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
   end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
