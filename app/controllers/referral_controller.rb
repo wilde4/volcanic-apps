@@ -1,4 +1,3 @@
-require 'securerandom'
 class ReferralController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json
@@ -15,18 +14,20 @@ class ReferralController < ApplicationController
   def create_referral
     referral = Referral.new
     referral.user_id = params[:user][:id]
+    referral.first_name = params[:user_profile][:first_name]
+    referral.last_name = params[:user_profile][:last_name]
 
     # find the referring user if we have to:
-    if params[:referrer_token]
+    if params[:token]
       referer = Referrer.find_by(token: params[:referrer_token])
       referral.referred_by = referrer.user_id if referrer
     end
 
     respond_to do |format|
       if referral.save
-        format.json { render json: { status: "OK", referral_token: referral.token } }
+        format.json { render json: { success: true, referral_token: referral.token } }
       else
-        format.json { render json: { status: "Error: #{referral.errors.full_messages.join(', ')}" } }
+        format.json { render json: { success: false, status: "Error: #{referral.errors.full_messages.join(', ')}" } }
       end
     end
   end
@@ -34,7 +35,7 @@ class ReferralController < ApplicationController
   # GET /referrals(/:id)/referral
   def get_referral
     respond_to do |format|
-      format.json { render json: { status: "OK", referral: @referral } }
+      format.json { render json: { success: true, referral: @referral } }
     end
   end
 
@@ -47,8 +48,8 @@ class ReferralController < ApplicationController
 
     respond_to do |format|
       format.json { render json: { 
-          status: "OK", count: referrals.count, referrals: referrals
-        } }
+        success: true, count: referrals.count, referrals: referrals
+      } }
     end
   end
 
@@ -60,7 +61,9 @@ class ReferralController < ApplicationController
     confirmed = !@referral.nil? && @referral.confirmed ? true : false
 
     respond_to do |format|
-      format.json { render json: { status: status, confirmed: confirmed } }
+      format.json { render json: {
+        success: status == "OK", status: status, confirmed: confirmed 
+      } }
     end
   end
 
@@ -70,13 +73,16 @@ class ReferralController < ApplicationController
   def generate
     if @referral
       referral.generate_token
-      status = "OK"
+      success = true
     else
+      success = false
       status = "Error: Record not found"
     end
 
     respond_to do |format|
-      format.json { render json: { status: status, referral: @referral } }
+      format.json { render json: {
+        success: success, status: status, referral: @referral
+      } }
     end
   end
 
@@ -93,7 +99,9 @@ class ReferralController < ApplicationController
     end
 
     respond_to do |format|
-      format.json { render json: { status: status } }
+      format.json { render json: {
+        success: status == "OK", status: status
+      } }
     end
   end
 
@@ -103,13 +111,16 @@ class ReferralController < ApplicationController
     if @referral
       @referral.revoked = true
       @referral.revoked_at = DateTime.now
+      @referral.save
       status = "OK"
     else
       status = "Error: Record not found"
     end
 
     respond_to do |format|
-      format.json { render json: { status: status } }
+      format.json { render json: {
+        success: status == "OK", status: status
+      } }
     end
   end
   
@@ -122,11 +133,23 @@ class ReferralController < ApplicationController
     start_date = params[:start_date] || Date.parse("2000-01-01")
     end_date = params[:end_date] || Date.parse("2050-01-01")
 
+    refgroups = []
+
     referrals = Referral.where(created_at: start_date...end_date)
+    referral_groupings = referrals.group(:referred_by).count.sort_by{|k,v| v}.reverse
+
+    # sort each referrer group into it's own collection:
+    referral_groupings.each do |k,v|
+      refgroups << referrals.select{ |r| r.referred_by == k }
+    end
 
     respond_to do |format|
+      format.html {
+        @referrals = refgroups
+        render action: 'overview'
+      }
       format.json { render json: {
-          status: "OK", length: referrals.count, referrals: referrals
+          success: true, length: referrals.count, referrals: refgroups
         }
       }
     end
@@ -140,15 +163,23 @@ class ReferralController < ApplicationController
     metrics = Referral.group(:referred_by).count.sort_by{|k,v| v}.reverse
     metrics.delete(nil)
 
-    limit = params[:limit].to_i || metrics.count / 10
+    limit = params[:limit] ? params[:limit].to_i : metrics.count / 10
+
+    @referrals = metrics[0...limit]
+
+    @referrals.each do |referral|
+      refdata = Referral.find_by(user_id: referral[0])
+      referral.unshift(refdata.first_name, refdata.last_name)
+    end
 
     respond_to do |format|
-      format.json { render json: { status: "OK", referrals: metrics[0...limit] } }
+      format.html { render action: 'most_referrals' }
+      format.json { render json: { success: true, status: "OK", referrals: @referrals } }
     end
   end
 
 private
   def set_referral
-    @referral = Referral.find_by(user_id: params[:id])
+    @referral = Referral.find(params[:id])
   end
 end

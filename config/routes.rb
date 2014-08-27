@@ -13,10 +13,10 @@ Apps::Application.routes.draw do
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
     get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
-    get "(/:id)/confirmed"      => 'referral#confirmed',            as: :confirmed
-    get "(/:id)/generate"       => 'referral#generate',             as: :generate
-    get "(/:id)/confirm"       => 'referral#confirm',              as: :confirm
-    get "(/:id)/revoke"        => 'referral#revoke',               as: :revoke
+    get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed
+    get "(/:id)/generate"       => 'referral#generate',             as: :referral_generate
+    get "(/:id)/confirm"       => 'referral#confirm',              as: :referral_confirm
+    get "(/:id)/revoke"        => 'referral#revoke',               as: :referral_revoke
     get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
     get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
   end

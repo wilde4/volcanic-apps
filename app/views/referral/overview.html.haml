@@ -1,0 +1,28 @@
+.panel-group#accordion
+  -@referrals.each_with_index do |referral, i|
+    .panel.panel-default
+      .panel-heading
+        %h4.panel-title
+          = link_to "#{referral.first.referred_by} (#{referral.count} referrals)", "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+      .panel-collapse.collapse{id: "referrer-#{i}"}
+        .panel-body
+          -referral.each do |ref|
+            .row
+              .col-xs-2= "Referral ID: #{ref.id}"
+              .col-xs-2= "User ID: #{ref.user_id}"
+              %attr.col-xs-3{title: "#{ref.confirmed_at if ref.confirmed}"}
+                = "Confirmed?: #{ref.confirmed? ? 'Yes' : 'No'}"
+
+              %attr.col-xs-3{title: "#{ref.revoked_at if ref.revoked}"}
+                .revoked= "Revoked?: #{ref.revoked ? 'Yes' : 'No'}"
+
+              - if !ref.revoked?
+                .col-xs-2.revoke= link_to "Revoke", referral_revoke_path(ref, format: :json), remote: true
+
+  :javascript
+    $(function() {
+      $('.revoke').bind('ajax:success', function() {
+        $(this).parent().find('.revoked').text("Revoked?: Yes");
+        $(this).hide();
+      });
+    });

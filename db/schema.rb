@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140822113217) do
+ActiveRecord::Schema.define(version: 20140827081604) do
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
@@ -23,6 +23,8 @@ ActiveRecord::Schema.define(version: 20140822113217) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "referred_by"
+    t.string   "first_name"
+    t.string   "last_name"
   end
 
 end
