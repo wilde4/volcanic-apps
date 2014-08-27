@@ -20,6 +20,16 @@ Apps::Application.routes.draw do
     get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
     get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
   end
+
+  scope :evergrad_likes do
+    post 'save_user' => 'evergrad_likes#save_user', as: :save_user
+    post 'save_job' => 'evergrad_likes#save_job', as: :save_job
+    post 'save_like' => 'evergrad_likes#save_like', as: :save_like
+    get '(/:id)/likes_made' => 'evergrad_likes#likes_made', as: :user_likes_made
+    get '(/:id)/likes_received' => 'evergrad_likes#likes_received', as: :user_likes_received
+    get '(/:id)/matches' => 'evergrad_likes#matches', as: :user_matches
+    get 'all_matches' => 'evergrad_likes#all_matches', as: :all_matches
+  end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

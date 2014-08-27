@@ -27,8 +27,6 @@ GEM
       tzinfo (~> 0.3.37)
     addressable (2.3.6)
     arel (4.0.2)
-    bootstrap-sass (3.2.0.1)
-      sass (~> 3.2)
     builder (3.1.4)
     byebug (3.2.0)
       columnize (~> 0.8)
@@ -161,7 +159,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bootstrap-sass
   byebug
   coffee-rails (~> 4.0.0)
   flickraw

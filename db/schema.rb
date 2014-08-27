@@ -11,7 +11,41 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140827081604) do
+ActiveRecord::Schema.define(version: 20140827135846) do
+
+  create_table "likes_jobs", force: true do |t|
+    t.integer  "job_id"
+    t.string   "job_reference"
+    t.string   "job_title"
+    t.integer  "user_id"
+    t.string   "cached_slug"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "likes_likes", force: true do |t|
+    t.integer  "like_id"
+    t.integer  "user_id"
+    t.integer  "likeable_id"
+    t.string   "likeable_type"
+    t.text     "extra"
+    t.boolean  "match",         default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "likes_likes", ["likeable_id", "likeable_type"], name: "index_likes_likes_on_likeable_id_and_likeable_type", using: :btree
+
+  create_table "likes_users", force: true do |t|
+    t.integer  "user_id"
+    t.string   "email"
+    t.string   "first_name"
+    t.string   "last_name"
+    t.text     "extra"
+    t.text     "registration_answers"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"

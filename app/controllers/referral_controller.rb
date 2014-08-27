@@ -12,22 +12,25 @@ class ReferralController < ApplicationController
   #   * token_length - Length of the token to generate
   # curl -X POST -H "Content-Type: application/json" -d '{"user" : {"id" : "2435"}}' http://0.0.0.0:3001/referrals/create_referral.json
   def create_referral
-    referral = Referral.new
-    referral.user_id = params[:user][:id]
-    referral.first_name = params[:user_profile][:first_name]
-    referral.last_name = params[:user_profile][:last_name]
+    ref = Referral.find_by(user_id: params[:user][:id])
+    unless ref.present?
+      referral = Referral.new
+      referral.user_id = params[:user][:id]
+      referral.first_name = params[:user_profile][:first_name]
+      referral.last_name = params[:user_profile][:last_name]
 
-    # find the referring user if we have to:
-    if params[:token]
-      referer = Referrer.find_by(token: params[:referrer_token])
-      referral.referred_by = referrer.user_id if referrer
-    end
+      # find the referring user if we have to:
+      if params[:token]
+        referer = Referrer.find_by(token: params[:referrer_token])
+        referral.referred_by = referrer.user_id if referrer
+      end
 
-    respond_to do |format|
-      if referral.save
-        format.json { render json: { success: true, referral_token: referral.token } }
-      else
-        format.json { render json: { success: false, status: "Error: #{referral.errors.full_messages.join(', ')}" } }
+      respond_to do |format|
+        if referral.save
+          format.json { render json: { success: true, referral_token: referral.token } }
+        else
+          format.json { render json: { success: false, status: "Error: #{referral.errors.full_messages.join(', ')}" } }
+        end
       end
     end
   end
