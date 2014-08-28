@@ -44,7 +44,7 @@ class ReferralController < ApplicationController
   # Params:
   #   * user - User ID to find as referred_by
   def get_referred
-    referrals = Referral.where(referred_by: params[:user])
+    referrals = Referral.where(referred_by: params[:id])
 
     respond_to do |format|
       format.json { render json: { 
