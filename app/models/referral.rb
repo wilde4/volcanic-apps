@@ -9,6 +9,10 @@ class Referral < ActiveRecord::Base
     generate_token
   end
 
+  def full_name
+    "#{self.first_name} #{self.last_name}"
+  end
+
   def generate_token
     self.token = SecureRandom.hex(4).upcase
     generate_token if Referral.find_by(token: self.token)
