@@ -11,7 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140827081604) do
+ActiveRecord::Schema.define(version: 20140827144029) do
+
+  create_table "promotions", force: true do |t|
+    t.string   "name"
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.boolean  "active"
+    t.decimal  "price",      precision: 8, scale: 2
+    t.boolean  "default",                            default: false
+    t.integer  "role_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "promotions", ["role_id"], name: "index_promotions_on_role_id", using: :btree
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
@@ -25,6 +39,13 @@ ActiveRecord::Schema.define(version: 20140827081604) do
     t.integer  "referred_by"
     t.string   "first_name"
     t.string   "last_name"
+  end
+
+  create_table "roles", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "user_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
 end

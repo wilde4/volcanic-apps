@@ -6,7 +6,16 @@ development:
   password:
   pool: 5
   socket: /tmp/mysql.sock
-  
+
+test:
+  adapter: mysql2
+  encoding: utf8
+  database: apps_test
+  username: root
+  password:
+  pool: 5
+  socket: /tmp/mysql.sock
+
 production:
   adapter: mysql2
   encoding: utf8

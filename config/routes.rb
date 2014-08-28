@@ -20,6 +20,18 @@ Apps::Application.routes.draw do
     get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
     get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
   end
+
+  scope :promotions do
+    post "create_promotion"     => 'promotion#create_promotion', as: :create_promotion
+    get  "(/:id)/promotion"     => 'promotion#get_promotion',    as: :get_promotion
+    get  "(/:id)/active"        => 'promotion#active',           as: :promotion_active
+    get  "(/:id)/toggle_active" => 'promotion#toggle_active',    as: :promotion_toggle_active
+    get  "(/:id)/toggle_default" => 'promotion#toggle_default',  as: :promotion_toggle_default
+    get  "/promotion"            => 'promotion#promotion_for_role', as: :promotion_for_role
+
+    get "overview"              => 'promotion#overview',         as: :promotion_overview
+
+  end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
