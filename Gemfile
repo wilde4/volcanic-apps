@@ -26,7 +26,7 @@ end
 group :test do
   gem "factory_girl_rails"
   gem "faker"
-  gem "byebug"
+  # gem "byebug"
 end
 
 group :production do
