@@ -1,11 +1,11 @@
 class RenamePromotionToInventory < ActiveRecord::Migration
   def change
-    rename_table :promotions, :inventory
+    rename_table :promotions, :inventories
 
-    remove_column :inventory, :active
-    remove_column :inventory, :default
-    remove_column :inventory, :role_id
+    remove_column :inventories, :active
+    remove_column :inventories, :default
+    remove_column :inventories, :role_id
 
-    add_column :inventory, :object_type, :string
+    add_column :inventories, :object_type, :string
   end
 end

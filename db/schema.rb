@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(version: 20140828152927) do
 
-  create_table "inventory", force: true do |t|
+  create_table "inventories", force: true do |t|
     t.string   "name"
     t.datetime "start_date"
     t.datetime "end_date"

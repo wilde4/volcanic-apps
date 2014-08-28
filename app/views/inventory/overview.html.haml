@@ -1,0 +1,11 @@
+= stylesheet_link_tag "application"
+= javascript_include_tag "application"
+
+.col-xs-12
+  - @items.each do |item|
+    .row
+      .col-xs-2= item.name
+      .col-xs-2= item.object_type
+      .col-xs-2= item.price
+      .col-xs-2= item.start_date
+      .col-xs-2= item.end_date
