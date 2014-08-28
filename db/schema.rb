@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140827144029) do
+ActiveRecord::Schema.define(version: 20140828105153) do
 
   create_table "likes_jobs", force: true do |t|
     t.integer  "job_id"
@@ -73,6 +73,8 @@ ActiveRecord::Schema.define(version: 20140827144029) do
     t.integer  "referred_by"
     t.string   "first_name"
     t.string   "last_name"
+    t.decimal  "fee",          precision: 8, scale: 2
+    t.boolean  "fee_paid",                             default: false
   end
 
   create_table "roles", force: true do |t|

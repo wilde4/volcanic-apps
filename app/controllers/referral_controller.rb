@@ -2,7 +2,9 @@ class ReferralController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json
 
-  before_action :set_referral, only: [:get_referral, :generate, :confirmed, :confirm, :revoke]
+  before_action :set_referral, except: [
+    :create_referral, :funds_earned, :funds_owed,
+    :referrals_for_period, :most_referrals]
 
   # POST /referrals/create_referral
   # Creates a referral for a User ID
@@ -42,6 +44,34 @@ class ReferralController < ApplicationController
     end
   end
 
+  # GET /referrals/funds_earned
+  # Returns a historical count of all money earned
+  # Params:
+  #   * user - User ID used in lookup
+  def funds_earned
+    earned = Referral.where(referred_by: params[:user_id], fee_paid: true)
+                     .map(&:fee).reduce(:+)
+
+    respond_to do |format|
+      format.json { render json: { success: true, value: earned } }
+    end
+  end
+
+  # GET /referrals/funds_owed
+  # Returns the outstanding money owed to user
+  # Params:
+  #   * user_id - User ID used in lookup
+  def funds_owed
+    owed = Referral.where(referred_by: params[:user_id],
+                          confirmed: true, revoked: false, fee_paid: false)
+                   .map(&:fee).reduce(:+)
+
+    respond_to do |format|
+      format.json { render json: { success: true, value: owed } }
+    end
+  end
+
+
   # GET /referrals(/:id)/referred
   # Get who the User referred
   # Params:
@@ -59,9 +89,15 @@ class ReferralController < ApplicationController
   # GET /referrals(/:id)/confirmed
   # Params:
   #   * id - Target user to load
+  # Returns true/false, or null on error
   def confirmed
-    status = !@referral.nil? ? "OK" : "Error: Record not found"
-    confirmed = !@referral.nil? && @referral.confirmed ? true : false
+    if @referral.nil?
+      status = "Error: Record not found"
+      confirmed = nil
+    else 
+      status = "OK"
+      confirmed = @referral.confirmed
+    end
 
     respond_to do |format|
       format.json { render json: {
@@ -69,6 +105,27 @@ class ReferralController < ApplicationController
       } }
     end
   end
+
+  # GET /referrals(/:id)/paid
+  # Params:
+  #   * id - Target user to load
+  # Returns true/false, or null on error
+  def paid
+    if @referral.nil?
+      status = "Error: Record not found"
+      paid = nil
+    else 
+      status = "OK"
+      paid = @referral.fee_paid
+    end
+
+    respond_to do |format|
+      format.json { render json: {
+        success: status == "OK", status: status, paid: paid
+      } }
+    end
+  end
+
 
   # GET /referrals(/:id)/generate
   # Params:
