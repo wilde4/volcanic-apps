@@ -29,6 +29,7 @@ Apps::Application.routes.draw do
     get '(/:id)/likes_received' => 'evergrad_likes#likes_received', as: :user_likes_received
     get '(/:id)/matches' => 'evergrad_likes#matches', as: :user_matches
     get 'all_matches' => 'evergrad_likes#all_matches', as: :all_matches
+    get 'notification_events' => 'evergrad_likes#notification_events', as: :notification_events
   end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

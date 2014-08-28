@@ -84,6 +84,9 @@ class EvergradLikesController < ApplicationController
           @matched_like = LikesLike.find_by(likeable_type: 'User', likeable_id: @like.user_id, user_id: @job.user_id)
           # MARK LIKE AND MATCHED LIKE AS MATCHED
           if @matched_like.present?
+            # SEND MATCH EMAIL
+            # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_graduate", "user_id" : "2659"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
+            @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_like.update(match: true) 
             @like.update(match: true) 
           end
@@ -95,6 +98,9 @@ class EvergradLikesController < ApplicationController
           @matched_likes = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, user_id: @graduate.user_id)
           # MARK LIKE AND MATCHED LIKES AS MATCHED
           if @matched_likes.present?
+            # SEND MATCH EMAIL
+            # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_employer", "user_id" : "21125"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
+            @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_likes.update_all(match: true)
             @like.update(match: true) 
           end
@@ -137,6 +143,21 @@ class EvergradLikesController < ApplicationController
   def all_matches
     @match_count = LikesLike.where(likeable_type: 'User', match: true).count
     render json: { match_count: @match_count }
+  end
+
+  def notification_events
+    render json: {
+      match_made_by_graduate: {
+        description: 'A graduate creates a match',
+        targets: [:user, :custom, :admin],
+        tags: [:name, :email, :time]
+      },
+      match_made_by_employer: {
+        description: 'An employer creates a match',
+        targets: [:user, :custom, :admin],
+        tags: [:name, :email, :time]
+      }
+    }
   end
 
 end
