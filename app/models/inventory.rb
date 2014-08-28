@@ -1,5 +1,4 @@
-class Promotion < ActiveRecord::Base
-  belongs_to :role
+class Inventory < ActiveRecord::Base
 
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
