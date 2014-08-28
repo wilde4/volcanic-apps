@@ -27,6 +27,8 @@ GEM
       tzinfo (~> 0.3.37)
     addressable (2.3.6)
     arel (4.0.2)
+    bootstrap-sass (3.2.0.1)
+      sass (~> 3.2)
     builder (3.1.4)
     byebug (3.2.0)
       columnize (~> 0.8)
@@ -45,6 +47,13 @@ GEM
     erubis (2.7.0)
     excon (0.33.0)
     execjs (2.0.2)
+    factory_girl (4.4.0)
+      activesupport (>= 3.0.0)
+    factory_girl_rails (4.4.1)
+      factory_girl (~> 4.4.0)
+      railties (>= 3.0.0)
+    faker (1.4.3)
+      i18n (~> 0.5)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
     flickraw (0.9.8)
@@ -159,8 +168,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bootstrap-sass
   byebug
   coffee-rails (~> 4.0.0)
+  factory_girl_rails
+  faker
   flickraw
   gibbon
   haml

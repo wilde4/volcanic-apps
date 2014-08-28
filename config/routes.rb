@@ -15,10 +15,24 @@ Apps::Application.routes.draw do
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
     get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed
     get "(/:id)/generate"       => 'referral#generate',             as: :referral_generate
-    get "(/:id)/confirm"       => 'referral#confirm',              as: :referral_confirm
-    get "(/:id)/revoke"        => 'referral#revoke',               as: :referral_revoke
+    get "(/:id)/confirm"        => 'referral#confirm',              as: :referral_confirm
+    get "(/:id)/revoke"         => 'referral#revoke',               as: :referral_revoke
     get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
     get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
+    get "funds_earned"          => 'referral#funds_earned',         as: :referral_fee_earned
+    get "funds_owed"            => 'referral#funds_owed',           as: :referral_fee_owed
+    get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
+  end
+
+  scope :promotions do
+    post "create_promotion"     => 'promotion#create_promotion', as: :create_promotion
+    get  "(/:id)/promotion"     => 'promotion#get_promotion',    as: :get_promotion
+    get  "(/:id)/active"        => 'promotion#active',           as: :promotion_active
+    get  "(/:id)/toggle_active" => 'promotion#toggle_active',    as: :promotion_toggle_active
+    get  "(/:id)/toggle_default" => 'promotion#toggle_default',  as: :promotion_toggle_default
+    get  "/promotion"            => 'promotion#promotion_for_role', as: :promotion_for_role
+
+    get "overview"              => 'promotion#overview',         as: :promotion_overview
   end
 
   scope :evergrad_likes do

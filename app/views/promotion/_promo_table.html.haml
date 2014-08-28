@@ -1,0 +1,29 @@
+.table-responsive
+  %table.table.table-striped
+    %thead
+      %th Promotion Name
+      %th Start Date
+      %th End Date
+      %th Pricing
+      %th Role
+      %th Active State
+      %th
+    %tbody
+      - promo_items.each do |promo|
+        %tr
+          %td= promo.name
+          %td= promo.human_start_date
+          %td= promo.human_end_date
+          %td= number_to_currency(promo.price, unit: '£')
+          %td= promo.role_id
+          -if !rendering_defaults
+            %td.actstate= link_to (promo.active ? "Active" : "Inactive"), promotion_toggle_active_path(promo), format: :json, remote: true
+            %td.default= link_to 'Set as default', promotion_toggle_default_path(promo), class: 'default-toggle', remote: true
+
+          :javascript
+            $(function() {
+              $('.actstate').bind('ajax:success', function() {
+                var text = $(this).text();
+                $(this).text(data.active ? "Active" : "Inactive");
+              });
+            });
