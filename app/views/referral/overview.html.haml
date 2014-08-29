@@ -6,12 +6,12 @@
     .panel.panel-default
       .panel-heading
         %h4.panel-title
-          = link_to "#{referral.first.full_name} (#{referral.count} referrals)", "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+          = link_to referral[0], "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
       .panel-collapse.collapse{id: "referrer-#{i}"}
         .panel-body
-          -referral.each do |ref|
+          -referral[1].each do |ref|
             .row
-              .col-xs-2= "User ID: #{ref.user_id}"
+              .col-xs-2= "#{ref.full_name} (ID: #{ref.user_id})"
               %attr.col-xs-3{title: "#{ref.confirmed_at if ref.confirmed}"}
                 = "Confirmed?: #{ref.confirmed? ? 'Yes' : 'No'}"
 

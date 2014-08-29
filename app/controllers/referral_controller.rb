@@ -27,9 +27,9 @@ class ReferralController < ApplicationController
       referral.last_name = params[:user_profile][:last_name]
 
       # find the referring user if we have to:
-      if params[:token]
-        referer = Referrer.find_by(token: params[:referrer_token])
-        referral.referred_by = referrer.user_id if referrer
+      if params['registration_answer_hash']['referral-code']
+        referer = Referral.find_by(token: params['registration_answer_hash']['referral-code'])     
+        referral.referred_by = referer.id if referer
       end
 
       respond_to do |format|
@@ -202,11 +202,16 @@ class ReferralController < ApplicationController
     refgroups = []
 
     referrals = Referral.where(created_at: start_date...end_date)
-    referral_groupings = referrals.group(:referred_by).count.sort_by{|k,v| v}.reverse
+    refcounts = referrals.group(:referred_by).count
+    refcounts.delete(nil)
 
     # sort each referrer group into it's own collection:
-    referral_groupings.each do |k,v|
-      refgroups << referrals.select{ |r| r.referred_by == k }
+    refcounts.each do |k,v|
+      referer = referrals.find(k)
+      if referer
+        ref = ["#{referer.full_name} (#{v} Referrals)", referrals.select{ |r| r.referred_by == k } ]
+        refgroups << ref
+      end
     end
     
     respond_to do |format|
