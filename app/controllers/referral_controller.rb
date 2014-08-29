@@ -241,16 +241,21 @@ class ReferralController < ApplicationController
   # Params:
   #   * limit - Number of users to take
   def most_referrals
-    metrics = Referral.group(:referred_by).count.sort_by{|k,v| v}.reverse
-    metrics.delete(nil)
+    metrics = Referral.group(:referred_by)
+                      .count.sort_by{|k,v| v}
+                      .reverse.reject{|r| r[0] == nil}
 
-    limit = params[:data][:limit].present? ? params[:data][:limit].to_i : metrics.count / 10
+    if params[:data][:limit].present?
+      limit = params[:data][:limit].to_i
+    else
+      limit = metrics.count > 100 ? metrics.count / 10 : metrics.count
+    end 
 
     @referrals = metrics[0...limit]
 
-    @referrals.each do |referral|
-      refdata = Referral.find_by(user_id: referral[0])
-      referral.unshift(refdata.first_name, refdata.last_name)
+    @referrals.each do |ref|
+      referrer = Referral.find(ref[0])
+      ref.unshift(referrer.full_name)
     end
 
     respond_to do |format|
