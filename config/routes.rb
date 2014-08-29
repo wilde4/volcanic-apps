@@ -25,15 +25,10 @@ Apps::Application.routes.draw do
     get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
   end
 
-  scope :promotions do
-    post "create_promotion"     => 'promotion#create_promotion', as: :create_promotion
-    get  "(/:id)/promotion"     => 'promotion#get_promotion',    as: :get_promotion
-    get  "(/:id)/active"        => 'promotion#active',           as: :promotion_active
-    get  "(/:id)/toggle_active" => 'promotion#toggle_active',    as: :promotion_toggle_active
-    get  "(/:id)/toggle_default" => 'promotion#toggle_default',  as: :promotion_toggle_default
-    get  "/promotion"            => 'promotion#promotion_for_role', as: :promotion_for_role
-
-    get "overview"              => 'promotion#overview',         as: :promotion_overview
+  scope :inventory do
+    post "create_inventory_item" => 'inventory#create_inventory_item', as: :create_inventory_item
+    get  "(/:id)/inventory"      => 'inventory#get_item'             , as: :inventory
+    get "overview"               => 'inventory#overview'             , as: :promotion_overview
   end
 
   scope :evergrad_likes do

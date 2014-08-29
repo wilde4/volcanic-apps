@@ -207,6 +207,7 @@ class ReferralController < ApplicationController
     referral_groupings.each do |k,v|
       refgroups << referrals.select{ |r| r.referred_by == k }
     end
+    byebug
 
     respond_to do |format|
       format.html {
