@@ -206,7 +206,6 @@ class ReferralController < ApplicationController
   #   * start_date - Start of reporting period
   #   * end_date   - End of reporting period
   def referrals_for_period
-    logger.info "--- params[data][start_date] = #{params[:data]["start_date"]}"
     start_date = params[:data][:start_date].present? ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
     end_date = params[:data][:end_date].present? ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
 
