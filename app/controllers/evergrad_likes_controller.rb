@@ -87,6 +87,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_graduate", "user_id" : "2659"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
+            @response = HTTParty.post('http://www.evergrad.com/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_like.update(match: true) 
             @like.update(match: true) 
           end
@@ -101,6 +102,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_employer", "user_id" : "21125"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
+            @response = HTTParty.post('http://www.evergrad.com/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_likes.update_all(match: true)
             @like.update(match: true) 
           end
@@ -125,6 +127,7 @@ class EvergradLikesController < ApplicationController
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
       @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
       @likes = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: false)
+      @jobs = LikesJob.where(user_id: @user.user_id)
     end
     render layout: false
   end
