@@ -1,0 +1,21 @@
+= form_for(@inventory) do |f|
+  
+  .form-inputs
+    .field
+      = f.label :name
+      = f.text_field :name
+    .field
+      = f.label :object_type
+      = f.text_field :object_type
+    .field
+      = f.label :start_date
+      = f.date_select :start_date
+    .field
+      = f.label :end_date
+      = f.date_select :end_date
+    .field
+      = f.label :price
+      = f.number_field :price
+
+  .form-actions
+    = f.submit "Submit Item"
