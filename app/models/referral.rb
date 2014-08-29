@@ -20,7 +20,11 @@ class Referral < ActiveRecord::Base
 
   # Returns the token of the person that referred this user
   def referrer_record
-    Referral.find_by(user_id: self.referred_by)
+    Referral.find(self.referred_by)
+  end
+
+  def referred_users
+    Referral.find_by(referred_by: self.id)
   end
 
 end

@@ -25,10 +25,9 @@ Apps::Application.routes.draw do
     get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
   end
 
-  scope :inventory do
+  resources :inventories do
     post "create_inventory_item" => 'inventory#create_inventory_item', as: :create_inventory_item
-    get  "(/:id)/inventory"      => 'inventory#get_item'             , as: :inventory
-    get "overview"               => 'inventory#overview'             , as: :promotion_overview
+    post "submit_form" => 'inventory#submit_form', as: :submit_form
   end
 
   scope :evergrad_likes do
