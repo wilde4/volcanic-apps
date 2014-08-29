@@ -3,8 +3,12 @@ class ReferralController < ApplicationController
   respond_to :json
 
   before_action :set_referral, except: [
-    :create_referral, :funds_earned, :funds_owed,
+    :index, :create_referral, :funds_earned, :funds_owed,
     :referrals_for_period, :most_referrals]
+
+  def index
+
+  end
 
   # POST /referrals/create_referral
   # Creates a referral for a User ID
@@ -190,8 +194,9 @@ class ReferralController < ApplicationController
   #   * start_date - Start of reporting period
   #   * end_date   - End of reporting period
   def referrals_for_period
-    start_date = params[:start_date] || Date.parse("2000-01-01")
-    end_date = params[:end_date] || Date.parse("2050-01-01")
+    logger.info "--- params[data][start_date] = #{params[:data]["start_date"]}"
+    start_date = params[:data][:start_date].present? ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
+    end_date = params[:data][:end_date].present? ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
 
     refgroups = []
 
@@ -223,7 +228,7 @@ class ReferralController < ApplicationController
     metrics = Referral.group(:referred_by).count.sort_by{|k,v| v}.reverse
     metrics.delete(nil)
 
-    limit = params[:limit] ? params[:limit].to_i : metrics.count / 10
+    limit = params[:data][:limit].present? ? params[:data][:limit].to_i : metrics.count / 10
 
     @referrals = metrics[0...limit]
 

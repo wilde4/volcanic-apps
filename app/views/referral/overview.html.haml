@@ -17,7 +17,7 @@
                 .revoked= "Revoked?: #{ref.revoked ? 'Yes' : 'No'}"
 
               - if !ref.revoked?
-                .col-xs-2.revoke= link_to "Revoke", referral_revoke_path(ref, format: :json), remote: true
+                .col-xs-2.revoke= link_to "Revoke", referral_revoke_url(ref, format: :json), remote: true
 
   :javascript
     $(function() {

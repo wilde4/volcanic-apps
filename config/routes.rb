@@ -10,6 +10,7 @@ Apps::Application.routes.draw do
   get 'author', :to => "google_plus#author", :as => :author
 
   scope :referrals do
+    get 'index'                 => 'referral#index',                as: :referrals_index
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
     get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
