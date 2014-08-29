@@ -10,6 +10,6 @@
       -@referrals.each_with_index do |refdata, i|
         %tr
           %td= i+1
+          %td= refdata[1]
+          %td= "#{refdata[0]}"
           %td= refdata[2]
-          %td= "#{refdata[0]} #{refdata[1]}"
-          %td= refdata[3]
