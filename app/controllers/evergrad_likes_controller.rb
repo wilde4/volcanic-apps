@@ -135,7 +135,8 @@ class EvergradLikesController < ApplicationController
   def matches
     @user = LikesUser.find_by(user_id: params[:id])
     if @user.extra["user_type"] == 'graduate'
-      @matches = LikesLike.where(likeable_type: 'User', likeable_id: @user.user_id, match: true)
+      # @matches = LikesLike.where(likeable_type: 'User', likeable_id: @user.user_id, match: true)
+      @matches = LikesLike.where(user_id: @user.user_id, match: true)
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
       @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
       @matches = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: true)
