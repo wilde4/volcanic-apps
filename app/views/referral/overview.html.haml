@@ -26,5 +26,6 @@
       $('.revoke').bind('ajax:success', function() {
         $(this).parent().find('.revoked').text("Revoked?: Yes");
         $(this).hide();
+      }).bind('ajax:beforeSend', function(xhr) {
       });
     });

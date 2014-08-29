@@ -27,6 +27,7 @@ Apps::Application.routes.draw do
 
   resources :inventories do
     post "create_inventory_item" => 'inventory#create_inventory_item', as: :create_inventory_item
+    post "submit_form" => 'inventory#submit_form', as: :submit_form
   end
 
   scope :evergrad_likes do

@@ -1,5 +1,7 @@
 class ReferralController < ApplicationController
   protect_from_forgery with: :null_session
+  skip_before_filter :verify_authenticity_token
+
   respond_to :json
 
   before_action :set_referral, except: [
@@ -7,7 +9,6 @@ class ReferralController < ApplicationController
     :referrals_for_period, :most_referrals]
 
   def index
-
   end
 
   # POST /referrals/create_referral
@@ -207,8 +208,7 @@ class ReferralController < ApplicationController
     referral_groupings.each do |k,v|
       refgroups << referrals.select{ |r| r.referred_by == k }
     end
-    byebug
-
+    
     respond_to do |format|
       format.html {
         @referrals = refgroups

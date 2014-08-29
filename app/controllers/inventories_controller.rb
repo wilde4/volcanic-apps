@@ -4,7 +4,6 @@ class InventoriesController < ApplicationController
 
   before_action :set_inventory_item, except: [:index, :create, :new]
 
-
   def index
     @items = Inventory.all || []
   end
@@ -33,7 +32,7 @@ class InventoriesController < ApplicationController
 
     respond_to do |format|
       if @inventory.save
-        format.html { redirect_to inventories_path, notice: "Inventory item created." }
+        format.html { redirect_to '/admin/apps/9/index', notice: "Inventory item created." }
         format.json { render json: { success: true, item: inventory }}
       else
         format.html

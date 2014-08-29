@@ -1,22 +1,23 @@
-= stylesheet_link_tag "application"
-= javascript_include_tag "application"
+/= stylesheet_link_tag "application"
+/= javascript_include_tag "application"
 
-.col-xs-12
-  %h3
-    Your Inventory
+%h5
+  = link_to 'Add Item', '/admin/apps/9/new_inventory'
 
-  %h5
-    .row
-      .col-xs-2 Display Name
-      .col-xs-2 Item Type
-      .col-xs-2 Price
-      .col-xs-2 Start Date
-      .col-xs-2 End Date
-
-  - @items.each do |item|
-    .row
-      .col-xs-2= item.name
-      .col-xs-2= item.object_type
-      .col-xs-2= number_to_currency(item.price, unit: '£')
-      .col-xs-2= item.human_start_date if item.start_date
-      .col-xs-2= item.human_end_date if item.end_date
+.table-responsive
+  %table.table
+    %thead
+      %tr
+        %th Display Name
+        %th Item Type
+        %th Price
+        %th Start Date
+        %th End Date
+    %tbody
+      - @items.each do |item|
+        %tr
+          %td= item.name
+          %td= item.object_type
+          %td= number_to_currency(item.price, unit: '£')
+          %td= item.human_start_date if item.start_date
+          %td= item.human_end_date if item.end_date
