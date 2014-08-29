@@ -13,3 +13,6 @@
           %td= refdata[1]
           %td= "#{refdata[0]}"
           %td= refdata[2]
+      - if @referrals.empty?
+        %tr
+          %td{colspan: 4} No referrals made yet :(
