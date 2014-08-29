@@ -125,6 +125,7 @@ class EvergradLikesController < ApplicationController
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
       @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
       @likes = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: false)
+      @jobs = LikesJob.where(user_id: @user.user_id)
     end
     render layout: false
   end
