@@ -12,6 +12,7 @@ Apps::Application.routes.draw do
   scope :referrals do
     get 'index'                 => 'referral#index',                as: :referrals_index
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
+    get "/referral"             => 'referral#referral_by_user', as: :referral_by_user
     get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
     get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed

@@ -6,7 +6,7 @@ class ReferralController < ApplicationController
 
   before_action :set_referral, except: [
     :index, :create_referral, :funds_earned, :funds_owed,
-    :referrals_for_period, :most_referrals]
+    :referrals_for_period, :most_referrals, :referral_by_user]
 
   def index
   end
@@ -48,6 +48,17 @@ class ReferralController < ApplicationController
       format.json { render json: { success: true, referral: @referral } }
     end
   end
+
+  # GET /referrals/referral
+  # Params:
+  #   * user_id - UID to lookup
+  def referral_by_user
+    @referral = Referral.find_by(user_id: params[:user_id])
+    respond_to do |format|
+      format.json { render json: { success: true, referral: @referral } }
+    end
+  end
+
 
   # GET /referrals/funds_earned
   # Returns a historical count of all money earned
