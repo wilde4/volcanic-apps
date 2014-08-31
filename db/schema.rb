@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140828152927) do
+ActiveRecord::Schema.define(version: 20140831081709) do
 
   create_table "inventories", force: true do |t|
     t.string   "name"
@@ -28,9 +28,10 @@ ActiveRecord::Schema.define(version: 20140828152927) do
     t.string   "job_reference"
     t.string   "job_title"
     t.integer  "user_id"
-    t.string   "cached_slug"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "extra"
+    t.date     "expiry_date"
   end
 
   create_table "likes_likes", force: true do |t|
