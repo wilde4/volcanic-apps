@@ -1,6 +1,7 @@
 class EvergradLikesController < ApplicationController
   protect_from_forgery with: :null_session
-  respond_to :json
+  require 'csv'
+  respond_to :json, :csv
 
   def save_user
     @user = LikesUser.find_by(user_id: params[:user][:id])
@@ -187,5 +188,17 @@ class EvergradLikesController < ApplicationController
       }
     }
   end
+
+  def index
+    render layout: false
+  end
+
+  def likes_csv
+    @likes = LikesLike.where(likeable_type: 'Job')
+    respond_to do |format|
+      format.csv { send_data @likes.to_csv }
+    end
+  end
+
 
 end

@@ -40,6 +40,8 @@ Apps::Application.routes.draw do
     get '(/:id)/matches' => 'evergrad_likes#matches', as: :user_matches
     get 'all_matches' => 'evergrad_likes#all_matches', as: :all_matches
     get 'notification_events' => 'evergrad_likes#notification_events', as: :notification_events
+    get 'index' => 'evergrad_likes#index', as: :evergrad_likes_index
+    get 'likes_csv' => 'evergrad_likes#likes_csv', as: :evergrad_likes_csv
   end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
