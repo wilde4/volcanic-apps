@@ -1,4 +1,6 @@
-%h4 Add New Inventory Item
+= javascript_include_tag "application"
+
+%h4 Edit Inventory Item
 
 = render 'form'
 
@@ -13,7 +15,7 @@
         dataType: 'json',
         xhrFields: { withCredentials: true }
       }).complete(function(data) {
-        window.location = "/admin/apps/9/index";
+        window.location = "/admin/apps/9/index";å
       });
       return false;
     });

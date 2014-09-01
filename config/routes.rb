@@ -32,6 +32,9 @@ Apps::Application.routes.draw do
     get "(/:id)/inventory" => 'inventory#get_inventory',  as: :inventory_lookup
     get "/available"       => 'inventory#get_available',  as: :inventory_available
     get "new"              => 'inventory#new',            as: :inventory_new
+    get "edit"             => 'inventory#edit',           as: :inventory_edit
+    get "cheapest_price"   => 'inventory#cheapest_price', as: :inventory_cheapest_price
+    patch "create_item"    => 'inventory#update',         as: :inventory_update
 
   end
 

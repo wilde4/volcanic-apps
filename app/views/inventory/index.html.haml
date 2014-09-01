@@ -1,11 +1,8 @@
-/= stylesheet_link_tag "application"
-/= javascript_include_tag "application"
-
 %h5
   = link_to 'Add Item', '/admin/apps/9/new_inventory'
 
 .table-responsive
-  %table.table
+  %table.table.table-striped
     %thead
       %tr
         %th Display Name
@@ -13,6 +10,7 @@
         %th Price
         %th Start Date
         %th End Date
+        %th
     %tbody
       - @items.each do |item|
         %tr
@@ -21,3 +19,6 @@
           %td= number_to_currency(item.price, unit: '£')
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date
+          %td
+            =link_to "/admin/apps/9/edit_inventory?inv_id=#{item.id}" do
+              %i.fa.fa-pencil
