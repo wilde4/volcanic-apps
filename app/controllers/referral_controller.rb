@@ -206,9 +206,8 @@ class ReferralController < ApplicationController
   #   * start_date - Start of reporting period
   #   * end_date   - End of reporting period
   def referrals_for_period
-    logger.info "--- params[data][start_date] = #{params[:data]["start_date"]}"
-    start_date = params[:data][:start_date].present? ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
-    end_date = params[:data][:end_date].present? ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
+    start_date = (params[:data].present? and params[:data][:start_date].present?) ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
+    end_date = (params[:data].present? and params[:data][:end_date].present?) ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
 
     refgroups = []
 
@@ -228,7 +227,7 @@ class ReferralController < ApplicationController
     respond_to do |format|
       format.html {
         @referrals = refgroups
-        render action: 'overview'
+        render action: 'overview', layout: false
       }
       format.json { render json: {
           success: true, length: referrals.count, referrals: refgroups
@@ -246,7 +245,7 @@ class ReferralController < ApplicationController
                       .count.sort_by{|k,v| v}
                       .reverse.reject{|r| r[0] == nil}
 
-    if params[:data][:limit].present?
+    if params[:data].present? and params[:data][:limit].present?
       limit = params[:data][:limit].to_i
     else
       limit = metrics.count > 100 ? metrics.count / 10 : metrics.count

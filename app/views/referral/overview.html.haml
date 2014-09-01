@@ -1,25 +1,28 @@
-= stylesheet_link_tag "application"
-= javascript_include_tag "application"
+/ = stylesheet_link_tag "application"
+/ = javascript_include_tag "application"
 
 .panel-group#accordion
-  -@referrals.each_with_index do |referral, i|
-    .panel.panel-default
-      .panel-heading
-        %h4.panel-title
-          = link_to referral[0], "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
-      .panel-collapse.collapse{id: "referrer-#{i}"}
-        .panel-body
-          -referral[1].each do |ref|
-            .row
-              .col-xs-2= "#{ref.full_name} (ID: #{ref.user_id})"
-              %attr.col-xs-3{title: "#{ref.confirmed_at if ref.confirmed}"}
-                = "Confirmed?: #{ref.confirmed? ? 'Yes' : 'No'}"
+  - if @referrals.present?
+    - @referrals.each_with_index do |referral, i|
+      .panel.panel-default
+        .panel-heading
+          %h4.panel-title
+            = link_to referral[0], "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+        .panel-collapse.collapse{id: "referrer-#{i}"}
+          .panel-body
+            -referral[1].each do |ref|
+              .row
+                .col-xs-2= "#{ref.full_name} (ID: #{ref.user_id})"
+                %attr.col-xs-3{title: "#{ref.confirmed_at if ref.confirmed}"}
+                  = "Confirmed?: #{ref.confirmed? ? 'Yes' : 'No'}"
 
-              %attr.col-xs-3{title: "#{ref.revoked_at if ref.revoked}"}
-                .revoked= "Revoked?: #{ref.revoked ? 'Yes' : 'No'}"
+                %attr.col-xs-3{title: "#{ref.revoked_at if ref.revoked}"}
+                  .revoked= "Revoked?: #{ref.revoked ? 'Yes' : 'No'}"
 
-              - if !ref.revoked?
-                .col-xs-2.revoke= link_to "Revoke", referral_revoke_url(ref, format: :json), remote: true
+                - if !ref.revoked?
+                  .col-xs-2.revoke= link_to "Revoke", referral_revoke_url(ref, format: :json), remote: true
+  - else
+    %p No referrals have been made yet :(
 
   :javascript
     $(function() {

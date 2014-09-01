@@ -1,6 +1,7 @@
 class EvergradLikesController < ApplicationController
   protect_from_forgery with: :null_session
-  respond_to :json
+  require 'csv'
+  respond_to :json, :csv
 
   def save_user
     @user = LikesUser.find_by(user_id: params[:user][:id])
@@ -38,7 +39,20 @@ class EvergradLikesController < ApplicationController
   def save_job
     @job = LikesJob.find_by(job_id: params[:job][:id])
     if @job.present?
-      if @job.update(job_reference: params[:job][:job_reference], job_title: params[:job][:job_title], cached_slug: params[:job][:cached_slug])
+      @extra = {
+        job_type: params[:job_type],
+        job_startdate: params[:job][:job_startdate],
+        job_description: params[:job][:job_description],
+        job_location: params[:job][:job_location],
+        salary_free: params[:job][:salary_free],
+        cached_slug: params[:job][:cached_slug]
+      }
+      if @job.update(
+        job_reference: params[:job][:job_reference], 
+        job_title: params[:job][:job_title], 
+        expiry_date: params[:job][:expiry_date],
+        extra: @extra
+      )
         render json: { success: true, job_id: @job.id }
       else
         render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
@@ -47,9 +61,18 @@ class EvergradLikesController < ApplicationController
       @job = LikesJob.new
       @job.job_id = params[:job][:id]
       @job.user_id = params[:job][:user_id]
-      @job.job_reference = params[:job][:job_reference]
+      @job.expiry_date = params[:job][:expiry_date]
       @job.job_title = params[:job][:job_title]
-      @job.cached_slug = params[:job][:cached_slug]
+      @job.job_reference = params[:job][:job_reference]
+      @extra = {
+        job_type: params[:job_type],
+        job_startdate: params[:job][:job_startdate],
+        job_description: params[:job][:job_description],
+        job_location: params[:job][:job_location],
+        salary_free: params[:job][:salary_free],
+        cached_slug: params[:job][:cached_slug]
+      }
+      @job.extra = @extra
 
       if @job.save
         render json: { success: true, job_id: @job.id }
@@ -117,6 +140,9 @@ class EvergradLikesController < ApplicationController
 
   def likes_made
     @likes = LikesLike.where(user_id: params[:id], match: false)
+    @likes.delete_if { |l| l.likeable_type == 'User' and LikesUser.find_by(user_id: l.likeable_id).blank? }
+    # REMOVE JOB IF IT HAS EXPIRED
+    @likes.delete_if { |l| l.likeable_type == 'Job' and LikesJob.live.find_by(job_id: l.likeable_id).blank? }
     render layout: false
   end
 
@@ -125,9 +151,7 @@ class EvergradLikesController < ApplicationController
     if @user.extra["user_type"] == 'graduate'
       @likes = LikesLike.where(likeable_type: 'User', likeable_id: @user.user_id, match: false)
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
-      @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
-      @likes = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: false)
-      @jobs = LikesJob.where(user_id: @user.user_id)
+      @jobs = LikesJob.where(user_id: @user.user_id).live
     end
     render layout: false
   end
@@ -135,10 +159,11 @@ class EvergradLikesController < ApplicationController
   def matches
     @user = LikesUser.find_by(user_id: params[:id])
     if @user.extra["user_type"] == 'graduate'
-      # @matches = LikesLike.where(likeable_type: 'User', likeable_id: @user.user_id, match: true)
       @matches = LikesLike.where(user_id: @user.user_id, match: true)
+      # REMOVE JOB IF IT HAS EXPIRED
+      @matches.delete_if { |l| l.likeable_type == 'Job' and LikesJob.live.find_by(job_id: l.likeable_id).blank? }
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
-      @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
+      @job_ids = LikesJob.where(user_id: @user.user_id).live.map(&:job_id)
       @matches = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: true)
     end
     render layout: false
@@ -163,5 +188,17 @@ class EvergradLikesController < ApplicationController
       }
     }
   end
+
+  def index
+    render layout: false
+  end
+
+  def likes_csv
+    @likes = LikesLike.where(likeable_type: 'Job')
+    respond_to do |format|
+      format.csv { send_data @likes.to_csv }
+    end
+  end
+
 
 end
