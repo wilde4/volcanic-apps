@@ -12,7 +12,7 @@ Apps::Application.routes.draw do
   scope :referrals do
     get 'index'                 => 'referral#index',                as: :referrals_index
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
-    get "/referral"             => 'referral#referral_by_user', as: :referral_by_user
+    get "/referral"             => 'referral#referral_by_user',     as: :referral_by_user
     get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
     get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed
@@ -26,9 +26,13 @@ Apps::Application.routes.draw do
     get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
   end
 
-  resources :inventories do
-    post "create_inventory_item" => 'inventory#create_inventory_item', as: :create_inventory_item
-    post "submit_form" => 'inventory#submit_form', as: :submit_form
+  scope :inventories do
+    post "create_item"     => 'inventory#create_item',    as: :create_item
+    get "index"            => 'inventory#index',          as: :inventory_index
+    get "(/:id)/inventory" => 'inventory#get_inventory',  as: :inventory_lookup
+    get "/available"       => 'inventory#get_available',  as: :inventory_available
+    get "new"              => 'inventory#new',            as: :inventory_new
+
   end
 
   scope :evergrad_likes do

@@ -1,4 +1,4 @@
-= form_for(@inventory, url: '/admin/apps/9/submit_form') do |f|
+= form_for(@inventory, url: 'http://localhost:3001/inventories/create_item') do |f|
   
   .form-inputs
     .field
@@ -9,20 +9,17 @@
       = f.text_field :object_type
     .field
       = f.label :start_date
-      = f.date_select :start_date, order: [:day, :month, :year]
+      = f.date_field :start_date
     .field
       = f.label :end_date
-      = f.date_select :end_date, order: [:day, :month, :year]
+      = f.date_field :end_date
     .field
       = f.label :price
-      = f.number_field :price
+      = f.number_field :price, step: :any
 
   .form-actions
     = f.submit "Submit Item"
 
   :css
-    .field {
-      padding: 10px 0;
-    }
-
+    .field { padding: 10px 0; }
     .field label { display: block; }
