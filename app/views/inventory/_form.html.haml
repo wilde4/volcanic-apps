@@ -2,25 +2,45 @@
   
   .form-inputs
     = f.hidden_field :id, value: @inv_id
-    
+
     .field
       = f.label :name
       = f.text_field :name
+
     .field
       = f.label :object_type
       = f.text_field :object_type
+
     .field
       = f.label :start_date
       = f.date_field :start_date
+
     .field
       = f.label :end_date
       = f.date_field :end_date
+
     .field
       = f.label :price
       = f.number_field :price, step: :any
 
   .form-actions
     = f.submit "Submit Item"
+
+  :javascript
+    $(function() {
+      $('#inventory_start_date').change(function() {
+        var startDate = $(this).val();
+        var endDate = $('#inventory_end_date').val();
+        if(new Date(startDate) > new Date(endDate))
+          $('#inventory_end_date').val(startDate);
+      });
+      $('#inventory_end_date').change(function() {
+        var endDate = $(this).val();
+        var startDate = $('#inventory_start_date').val();
+        if(new Date(endDate) < new Date(startDate))
+          $('#inventory_start_date').val(endDate);
+      });
+    });
 
   :css
     .field { padding: 10px 0; }

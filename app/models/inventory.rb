@@ -11,10 +11,14 @@ class Inventory < ActiveRecord::Base
     self.end_date.strftime(strftime_string)
   end
 
+  def within_date
+    start_date <= Date.today && end_date >= Date.today
+  end
+
   private
 
   def strftime_string
-    "%d %b %Y, %H:%M"
+    "%d %B %Y"
   end
 
 

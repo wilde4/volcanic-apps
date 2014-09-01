@@ -2,7 +2,7 @@
   = link_to 'Add Item', '/admin/apps/9/new_inventory'
 
 .table-responsive
-  %table.table.table-striped
+  %table.table
     %thead
       %tr
         %th Display Name
@@ -13,7 +13,7 @@
         %th
     %tbody
       - @items.each do |item|
-        %tr
+        %tr{class: "#{'success' if item.within_date}"}
           %td= item.name
           %td= item.object_type
           %td= number_to_currency(item.price, unit: '£')
