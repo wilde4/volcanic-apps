@@ -1,5 +1,7 @@
 = form_for(@inventory, url: '') do |f|
   .form-inputs
+
+    .errors
   
     = f.hidden_field :id, value: @inv_id
 
@@ -28,13 +30,13 @@
 
   :javascript
     $(function() {
-      $('#inventory_start_date').mouseleave(function() {
+      $('#inventory_start_date').focusout(function() {
         var startDate = $(this).val();
         var endDate = $('#inventory_end_date').val();
         if(new Date(startDate) > new Date(endDate))
           $('#inventory_end_date').val(startDate);
       });
-      $('#inventory_end_date').mouseleave(function() {
+      $('#inventory_end_date').focusout(function() {
         var endDate = $(this).val();
         var startDate = $('#inventory_start_date').val();
         if(new Date(endDate) < new Date(startDate))

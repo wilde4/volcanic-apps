@@ -2,6 +2,9 @@ class InventoryController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json
 
+  # Controller requires cross-domain POST XHRs
+  after_filter :setup_access_control_origin
+
   before_action :set_inventory_item, only: [:get_inventory]
 
   # GET /inventories/index
@@ -30,10 +33,12 @@ class InventoryController < ApplicationController
     respond_to do |format|
       if @inventory.update(inventory_params)
         format.html { redirect_to action: 'index' }
-        format.json { head :no_content }
+        format.json { render json: { success: true, item: @inventory }}
       else
         format.html { render action: 'edit' }
-        format.json { render json: @inventory.errors, status: :unprocessable_entity }
+        format.json { render json: {
+          success: false, status: "Error: #{@inventory.errors.full_messages.join(', ')}"
+        }}
       end
     end
   end

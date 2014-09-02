@@ -9,11 +9,16 @@
       $.ajax({
         url: 'http://localhost:3001/inventories/create_item.json',
         type: "POST",
+        crossDomain: true,
         data: formData,
-        dataType: 'json',
-        xhrFields: { withCredentials: true }
-      }).complete(function(data) {
-        window.location = "/admin/apps/9/index";
+        dataType: 'json'
+      }).success(function(data) {
+        if(data.success) {
+          window.location = "/admin/apps/9/index";
+        } else {
+          $('.errors').html(data.status);
+        }
+        return false;
       });
       return false;
     });
