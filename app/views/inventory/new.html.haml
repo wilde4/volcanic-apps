@@ -7,14 +7,14 @@
     $('form').submit(function() {
       var formData = $(this).serialize();
       $.ajax({
-        url: 'http://localhost:3001/inventories/create_item.json',
+        url: "http://#{@app_server}/inventories/create_item.json",
         type: "POST",
         crossDomain: true,
         data: formData,
         dataType: 'json'
       }).success(function(data) {
         if(data.success) {
-          window.location = "/admin/apps/9/index";
+          window.location = "index";
         } else {
           $('.errors').html(data.status);
         }
@@ -24,4 +24,4 @@
     });
   });
 
-= link_to 'Back to Inventory', '/admin/apps/9/index'
+= link_to 'Back to Inventory', 'index'

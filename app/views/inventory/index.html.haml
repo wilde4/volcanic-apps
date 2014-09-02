@@ -1,5 +1,5 @@
 %h5
-  = link_to 'Add Item', '/admin/apps/9/new_inventory'
+  = link_to 'Add Item', "new_inventory"
 
 .table-responsive
   %table.table
@@ -20,5 +20,5 @@
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date
           %td
-            =link_to "/admin/apps/9/edit_inventory?inv_id=#{item.id}" do
+            =link_to "edit_inventory?inv_id=#{item.id}" do
               %i.fa.fa-pencil

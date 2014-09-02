@@ -15,13 +15,16 @@ class ApplicationController < ActionController::Base
   # Production should point to the volcanic apps server
   def setup_access_control_origin
     headers['Access-Control-Request-Method'] = '*'
+    headers['Access-Control-Allow-Origin'] = '*'
+  end
 
+  # Use the app server suitable for the host environment
+  def app_server_host
     if Rails.env.development?
-      headers['Access-Control-Allow-Origin'] = 'http://evergrad.localhost.volcanic.co:3000'
+      "localhost:3001"
     elsif Rails.env.production?
-      headers['Access-Control-Allow-Origin'] = 'http://apps.volcanic.co'
+      "apps.volcanic.co"
     end
-
   end
   
 end

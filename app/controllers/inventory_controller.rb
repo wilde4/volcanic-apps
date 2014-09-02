@@ -21,11 +21,12 @@ class InventoryController < ApplicationController
   # Loads up the HTML form for use in the apps dashboard
   def new
     @inventory = Inventory.new
+    @app_server = app_server_host
   end
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
-    @inv_id = params[:data][:inv_id]
+    @app_server = app_server_host
   end
 
    def update
