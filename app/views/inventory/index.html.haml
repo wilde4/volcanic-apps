@@ -1,6 +1,8 @@
 %h5
   = link_to 'Add Item', "new_inventory"
 
+  = link_to 'Toggle Inactive', '#', class: 'toggle-active'
+
 .table-responsive
   %table.table
     %thead
@@ -22,3 +24,13 @@
           %td
             =link_to "edit_inventory?inv_id=#{item.id}" do
               %i.fa.fa-pencil
+:javascript
+  $(function() {
+    var hidden = false;
+    $('.toggle-active').click(function() {
+      var inactiveItems = $('table tbody tr:not(.success)')
+      hidden ? inactiveItems.show() : inactiveItems.hide();
+      hidden = !hidden;
+      return false;
+    });
+  });
