@@ -41,7 +41,6 @@ class ApplicationController < ActionController::Base
 
   def deactivate_app
     key = Key.where(app_dataset_id: params[:data][:app_dataset_id], app_name: params[:controller]).first
-    byebug
     respond_to do |format|
       if key
         format.json { render json: { success: key.destroy }}
