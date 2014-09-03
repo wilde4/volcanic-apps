@@ -30,7 +30,7 @@ class ApplicationController < ActionController::Base
   def activate_app
     key = Key.new
     key.host = params[:data][:host]
-    key.dataset_id = params[:data][:dataset_id]
+    key.app_dataset_id = params[:data][:app_dataset_id]
     key.api_key = params[:data][:api_key]
     key.app_name = params[:controller]
 
@@ -40,7 +40,8 @@ class ApplicationController < ActionController::Base
   end
 
   def deactivate_app
-    key = Key.where(dataset_id: params[:data][:dataset_id], app_name: params[:controller]).first
+    key = Key.where(app_dataset_id: params[:data][:app_dataset_id], app_name: params[:controller]).first
+    byebug
     respond_to do |format|
       if key
         format.json { render json: { success: key.destroy }}

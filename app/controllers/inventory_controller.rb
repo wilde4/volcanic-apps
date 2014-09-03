@@ -103,6 +103,42 @@ class InventoryController < ApplicationController
     end
   end
 
+=begin
+  # POST /inventory/post_purchase
+  # An action that can be called on a purchased object
+  # Params:
+  #   * domain       - Where we're sending the request, usually 
+  #   * inventory_id - The record for the item purchased
+  #   * purchased_id - The specific record ID that was purchased (Job(10), User(1442) etc.)
+  #   * api_key      - Api Key for Oliver API access
+  def post_purchase
+
+    if params[:data][:inventory_id] && params[:data][:api_key]
+      item = Inventory.find(params[:data][:inventory_id])
+      resource = item.object_type.downcase.pluralize(2)
+      endpoint_str = "#{params[:data][:domain]}/api/v1/#{resource}/#{params[:data][:purchased_id]}.json"
+
+      # Work out the field to be edited, will be a record in future
+      case item.object_type
+      when "User"
+        attribute = { email: 'SharksWithLaserBeams@gmail.com' }
+      end
+
+      request_data = {
+        api_key: params[:data][:api_key],
+        item.object_type.to_sym => attribute
+      }
+
+      response = HTTParty.put(endpoint_str, request_data)
+
+      respond_to do |format|
+        format.json{ render json: response.body }
+      end
+
+    end
+  end
+=end
+
 private
 
   def inventory_params
