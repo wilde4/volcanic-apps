@@ -26,5 +26,29 @@ class ApplicationController < ActionController::Base
       "apps.volcanic.co"
     end
   end
+
+  def activate_app
+    key = Key.new
+    key.host = params[:data][:host]
+    key.dataset_id = params[:data][:dataset_id]
+    key.api_key = params[:data][:api_key]
+    key.app_name = params[:controller]
+
+    respond_to do |format|
+        format.json { render json: { success: key.save }}
+    end
+  end
+
+  def deactivate_app
+    key = Key.where(dataset_id: params[:data][:dataset_id], app_name: params[:controller]).first
+    respond_to do |format|
+      if key
+        format.json { render json: { success: key.destroy }}
+      else
+        format.json { render json: { error: 'Key not found.' } }
+      end
+    end
+  end
+
   
 end

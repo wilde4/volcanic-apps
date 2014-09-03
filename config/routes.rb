@@ -27,15 +27,17 @@ Apps::Application.routes.draw do
   end
 
   scope :inventories do
-    post "create_item"     => 'inventory#create_item',    as: :create_item
-    get "index"            => 'inventory#index',          as: :inventory_index
-    get "(/:id)/inventory" => 'inventory#get_inventory',  as: :inventory_lookup
-    get "/available"       => 'inventory#get_available',  as: :inventory_available
-    get "new"              => 'inventory#new',            as: :inventory_new
-    get "edit"             => 'inventory#edit',           as: :inventory_edit
-    get "cheapest_price"   => 'inventory#cheapest_price', as: :inventory_cheapest_price
-    patch "create_item"    => 'inventory#update',         as: :inventory_update
-
+    post "create_item"      => 'inventory#create_item',    as: :create_item
+    get "index"             => 'inventory#index',          as: :inventory_index
+    get "(/:id)/inventory"  => 'inventory#get_inventory',  as: :inventory_lookup
+    get "/available"        => 'inventory#get_available',  as: :inventory_available
+    get "new"               => 'inventory#new',            as: :inventory_new
+    get "edit"              => 'inventory#edit',           as: :inventory_edit
+    get "cheapest_price"    => 'inventory#cheapest_price', as: :inventory_cheapest_price
+    patch "create_item"     => 'inventory#update',         as: :inventory_update
+    post "activate_app"     => 'inventory#activate_app',   as: :inventory_activate_app
+    post "deactivate_app"   => 'inventory#deactivate_app', as: :inventory_deactivate_app
+    post "post_purchase"    => 'inventory#post_purchase',  as: :inventory_post_purchase
   end
 
   scope :evergrad_likes do
