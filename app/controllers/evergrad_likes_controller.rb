@@ -8,7 +8,11 @@ class EvergradLikesController < ApplicationController
     if @user.present?
       @extra = {
         user_type: params[:user][:user_type],
-        avatar_path: params[:user_profile][:avatar_path]
+        avatar_thumb_path: params[:user_profile][:avatar_thumb_path],
+        avatar_medium_cropped_path: params[:user_profile][:avatar_medium_cropped_path],
+        avatar_medium_uncropped_path: params[:user_profile][:avatar_medium_uncropped_path],
+        avatar_large_cropped_path: params[:user_profile][:avatar_large_cropped_path],
+        avatar_large_uncropped_path: params[:user_profile][:avatar_large_uncropped_path]
       }
       if @user.update(email: params[:user][:email], first_name: params[:user_profile][:first_name], last_name: params[:user_profile][:last_name], extra: @extra, registration_answers: params[:registration_answer_hash])
         render json: { success: true, user_id: @user.id }
@@ -23,7 +27,11 @@ class EvergradLikesController < ApplicationController
       @user.last_name = params[:user_profile][:last_name]
       @extra = {
         user_type: params[:user][:user_type],
-        avatar_path: params[:user_profile][:avatar_path]
+        avatar_thumb_path: params[:user_profile][:avatar_thumb_path],
+        avatar_medium_cropped_path: params[:user_profile][:avatar_medium_cropped_path],
+        avatar_medium_uncropped_path: params[:user_profile][:avatar_medium_uncropped_path],
+        avatar_large_cropped_path: params[:user_profile][:avatar_large_cropped_path],
+        avatar_large_uncropped_path: params[:user_profile][:avatar_large_uncropped_path]
       }
       @user.extra = @extra
       @user.registration_answers = params[:registration_answer_hash]
