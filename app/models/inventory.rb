@@ -1,10 +1,9 @@
 class Inventory < ActiveRecord::Base
 
-  scope :within_date, -> { where("? BETWEEN start_date AND end_date", Date.today) }
-
   validates :name, presence: true
-  validates :object_type, presence: true
   validates :price, presence: true
+
+  belongs_to :inventory_object
 
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
@@ -16,7 +15,9 @@ class Inventory < ActiveRecord::Base
   end
 
   def within_date
-    start_date <= Date.today && end_date >= Date.today
+    active_start = start_date.nil? || start_date <= Date.today
+    active_end = end_date.nil? || end_date >= Date.today
+    active_start && active_end
   end
 
   private

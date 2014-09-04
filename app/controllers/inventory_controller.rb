@@ -21,11 +21,13 @@ class InventoryController < ApplicationController
   # Loads up the HTML form for use in the apps dashboard
   def new
     @inventory = Inventory.new
+    @inv_objs = InventoryObject.all
     @app_server = app_server_host
   end
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
+    @inv_objs = InventoryObject.all
     @app_server = app_server_host
   end
 
@@ -52,12 +54,7 @@ class InventoryController < ApplicationController
   #   * end_date - Date that ends the Inventory Item active period
   #   * price - Price to charge for this Inventory Item
   def create_item
-    @inventory = Inventory.new(
-      name: params[:inventory][:name],
-      start_date: params[:inventory][:start_date],
-      end_date: params[:inventory][:end_date],
-      price: params[:inventory][:price],
-      object_type: params[:inventory][:object_type])
+    @inventory = Inventory.new(inventory_params)
 
     respond_to do |format|
       if @inventory.save
@@ -86,7 +83,9 @@ class InventoryController < ApplicationController
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def get_available
-    @inventory = Inventory.where(object_type: params[:type]).within_date
+    inv_obj = InventoryObject.find_by(name: params[:type])
+    @inventory = Inventory.where(inventory_object: inv_obj.id).within_date
+
     respond_to do |format|
       format.json { render json: { success: true, items: @inventory } }
     end
@@ -140,9 +139,8 @@ class InventoryController < ApplicationController
 =end
 
 private
-
   def inventory_params
-    params.require(:inventory).permit(:name, :start_date, :end_date, :price, :object_type)
+    params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price, :inventory_object_id)
   end
 
   def set_inventory_item
