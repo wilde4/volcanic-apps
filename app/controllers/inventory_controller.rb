@@ -6,11 +6,11 @@ class InventoryController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
-
+  before_action :set_key, only: [:index, :new]
   # GET /inventories/index
   # Outputs all Inventory Items in the system
   def index
-    @items = Inventory.all || []
+    @items = Inventory.by_dataset(@key.app_dataset_id) || []
 
     respond_to do |format|
       format.html
@@ -20,9 +20,14 @@ class InventoryController < ApplicationController
 
   # Loads up the HTML form for use in the apps dashboard
   def new
-    @inventory = Inventory.new
-    @inv_objs = Inventory.inventory_objects
-    @app_server = app_server_host
+    if @key
+      @inventory = Inventory.new
+      @inventory.dataset_id = @key.app_dataset_id
+      @inv_objs = Inventory.inventory_objects
+      @app_server = app_server_host
+    else
+      redirect_to action: 'index'
+    end
   end
 
   def edit
@@ -100,11 +105,14 @@ class InventoryController < ApplicationController
   def cheapest_price
     inv_obj = Inventory.object_by_name(params[:type])
     if inv_obj
-      @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}.sort_by{|i| i.price }
+      @inventory = Inventory.by_object(inv_obj[:id])
+                            .select{|iv| iv.within_date}
+                            .sort_by{|i| i.price }
+                            .first
     end
 
     respond_to do |format|
-      format.json { render json: { success: true, item: @inventory.first } }
+      format.json { render json: { success: true, item: @inventory || [] } }
     end
   end
 
@@ -146,10 +154,15 @@ class InventoryController < ApplicationController
 
 private
   def inventory_params
-    params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price, :inventory_object_id)
+    params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
+      :inventory_object_id, :dataset_id)
   end
 
   def set_inventory_item
     @inventory = Inventory.find(params[:id])
+  end
+
+  def set_key
+    @key = Key.find_by(host: request.host)
   end
 end

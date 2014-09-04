@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140904111529) do
+ActiveRecord::Schema.define(version: 20140904130114) do
 
   create_table "inventories", force: true do |t|
     t.string   "name"
@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 20140904111529) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "inventory_object_id"
+    t.integer  "dataset_id"
   end
 
   create_table "keys", force: true do |t|

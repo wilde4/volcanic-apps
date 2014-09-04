@@ -5,6 +5,7 @@ class Inventory < ActiveRecord::Base
   validates :price, numericality: { greater_than_or_equal_to: 0 }
   validates :inventory_object_id, presence: true
 
+  scope :by_dataset, -> id { where(dataset_id: id) }
   scope :by_object, -> id { where(inventory_object_id: id) }
 
   # Calls strftime on start_date and returns a human-friendly version
