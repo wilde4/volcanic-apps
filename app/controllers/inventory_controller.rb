@@ -21,13 +21,13 @@ class InventoryController < ApplicationController
   # Loads up the HTML form for use in the apps dashboard
   def new
     @inventory = Inventory.new
-    @inv_objs = InventoryObject.all
+    @inv_objs = Inventory.inventory_objects
     @app_server = app_server_host
   end
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
-    @inv_objs = InventoryObject.all
+    @inv_objs = Inventory.inventory_objects
     @app_server = app_server_host
   end
 
@@ -83,11 +83,13 @@ class InventoryController < ApplicationController
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def get_available
-    inv_obj = InventoryObject.find_by(name: params[:type])
-    @inventory = Inventory.where(inventory_object: inv_obj.id).within_date
+    inv_obj = Inventory.object_by_name(params[:type])
+    if inv_obj
+      @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
+    end
 
     respond_to do |format|
-      format.json { render json: { success: true, items: @inventory } }
+      format.json { render json: { success: true, items: @inventory || [] } }
     end
   end
 
@@ -96,7 +98,11 @@ class InventoryController < ApplicationController
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def cheapest_price
-    @inventory = Inventory.where(object_type: params[:type]).within_date.sort_by{|i| i.price }
+    inv_obj = Inventory.object_by_name(params[:type])
+    if inv_obj
+      @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}.sort_by{|i| i.price }
+    end
+
     respond_to do |format|
       format.json { render json: { success: true, item: @inventory.first } }
     end

@@ -17,7 +17,7 @@
       - @items.each do |item|
         %tr{class: "#{'success' if item.within_date}"}
           %td= item.name
-          %td= item.inventory_object.name
+          %td= Inventory.object_name(item.inventory_object_id)
           %td= number_to_currency(item.price, unit: '£')
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date
