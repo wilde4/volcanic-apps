@@ -103,13 +103,10 @@ class InventoryController < ApplicationController
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def cheapest_price
-    inv_obj = Inventory.object_by_name(params[:type])
-    if inv_obj
-      @inventory = Inventory.by_object(inv_obj[:id])
-                            .select{|iv| iv.within_date}
-                            .sort_by{|i| i.price }
-                            .first
-    end
+    @inventory = Inventory.by_object(params[:type])
+                          .select{|iv| iv.within_date}
+                          .sort_by{|i| i.price }
+                          .first
 
     respond_to do |format|
       format.json { render json: { success: true, item: @inventory || [] } }
