@@ -30,6 +30,13 @@ class Inventory < ActiveRecord::Base
     nil
   end
 
+  def self.object_by_id(id)
+    self.inventory_objects.each do |obj|
+      return obj if obj[:id] == id
+    end
+    nil
+  end
+
   def self.object_by_name(name)
     self.inventory_objects.each do |obj|
       return obj if obj[:name] == name
@@ -39,7 +46,10 @@ class Inventory < ActiveRecord::Base
 
   def self.inventory_objects
     [
-      {id: 1, name: 'Credit', attribute: '' },
+      {id: 1, name: '10 Credit Pack', type: 'Credit', attribute: '10' },
+      {id: 2, name: '100 Credit Pack', type: 'Credit', attribute: '100'},
+      {id: 3, name: 'Job Match', type: 'Job', attribute: ''},
+      {id: 4, name: 'EG Job', type: 'EG_Job', attribute: '{ "paid": true }' }
     ]
   end
 

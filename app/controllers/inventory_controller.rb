@@ -6,7 +6,7 @@ class InventoryController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
-  before_action :set_key, only: [:index, :new]
+  before_action :set_key, only: [:index, :new, :post_purchase]
   # GET /inventories/index
   # Outputs all Inventory Items in the system
   def index
@@ -116,41 +116,44 @@ class InventoryController < ApplicationController
     end
   end
 
-=begin
   # POST /inventory/post_purchase
   # An action that can be called on a purchased object
   # Params:
-  #   * domain       - Where we're sending the request, usually 
-  #   * inventory_id - The record for the item purchased
+  #   * inventory_id - ID of the inventory object item purchased
   #   * purchased_id - The specific record ID that was purchased (Job(10), User(1442) etc.)
-  #   * api_key      - Api Key for Oliver API access
+  #   * data - A splat of data that will help the action comm. with the API
   def post_purchase
-
-    if params[:data][:inventory_id] && params[:data][:api_key]
-      item = Inventory.find(params[:data][:inventory_id])
-      resource = item.object_type.downcase.pluralize(2)
-      endpoint_str = "#{params[:data][:domain]}/api/v1/#{resource}/#{params[:data][:purchased_id]}.json"
+    if @key # if it's from an authenticated host
+      object = Inventory.object_by_id(params[:data][:inventory_id])
+      resource = object[:type].pluralize(2).downcase
 
       # Work out the field to be edited, will be a record in future
-      case item.object_type
-      when "User"
-        attribute = { email: 'SharksWithLaserBeams@gmail.com' }
+      case object[:type]
+      when "Credit"
+        http_method = :post
+        resource_action = "#{resource}"
+        attributes = { user_token: params[:data][:user_token], value: object[:attribute] }
+      when "Job"
+        http_method = :put
+        resource_action = "#{resource}"
       end
 
+      # Build the endpoint to talk to, and the query params in request_data
+      endpoint_str = "http://evergrad.localhost.volcanic.co:3000/api/v1/#{resource_action}.json"
+
       request_data = {
-        api_key: params[:data][:api_key],
-        item.object_type.to_sym => attribute
+        api_key: @key.api_key,
+        object[:type].to_sym.downcase => attributes # builds params[:<object_type>][:<data>]
       }
 
-      response = HTTParty.put(endpoint_str, request_data)
+      # Make HTTParty go talk to the API:
+      response = HTTParty.send(http_method, endpoint_str, { body: request_data })
 
       respond_to do |format|
         format.json{ render json: response.body }
       end
-
     end
   end
-=end
 
 private
   def inventory_params
