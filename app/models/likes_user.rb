@@ -9,7 +9,11 @@ class LikesUser < ActiveRecord::Base
       user.id user_id
       user.first_name first_name
       user.last_name last_name
-      user.avatar_url extra["avatar_path"]
+      user.avatar_thumb_path extra["avatar_thumb_path"]
+      user.avatar_medium_cropped_path extra["avatar_medium_cropped_path"]
+      user.avatar_medium_uncropped_path extra["avatar_medium_uncropped_path"]
+      user.avatar_large_cropped_path extra["avatar_large_cropped_path"]
+      user.avatar_large_uncropped_path extra["avatar_large_uncropped_path"]
       user.registration_answers registration_answers
     end
   end
