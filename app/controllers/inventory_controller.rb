@@ -3,7 +3,7 @@ class InventoryController < ApplicationController
   respond_to :json
 
   # Controller requires cross-domain POST XHRs
-  before_filter :setup_access_control_origin
+  after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
   before_action :set_key, only: [:index, :new, :post_purchase]

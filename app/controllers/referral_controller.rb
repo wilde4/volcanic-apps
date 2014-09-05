@@ -4,6 +4,9 @@ class ReferralController < ApplicationController
 
   respond_to :json
 
+  # Controller requires cross-domain POST XHRs
+  after_filter :setup_access_control_origin
+
   before_action :set_referral, except: [
     :index, :create_referral, :funds_earned, :funds_owed,
     :referrals_for_period, :most_referrals, :referral_by_user]
