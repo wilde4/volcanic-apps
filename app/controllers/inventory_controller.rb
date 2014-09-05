@@ -133,6 +133,9 @@ class InventoryController < ApplicationController
       when "Job"
         http_method = :put
         resource_action = "#{resource}"
+      when "EG_Job"
+        # UPDATE JOB paid: true
+        LikesJob.find(params[:data][:job_id]).update(paid: true)
       end
 
       # Build the endpoint to talk to, and the query params in request_data

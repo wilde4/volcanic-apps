@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140905120555) do
+ActiveRecord::Schema.define(version: 20140905132059) do
 
   create_table "inventories", force: true do |t|
     t.string   "name"
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(version: 20140905120555) do
     t.datetime "updated_at"
     t.text     "extra"
     t.date     "expiry_date"
+    t.boolean  "paid",          default: false
   end
 
   create_table "likes_likes", force: true do |t|
