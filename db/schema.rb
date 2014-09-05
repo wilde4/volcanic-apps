@@ -11,16 +11,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140904130114) do
+ActiveRecord::Schema.define(version: 20140905120555) do
 
   create_table "inventories", force: true do |t|
     t.string   "name"
     t.datetime "start_date"
     t.datetime "end_date"
-    t.decimal  "price",               precision: 8, scale: 2
+    t.decimal  "price",       precision: 8, scale: 2
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "inventory_object_id"
+    t.string   "object_type"
     t.integer  "dataset_id"
   end
 

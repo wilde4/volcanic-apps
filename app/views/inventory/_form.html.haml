@@ -12,7 +12,7 @@
 
     .field
       = f.label :object_type
-      = f.select :inventory_object_id, options_for_select(@inv_objs.collect{|io| [io[:name], io[:id]]}, @inventory.inventory_object_id), {include_blank: false}
+      = f.select :object_type, options_for_select(@inv_objs.collect{|io| [io[:type]]}, @inventory.object_type), {include_blank: false}
 
     .field
       = f.label :start_date
