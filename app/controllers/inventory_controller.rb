@@ -3,10 +3,11 @@ class InventoryController < ApplicationController
   respond_to :json
 
   # Controller requires cross-domain POST XHRs
-  after_filter :setup_access_control_origin
+  before_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
   before_action :set_key, only: [:index, :new, :post_purchase]
+
   # GET /inventories/index
   # Outputs all Inventory Items in the system
   def index
@@ -23,7 +24,7 @@ class InventoryController < ApplicationController
     if @key
       @inventory = Inventory.new
       @inventory.dataset_id = @key.app_dataset_id
-      @inv_objs = Inventory.inventory_objects
+      @inv_objs = Inventory.object_types
       @app_server = app_server_host
     else
       redirect_to action: 'index'
@@ -32,7 +33,7 @@ class InventoryController < ApplicationController
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
-    @inv_objs = Inventory.inventory_objects
+    @inv_objs = Inventory.object_types
     @app_server = app_server_host
   end
 
@@ -88,7 +89,6 @@ class InventoryController < ApplicationController
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def get_available
-    inv_obj = Inventory.object_by_name(params[:type])
     if inv_obj
       @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
     end
@@ -158,7 +158,7 @@ class InventoryController < ApplicationController
 private
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
-      :inventory_object_id, :dataset_id)
+      :object_type, :dataset_id)
   end
 
   def set_inventory_item
@@ -166,6 +166,6 @@ private
   end
 
   def set_key
-    @key = Key.find_by(host: request.host)
+    @key = Key.find_by(host: params[:referrer])
   end
 end

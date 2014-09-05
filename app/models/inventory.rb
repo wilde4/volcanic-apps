@@ -3,10 +3,10 @@ class Inventory < ActiveRecord::Base
   validates :name, presence: true
   validates :price, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
-  validates :inventory_object_id, presence: true
+  validates :object_type, presence: true
 
   scope :by_dataset, -> id { where(dataset_id: id) }
-  scope :by_object, -> id { where(inventory_object_id: id) }
+  scope :by_object, -> type { where(object_type: type) }
 
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
@@ -22,34 +22,12 @@ class Inventory < ActiveRecord::Base
     active_end = end_date.nil? || end_date >= Date.today
     active_start && active_end
   end
-  
-  def self.object_name(id)
-    self.inventory_objects.each do |obj|
-      return obj[:name] if obj[:id] == id
-    end
-    nil
-  end
 
-  def self.object_by_id(id)
-    self.inventory_objects.each do |obj|
-      return obj if obj[:id] == id
-    end
-    nil
-  end
-
-  def self.object_by_name(name)
-    self.inventory_objects.each do |obj|
-      return obj if obj[:name] == name
-    end
-    nil
-  end
-
-  def self.inventory_objects
+  def self.object_types
     [
-      {id: 1, name: '10 Credit Pack', type: 'Credit', attribute: '10' },
-      {id: 2, name: '100 Credit Pack', type: 'Credit', attribute: '100'},
-      {id: 3, name: 'Job Match', type: 'Job', attribute: ''},
-      {id: 4, name: 'EG Job', type: 'EG_Job', attribute: '{ "paid": true }' }
+      { type: 'Credit' },
+      { type: 'Job' },
+      { type: 'EG_Job' }
     ]
   end
 
