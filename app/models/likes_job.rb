@@ -11,6 +11,7 @@ class LikesJob < ActiveRecord::Base
       job.job_reference job_reference
       job.job_title job_title
       job.extra extra
+      job.paid paid
       job.user LikesUser.find_by(user_id: user_id).to_builder
     end
   end
