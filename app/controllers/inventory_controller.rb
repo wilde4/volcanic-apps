@@ -121,11 +121,10 @@ class InventoryController < ApplicationController
   #   * data - A splat of data that will help the action comm. with the API
   def post_purchase
     if @key # if it's from an authenticated host
-      object = Inventory.object_by_id(params[:data][:inventory_id])
-      resource = object[:type].pluralize(2).downcase
+      inventory_item = Inventory.find(params[:data][:inventory_id])
 
       # Work out the field to be edited, will be a record in future
-      case object[:type]
+      case inventory_item.object_type
       when "Credit"
         http_method = :post
         resource_action = "#{resource}"
@@ -135,7 +134,12 @@ class InventoryController < ApplicationController
         resource_action = "#{resource}"
       when "EG_Job"
         # UPDATE JOB paid: true
-        LikesJob.find(params[:data][:job_id]).update(paid: true)
+        LikesJob.find_by(job_id: params[:data][:job_id]).update(paid: true)
+        response = {state: 'success'}
+        respond_to do |format|
+          format.json{ render json: response }
+        end
+        return
       end
 
       # Build the endpoint to talk to, and the query params in request_data
