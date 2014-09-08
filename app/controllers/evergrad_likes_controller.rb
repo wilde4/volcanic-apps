@@ -3,6 +3,9 @@ class EvergradLikesController < ApplicationController
   require 'csv'
   respond_to :json, :csv
 
+  # Controller requires cross-domain POST XHRs
+  after_filter :setup_access_control_origin
+
   def save_user
     @user = LikesUser.find_by(user_id: params[:user][:id])
     if @user.present?
