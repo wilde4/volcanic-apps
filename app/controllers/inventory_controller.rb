@@ -134,7 +134,9 @@ class InventoryController < ApplicationController
         resource_action = "#{resource}"
       when "EG_Job"
         # UPDATE JOB paid: true
-        LikesJob.find_by(job_id: params[:data][:job_id]).update(paid: true)
+        job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
+        job_likes.update(paid: true)
+
         response = {state: 'success'}
         respond_to do |format|
           format.json{ render json: response }
@@ -143,7 +145,7 @@ class InventoryController < ApplicationController
       end
 
       # Build the endpoint to talk to, and the query params in request_data
-      endpoint_str = "http://evergrad.localhost.volcanic.co:3000/api/v1/#{resource_action}.json"
+      endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
 
       request_data = {
         api_key: @key.api_key,

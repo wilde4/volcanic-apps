@@ -201,6 +201,15 @@ class EvergradLikesController < ApplicationController
     }
   end
 
+  # GET /evergrad_likes/jobs_paid.json
+  # Get the paid status for a job ID. Accepts a list of IDs for single lookups.
+  # Returns array with ID and boolean
+  def jobs_paid
+    job_ids = params[:job_id].split(' ')
+    jobs = LikesJob.where(job_id: job_ids)
+    render json: { jobs: jobs.map{|j| [j.job_id, j.paid] } }
+  end
+
   def index
     render layout: false
   end

@@ -51,6 +51,7 @@ Apps::Application.routes.draw do
     get 'notification_events' => 'evergrad_likes#notification_events', as: :notification_events
     get 'index' => 'evergrad_likes#index', as: :evergrad_likes_index
     get 'likes_csv' => 'evergrad_likes#likes_csv', as: :evergrad_likes_csv
+    get 'jobs_paid' => 'evergrad_likes#jobs_paid', as: :evergrad_jobs_paid
   end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
