@@ -1,5 +1,5 @@
 %h5
-  = link_to 'Add Item', "new_inventory"
+  = link_to 'Add Item', relative_link("new_inventory")
   &nbsp;
   = link_to 'Toggle Inactive', '#', class: 'toggle-active'
 
@@ -22,7 +22,7 @@
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date
           %td
-            =link_to "edit_inventory?inv_id=#{item.id}" do
+            =link_to relative_link("edit_inventory?inv_id=#{item.id}") do
               %i.fa.fa-pencil
 :javascript
   $(function() {
