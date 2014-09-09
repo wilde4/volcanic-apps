@@ -40,6 +40,14 @@ Apps::Application.routes.draw do
     post "post_purchase"    => 'inventory#post_purchase',  as: :inventory_post_purchase
   end
 
+  scope :evergrad_gaming do
+    post "create_item"           => 'evergrad_gaming#create_record', as: :eg_create_gaming
+    get "action_complete"        => 'evergrad_gaming#action_complete', as: :eg_action_complete
+    get "available_achievements" => 'evergrad_gaming#available_achievements', as: :eg_available
+    get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement    
+    get "tiered_achievement"     => 'evergrad_gaming#tiered_achievement', as: :eg_achievement_tiered
+  end
+
   scope :evergrad_likes do
     post 'save_user' => 'evergrad_likes#save_user', as: :save_user
     post 'save_job' => 'evergrad_likes#save_job', as: :save_job

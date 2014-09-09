@@ -11,7 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140905132059) do
+ActiveRecord::Schema.define(version: 20140909113843) do
+
+  create_table "achievements", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level",             default: "bronze"
+  end
 
   create_table "inventories", force: true do |t|
     t.string   "name"
