@@ -41,8 +41,7 @@ Apps::Application.routes.draw do
   end
 
   scope :evergrad_gaming do
-    post "create_item"           => 'evergrad_gaming#create_record', as: :eg_create_gaming
-    get "action_complete"        => 'evergrad_gaming#action_complete', as: :eg_action_complete
+    post "action_complete"        => 'evergrad_gaming#action_complete', as: :eg_action_complete
     get "available_achievements" => 'evergrad_gaming#available_achievements', as: :eg_available
     get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement    
     get "tiered_achievement"     => 'evergrad_gaming#tiered_achievement', as: :eg_achievement_tiered
