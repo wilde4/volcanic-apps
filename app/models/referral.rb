@@ -1,8 +1,12 @@
 class Referral < ActiveRecord::Base
+  before_save :encrypt_data
+  after_initialize :decrypt_data
 
   belongs_to :user
-
   validates_uniqueness_of :user_id, :token
+
+  validates :account_number, length: { is: 8 }
+  validates :sort_code, length: { is: 6 }
 
   def initialize
     super
@@ -25,6 +29,24 @@ class Referral < ActiveRecord::Base
 
   def referred_users
     Referral.find_by(referred_by: self.id)
+  end
+
+  def payment_fields
+    {
+      account_name: self.account_name,
+      account_number: self.account_number,
+      sort_code: self.sort_code
+    }
+  end
+
+  def encrypt_data
+    cipher = Gibberish::AES.new(ENV['referral_payment_key'])
+    payment_fields.map{ |k,v| self.send("#{k}=", cipher.enc(v)) if !v.empty? }
+  end
+
+  def decrypt_data
+    cipher = Gibberish::AES.new(ENV['referral_payment_key'])
+    payment_fields.map{ |k,v| self.send("#{k}=", cipher.dec(v)) if !v.empty? }
   end
 
 end

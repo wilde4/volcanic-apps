@@ -13,6 +13,7 @@ Apps::Application.routes.draw do
     get 'index'                 => 'referral#index',                as: :referrals_index
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
     get "/referral"             => 'referral#referral_by_user',     as: :referral_by_user
+    get "(/:id)/full_referral"  => 'referral#full_referral',        as: :full_referral
     get "(/:id)/referral"       => 'referral#get_referral',         as: :get_referral
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
     get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed
@@ -24,6 +25,8 @@ Apps::Application.routes.draw do
     get "funds_earned"          => 'referral#funds_earned',         as: :referral_fee_earned
     get "funds_owed"            => 'referral#funds_owed',           as: :referral_fee_owed
     get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
+    get "payment_form"          => 'referral#payment_form',         as: :referral_payment_new
+    patch "save_payment_info"    => 'referral#save_payment_info',    as: :referral_payment_save
   end
 
   scope :inventories do

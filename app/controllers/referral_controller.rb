@@ -9,7 +9,8 @@ class ReferralController < ApplicationController
 
   before_action :set_referral, except: [
     :index, :create_referral, :funds_earned, :funds_owed,
-    :referrals_for_period, :most_referrals, :referral_by_user]
+    :referrals_for_period, :most_referrals, :referral_by_user, :payment_form,
+    :save_payment_info]
 
   def index
   end
@@ -46,9 +47,20 @@ class ReferralController < ApplicationController
   end
 
   # GET /referrals(/:id)/referral
+  # A call to get referral data - excludes payment info
   def get_referral
+    @referral.account_name = @referral.account_number = @referral.sort_code = nil
+
     respond_to do |format|
-      format.json { render json: { success: true, referral: @referral } }
+      format.json { render json: { success: true, referral: @referral }}
+    end
+  end
+
+  # GET /referrals(/:id)/full_referral
+  # A call to get all referral data
+  def full_referral
+    respond_to do |format|
+      format.json { render json: { success: true, referral: @referral }}
     end
   end
 
@@ -267,8 +279,34 @@ class ReferralController < ApplicationController
     end
   end
 
+  def payment_form
+    @referral = Referral.find_by(user_id: params[:data][:user_id])
+  end
+
+  def save_payment_info
+    @referral = Referral.find(params[:referral][:id])
+
+    if params[:referral][:sort_code]
+      params[:referral][:sort_code].gsub!(/\D/, '')
+    end
+
+    respond_to do |format|
+      if @referral.update(referral_params)
+        format.json { render json: {success: true, status: "OK" }}
+      else
+        format.json { render json: {
+          success: false, status: "Error: #{@referral.errors.full_messages.join(', ')}"
+        }}
+      end
+    end
+  end
+
 private
   def set_referral
     @referral = Referral.find(params[:id])
+  end
+
+  def referral_params
+    params.require(:referral).permit(:id, :account_name, :account_number, :sort_code)
   end
 end

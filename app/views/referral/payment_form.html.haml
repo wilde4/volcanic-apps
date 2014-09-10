@@ -1,0 +1,52 @@
+= form_for(@referral, url: '', remote: true) do |f|
+  .form-inputs
+    .errors
+    
+    = f.hidden_field :id, value: @referral.id
+
+    .field
+      = f.label :account_name
+      = f.text_field :account_name
+
+    .field
+      = f.label :account_number
+      = f.text_field :account_number
+
+    .field
+      = f.label :sort_code
+      = f.text_field :sort_code
+
+    .security-note.field
+      %i.glyphicon.glyphicon-lock
+      Your data is secured with 256-bit AES encryption.
+
+  .form-actions
+    = f.submit "Submit"
+
+  :css
+    .field { padding: 10px 0; }
+    .field label { display: block; }
+
+  :javascript
+    $(function() {
+      $('form').submit(function() {
+        var formData = $(this).serialize();
+        $.ajax({
+          url: "http://#{app_server_host}/referrals/save_payment_info.json",
+          type: "POST",
+          crossDomain: true,
+          data: formData,
+          dataType: 'json'
+        }).complete(function(data) {
+          if(data.responseJSON.success) {
+            $('#pay-modal').modal('hide');
+          } else {
+            $('.errors').html(data.responseJSON.status);
+          }
+          return false;
+        });
+        e.preventDefault();
+        return false;
+
+      });
+    });
