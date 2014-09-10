@@ -18,15 +18,6 @@ class ApplicationController < ActionController::Base
     headers['Access-Control-Allow-Origin'] = '*'
   end
 
-  # Use the app server suitable for the host environment
-  def app_server_host
-    if Rails.env.development?
-      "localhost:3001"
-    elsif Rails.env.production?
-      "apps.volcanic.co"
-    end
-  end
-
   def activate_app
     key = Key.new
     key.host = params[:data][:host]

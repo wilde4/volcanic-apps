@@ -211,7 +211,6 @@ class EvergradLikesController < ApplicationController
   end
 
   def index
-    @server_host = app_server_host
     render layout: false
   end
 

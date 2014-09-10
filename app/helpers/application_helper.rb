@@ -7,4 +7,13 @@ module ApplicationHelper
     path
   end
 
+    # Use the app server suitable for the host environment
+  def app_server_host
+    if Rails.env.development?
+      "localhost:3001"
+    elsif Rails.env.production?
+      "apps.volcanic.co"
+    end
+  end
+
 end

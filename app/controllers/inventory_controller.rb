@@ -25,7 +25,6 @@ class InventoryController < ApplicationController
       @inventory = Inventory.new
       @inventory.dataset_id = @key.app_dataset_id
       @inv_objs = Inventory.object_types
-      @app_server = app_server_host
     else
       redirect_to action: 'index'
     end
@@ -34,7 +33,6 @@ class InventoryController < ApplicationController
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
     @inv_objs = Inventory.object_types
-    @app_server = app_server_host
   end
 
    def update
@@ -135,7 +133,7 @@ class InventoryController < ApplicationController
       when "EG_Job"
         # UPDATE JOB paid: true
         job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
-        job_likes.update(paid: true)
+        job_likes.update(paid: true) if job_likes
 
         response = {state: 'success'}
         respond_to do |format|
