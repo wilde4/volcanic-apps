@@ -26,7 +26,8 @@ Apps::Application.routes.draw do
     get "funds_owed"            => 'referral#funds_owed',           as: :referral_fee_owed
     get "(/:id)/paid"           => 'referral#paid',                 as: :referral_paid
     get "payment_form"          => 'referral#payment_form',         as: :referral_payment_new
-    patch "save_payment_info"    => 'referral#save_payment_info',    as: :referral_payment_save
+    patch "save_payment_info"   => 'referral#save_payment_info',    as: :referral_payment_save
+    get 'referral_report'   => 'referral#referral_report',      as: :referral_report
   end
 
   scope :inventories do

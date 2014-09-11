@@ -41,6 +41,20 @@ class Referral < ActiveRecord::Base
     }
   end
 
+
+  def self.to_csv(options = {})
+    CSV.generate(options) do |csv|
+      csv << ['User ID', 'Account Name', 'Account Number', 'Sort Code', 'Amount']
+      all.each do |ref|
+        if ![ref.account_number, ref.account_name, ref.sort_code].include?(nil)
+          csv << [ref.user_id, ref.account_name, ref.account_number.to_s, ref.sort_code.to_s, ref.fee]
+          Referral.update(ref, fee_paid: true)
+        end
+      end
+    end
+  end
+
+
   def encrypt_data
     raise NoEncryptionKeyError, 'No Encryption Key set!' if ENV['referral_payment_key'].nil?
 

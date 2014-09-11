@@ -19,6 +19,10 @@
                 %attr.col-xs-3{title: "#{ref.revoked_at if ref.revoked}"}
                   .revoked= "Revoked?: #{ref.revoked ? 'Yes' : 'No'}"
 
+                .col-xs-2
+                  - if ref.confirmed
+                    = "Paid?: #{ref.fee_paid ? 'Yes' : 'No'}"
+
                 - if !ref.revoked?
                   .col-xs-2.revoke= link_to "Revoke", referral_revoke_url(ref, format: :json), remote: true
   - else

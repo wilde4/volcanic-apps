@@ -2,7 +2,8 @@ class ReferralController < ApplicationController
   protect_from_forgery with: :null_session
   skip_before_filter :verify_authenticity_token
 
-  respond_to :json
+  require 'csv'
+  respond_to :json, :csv
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
@@ -10,7 +11,7 @@ class ReferralController < ApplicationController
   before_action :set_referral, except: [
     :index, :create_referral, :funds_earned, :funds_owed,
     :referrals_for_period, :most_referrals, :referral_by_user, :payment_form,
-    :save_payment_info]
+    :save_payment_info, :referral_report]
 
   def index
   end
@@ -298,6 +299,13 @@ class ReferralController < ApplicationController
           success: false, status: "Error: #{@referral.errors.full_messages.join(', ')}"
         }}
       end
+    end
+  end
+
+  def referral_report
+    @refs = Referral.where(fee_paid: false, confirmed: true, revoked: false || nil)
+    respond_to do |format|
+      format.csv { send_data @refs.to_csv }
     end
   end
 
