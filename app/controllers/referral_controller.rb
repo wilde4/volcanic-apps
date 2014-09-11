@@ -232,7 +232,7 @@ class ReferralController < ApplicationController
 
     # sort each referrer group into it's own collection:
     refcounts.each do |k,v|
-      referer = referrals.find(k)
+      referer = referrals.find_by(id: k)
       if referer
         ref = ["#{referer.full_name} (#{v} Referrals)", referrals.select{ |r| r.referred_by == k } ]
         refgroups << ref
@@ -300,6 +300,7 @@ class ReferralController < ApplicationController
       end
     end
   end
+
 
 private
   def set_referral

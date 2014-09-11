@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 20140910091535) do
     t.boolean "liked_job",         default: false
     t.boolean "shared_social",     default: false
     t.boolean "completed_profile", default: false
-    t.string  "level",             default: "bronze"
+    t.string  "level"
   end
 
   create_table "inventories", force: true do |t|

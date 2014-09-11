@@ -7,8 +7,8 @@ class Referral < ActiveRecord::Base
   belongs_to :user
   validates_uniqueness_of :user_id, :token
 
-  validates :account_number, length: { is: 8 }
-  validates :sort_code, length: { is: 6 }
+  validates :account_number, length: { is: 8 }, allow_blank: true
+  validates :sort_code, length: { is: 6 }, allow_blank: true
 
   def initialize
     super
@@ -42,17 +42,17 @@ class Referral < ActiveRecord::Base
   end
 
   def encrypt_data
-    raise NoEncryptionKeyError, 'No Enc/Decryption Key set!' if ENV['referral_payment_key'].nil?
-    
+    raise NoEncryptionKeyError, 'No Encryption Key set!' if ENV['referral_payment_key'].nil?
+
     cipher = Gibberish::AES.new(ENV['referral_payment_key'])
-    payment_fields.map{ |k,v| self.send("#{k}=", cipher.enc(v)) if !v.empty? }
+    payment_fields.map{ |k,v| self.send("#{k}=", cipher.enc(v)) if v }
   end
 
   def decrypt_data
-    raise NoEncryptionKeyError, 'No Enc/Decryption Key set!' if ENV['referral_payment_key'].nil?
+    raise NoEncryptionKeyError, 'No Decryption Key set!' if ENV['referral_payment_key'].nil?
 
     cipher = Gibberish::AES.new(ENV['referral_payment_key'])
-    payment_fields.map{ |k,v| self.send("#{k}=", cipher.dec(v)) if !v.empty? }
+    payment_fields.map{ |k,v| self.send("#{k}=", cipher.dec(v)) if v }
   end
 
 end
