@@ -1,0 +1,18 @@
+= stylesheet_link_tag "application"
+= javascript_include_tag "application"
+
+.panel-group#accordion
+  - if @matches.present?
+    - @matches.each_with_index do |match, i|
+      .panel.panel-default
+        .panel-heading
+          %h4.panel-title
+            = link_to match[0], "#match-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+        .panel-collapse.collapse{id: "match-#{i}"}
+          .panel-body
+            -match[1].each do |grad|
+              .row
+                .col-xs-4= "#{grad.first_name} #{grad.last_name}"
+                .col-xs-4= "#{grad.email}"
+  - else
+    %p No matches available yet! :(

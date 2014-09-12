@@ -223,16 +223,21 @@ class EvergradLikesController < ApplicationController
     end_date = (params[:data].present? and params[:data][:end_date].present?) ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
 
     employers = LikesUser.where("extra like ?", "%employer%")
+
     match_data = {}
 
     employers.each do |employer|
-      employer_job_ids = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
-      job_matches = LikesLike.where(likeable_type: 'User', likable_id: employer_job_ids, match: true)
-      match_data[employer.user_id] = job_matches
+      employer_str = "#{employer.first_name} #{employer.last_name} (#{employer.email})"
+      matched_grads = []
+      employer_jobs = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
+      job_matches = LikesLike.where(likeable_type: 'Job', likeable_id: employer_jobs, match: true)
+      
+      job_matches.each do |match|
+        matched_grads << LikesUser.find_by(user_id: match.user_id)
+      end
+
+      match_data[employer_str] = matched_grads if !matched_grads.blank?
     end
-
-    byebug
-
     
     respond_to do |format|
       format.html {
