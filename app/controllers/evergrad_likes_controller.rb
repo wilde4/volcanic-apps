@@ -173,12 +173,18 @@ class EvergradLikesController < ApplicationController
       @matches = LikesLike.where(user_id: @user.user_id, match: true)
 
       # REMOVE JOB IF IT HAS EXPIRED, UNLESS REQUESTED
-      if params[:include_expired] == false
+      if params[:include_expired].blank? || params[:include_expired] == false
         @matches.delete_if { |l| l.likeable_type == 'Job' and LikesJob.live.find_by(job_id: l.likeable_id).blank? }
       end
 
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
-      @job_ids = LikesJob.where(user_id: @user.user_id).live.map(&:job_id)
+      byebug
+      # GET ALL IF EXPIRED ARE REQUESTED TO BE INCLUDED:
+      if params[:include_expired] == "true"
+        @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
+      else
+        @job_ids = LikesJob.where(user_id: @user.user_id).live.map(&:job_id)
+      end
       @matches = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: true)
       @jobs = LikesJob.where(user_id: @user.user_id).live
     end
