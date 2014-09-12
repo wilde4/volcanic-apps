@@ -171,8 +171,12 @@ class EvergradLikesController < ApplicationController
     @user = LikesUser.find_by(user_id: params[:id])
     if @user.extra["user_type"] == 'graduate'
       @matches = LikesLike.where(user_id: @user.user_id, match: true)
-      # REMOVE JOB IF IT HAS EXPIRED
-      @matches.delete_if { |l| l.likeable_type == 'Job' and LikesJob.live.find_by(job_id: l.likeable_id).blank? }
+
+      # REMOVE JOB IF IT HAS EXPIRED, UNLESS REQUESTED
+      if params[:include_expired] == false
+        @matches.delete_if { |l| l.likeable_type == 'Job' and LikesJob.live.find_by(job_id: l.likeable_id).blank? }
+      end
+
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
       @job_ids = LikesJob.where(user_id: @user.user_id).live.map(&:job_id)
       @matches = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: true)
