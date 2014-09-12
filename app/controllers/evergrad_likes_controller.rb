@@ -178,7 +178,6 @@ class EvergradLikesController < ApplicationController
       end
 
     elsif @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
-      byebug
       # GET ALL IF EXPIRED ARE REQUESTED TO BE INCLUDED:
       if params[:include_expired] == "true"
         @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
