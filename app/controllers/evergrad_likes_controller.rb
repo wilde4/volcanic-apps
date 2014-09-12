@@ -219,15 +219,12 @@ class EvergradLikesController < ApplicationController
   end
 
   def overview
-    start_date = (params[:data].present? and params[:data][:start_date].present?) ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
-    end_date = (params[:data].present? and params[:data][:end_date].present?) ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
-
     employers = LikesUser.where("extra like ?", "%employer%")
-
     match_data = {}
 
     employers.each do |employer|
       employer_str = "#{employer.first_name} #{employer.last_name} (#{employer.email})"
+      
       matched_grads = []
       employer_jobs = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
       job_matches = LikesLike.where(likeable_type: 'Job', likeable_id: employer_jobs, match: true)
@@ -245,7 +242,7 @@ class EvergradLikesController < ApplicationController
         render action: 'overview', layout: false
       }
       format.json { render json: {
-          success: true, length: match_data.count, referrals: match_data
+          success: true, count: match_data.count, matches: match_data
         }
       }
     end
