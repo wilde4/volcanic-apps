@@ -94,7 +94,8 @@ class EvergradLikesController < ApplicationController
   end
 
   def save_like
-    @like = LikesLike.find_by(like_id: params[:like][:id])
+    @like = LikesLike.find_by(likeable_id: params[:like][:likeable_id],
+                              user_id: params[:like][:user_id])
     if @like.present?
       if @like.update(extra: params[:like][:extra])
         render json: { success: true, like_id: @like.id }
