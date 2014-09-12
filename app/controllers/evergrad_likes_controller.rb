@@ -121,7 +121,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_graduate", "user_id" : "2659"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
-            @response = HTTParty.post('http://www.evergrad.com/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
+            @response = HTTParty.post('http://evergrad.staging.volcanic.uk/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_like.update(match: true) 
             @like.update(match: true) 
           end
@@ -136,7 +136,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_employer", "user_id" : "21125"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
-            @response = HTTParty.post('http://www.evergrad.com/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
+            @response = HTTParty.post('http://evergrad.staging.volcanic.uk/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
             @matched_likes.update_all(match: true)
             @like.update(match: true) 
           end
@@ -212,6 +212,34 @@ class EvergradLikesController < ApplicationController
 
   def index
     render layout: false
+  end
+
+  def overview
+    start_date = (params[:data].present? and params[:data][:start_date].present?) ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
+    end_date = (params[:data].present? and params[:data][:end_date].present?) ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
+
+    employers = LikesUser.where("extra like ?", "%employer%")
+    match_data = {}
+
+    employers.each do |employer|
+      employer_job_ids = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
+      job_matches = LikesLike.where(likeable_type: 'User', likable_id: employer_job_ids, match: true)
+      match_data[employer.user_id] = job_matches
+    end
+
+    byebug
+
+    
+    respond_to do |format|
+      format.html {
+        @matches = match_data
+        render action: 'overview', layout: false
+      }
+      format.json { render json: {
+          success: true, length: match_data.count, referrals: match_data
+        }
+      }
+    end
   end
 
   def likes_csv

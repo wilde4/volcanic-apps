@@ -11,7 +11,7 @@ class EvergradGamingController < ApplicationController
   # Sets an achievement to true
   # Params:
   #   * user_id : The user to lookup for the achievement
-  #   * achievement_name : Name of the achievement to update
+  #   * achievement : Name of the achievement to update
   def action_complete
     status = update_achievement(@achievement, params[:evergrad_gaming][:achievement])
     render json: status
