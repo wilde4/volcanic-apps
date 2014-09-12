@@ -181,11 +181,13 @@ class EvergradLikesController < ApplicationController
       # GET ALL IF EXPIRED ARE REQUESTED TO BE INCLUDED:
       if params[:include_expired] == "true"
         @job_ids = LikesJob.where(user_id: @user.user_id).map(&:job_id)
+        @jobs = LikesJob.where(user_id: @user.user_id)
       else
         @job_ids = LikesJob.where(user_id: @user.user_id).live.map(&:job_id)
+        @jobs = LikesJob.where(user_id: @user.user_id).live
       end
       @matches = LikesLike.where(likeable_type: 'Job', likeable_id: @job_ids, match: true)
-      @jobs = LikesJob.where(user_id: @user.user_id).live
+      
     end
     render layout: false
   end
