@@ -1,6 +1,8 @@
 = stylesheet_link_tag "application"
 = javascript_include_tag "application"
 
+%h5 From here, you can monitor how successful a company is using Evergrad, select a company below to view their matches.
+
 .panel-group#accordion
   - if @matches.present?
     - @matches.each_with_index do |match, i|
@@ -12,7 +14,8 @@
           .panel-body
             -match[1].each do |grad|
               .row
-                .col-xs-4= "#{grad.first_name} #{grad.last_name}"
-                .col-xs-4= "#{grad.email}"
+                .col-xs-2= grad.created_at.strftime('%d %b %y %H:%M:%S')
+                .col-xs-3= "#{grad.first_name} #{grad.last_name}"
+                .col-xs-4= link_to "User Profile", "/admin/users/#{grad.user_id}"
   - else
     %p No matches available yet! :(

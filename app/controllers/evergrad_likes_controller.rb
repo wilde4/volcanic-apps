@@ -223,7 +223,7 @@ class EvergradLikesController < ApplicationController
     match_data = {}
 
     employers.each do |employer|
-      employer_str = "#{employer.first_name} #{employer.last_name} (#{employer.email})"
+      employer_str = "#{employer.registration_answers["company-name"]} (#{employer.first_name} #{employer.last_name})"
       
       matched_grads = []
       employer_jobs = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
@@ -233,7 +233,7 @@ class EvergradLikesController < ApplicationController
         matched_grads << LikesUser.find_by(user_id: match.user_id)
       end
 
-      match_data[employer_str] = matched_grads if !matched_grads.blank?
+      match_data[employer_str] = matched_grads.reverse if !matched_grads.blank?
     end
     
     respond_to do |format|
