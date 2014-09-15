@@ -5,8 +5,10 @@ if @user.extra["user_type"] == 'graduate'
     json.liked LikesJob.find_by(job_id: l.likeable_id).to_builder
     json.response l.extra
   end
+  json.total_matches @matches.count
 end
 
+match_count = 0
 if @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
   json.jobs @jobs do |job|
     json.job_id job.job_id
@@ -18,6 +20,8 @@ if @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'indivi
       json.id l.id
       json.user LikesUser.find_by(user_id: l.user_id).to_builder
       json.response l.extra
+      match_count += 1
     end
   end
+  json.total_matches match_count
 end

@@ -9,3 +9,5 @@ json.likes @likes do |l|
     json.response l.extra
   end
 end
+
+json.total_likes @likes.count
