@@ -56,16 +56,16 @@ class Referral < ActiveRecord::Base
 
 
   def encrypt_data
-    raise NoEncryptionKeyError, 'No Encryption Key set!' if ENV['referral_payment_key'].nil?
+    raise NoEncryptionKeyError, 'No Encryption Key set!' if ENV['REFERRAL_PAYMENT_KEY'].nil?
 
-    cipher = Gibberish::AES.new(ENV['referral_payment_key'])
+    cipher = Gibberish::AES.new(ENV['REFERRAL_PAYMENT_KEY'])
     payment_fields.map{ |k,v| self.send("#{k}=", cipher.enc(v)) if v }
   end
 
   def decrypt_data
-    raise NoEncryptionKeyError, 'No Decryption Key set!' if ENV['referral_payment_key'].nil?
+    raise NoEncryptionKeyError, 'No Decryption Key set!' if ENV['REFERRAL_PAYMENT_KEY'].nil?
 
-    cipher = Gibberish::AES.new(ENV['referral_payment_key'])
+    cipher = Gibberish::AES.new(ENV['REFERRAL_PAYMENT_KEY'])
     payment_fields.map{ |k,v| self.send("#{k}=", cipher.dec(v)) if v }
   end
 
