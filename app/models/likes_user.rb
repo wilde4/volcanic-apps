@@ -15,6 +15,7 @@ class LikesUser < ActiveRecord::Base
       user.avatar_large_cropped_path extra["avatar_large_cropped_path"]
       user.avatar_large_uncropped_path extra["avatar_large_uncropped_path"]
       user.registration_answers registration_answers
+      user.extra extra['user_type']
     end
   end
 
