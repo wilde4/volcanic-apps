@@ -18,6 +18,7 @@ gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
 
 gem 'gibberish' # For referral payment data
+gem 'figaro'
 
 group :development do
   gem 'sqlite3'
