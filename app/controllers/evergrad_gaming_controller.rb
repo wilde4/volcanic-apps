@@ -2,7 +2,7 @@ class EvergradGamingController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json
 
-  before_action :set_achievement, only: [:action_complete, :achievement, :tiered_achievement]
+  before_action :set_achievement, only: [:achievement, :tiered_achievement]
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
@@ -13,7 +13,25 @@ class EvergradGamingController < ApplicationController
   #   * user_id : The user to lookup for the achievement
   #   * achievement : Name of the achievement to update
   def action_complete
-    status = update_achievement(@achievement, params[:evergrad_gaming][:achievement])
+    status = ""
+    completed_achievements = []
+
+    @achievement = Achievement.find_or_create_by(user_id: params[:user][:id]) do |a|
+      a.signed_up = true
+    end
+
+    if params[:user][:percentage_complete] > 99
+      completed_achievements << :completed_profile
+    end
+
+    if params[:registration_answer_hash]['video-introduction'].present?
+      completed_achievements << :uploaded_cv
+    end
+
+    completed_achievements.each do |a_name|
+      status.concat update_achievement(@achievement, a_name).to_json
+    end
+
     render json: status
   end
 
