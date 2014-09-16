@@ -16,7 +16,7 @@ if @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'indivi
     json.job_reference job.job_reference
     json.extra job.extra
     json.paid job.paid
-    json.likes LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id, match: true) do |l|
+    json.likes LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id, match: true).to_a.uniq{|m| m.user_id} do |l|
       json.id l.id
       json.user LikesUser.find_by(user_id: l.user_id).to_builder
       json.response l.extra
