@@ -20,14 +20,18 @@ class EvergradGamingController < ApplicationController
       a.signed_up = true
     end
 
-    if params[:user][:percentage_complete] > 99
+    if params[:user][:percentage_complete].present? && params[:user][:percentage_complete] > 99
       completed_achievements << :completed_profile
     end
 
-    if params[:registration_answer_hash]['video-introduction'].present?
+    if params[:registration_answers_hash].present? && params[:registration_answer_hash]['video-introduction'].present?
       completed_achievements << :uploaded_cv
     end
 
+    if params[:evergrad_gaming][:achievement].present?
+      completed_achievements << params[:evergrad_gaming][:achievement]
+    end
+    
     completed_achievements.each do |a_name|
       status.concat update_achievement(@achievement, a_name).to_json
     end
