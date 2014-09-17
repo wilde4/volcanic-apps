@@ -26,9 +26,11 @@ class EvergradLikesController < ApplicationController
       @user = LikesUser.new
       @user.user_id = params[:user][:id]
       @user.email = params[:user][:email]
-      @user.first_name = params[:user_profile][:first_name]
-      @user.last_name = params[:user_profile][:last_name]
-      @extra = {
+      
+      if params[:user_profile].present?
+        @user.first_name = params[:user_profile][:first_name]
+        @user.last_name = params[:user_profile][:last_name]
+        @extra = {
         user_type: params[:user][:user_type],
         avatar_thumb_path: params[:user_profile][:avatar_thumb_path],
         avatar_medium_cropped_path: params[:user_profile][:avatar_medium_cropped_path],
@@ -36,6 +38,10 @@ class EvergradLikesController < ApplicationController
         avatar_large_cropped_path: params[:user_profile][:avatar_large_cropped_path],
         avatar_large_uncropped_path: params[:user_profile][:avatar_large_uncropped_path]
       }
+      else
+        @extra = { user_type: params[:user][:user_type] }
+      end
+
       @user.extra = @extra
       @user.registration_answers = params[:registration_answer_hash]
 
