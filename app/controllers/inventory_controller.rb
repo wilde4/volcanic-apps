@@ -160,6 +160,11 @@ class InventoryController < ApplicationController
   end
 
 private
+
+  def set_key
+    @key = Key.find_by(host: params[:referrer])
+  end
+
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
       :object_type, :dataset_id)
@@ -167,9 +172,5 @@ private
 
   def set_inventory_item
     @inventory = Inventory.find(params[:id])
-  end
-
-  def set_key
-    @key = Key.find_by(host: params[:referrer])
   end
 end
