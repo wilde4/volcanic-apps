@@ -71,7 +71,7 @@ class ReferralController < ApplicationController
   def referral_by_user
     @referral = Referral.find_by(user_id: params[:user_id])
     respond_to do |format|
-      format.json { render json: { success: true, referral: @referral } }
+      format.json { render json: { success: true, referral: @referral }, methods: [:funds_earned, :funds_owed] }
     end
   end
 

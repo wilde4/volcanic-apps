@@ -45,6 +45,19 @@ class Referral < ActiveRecord::Base
     }
   end
 
+  # Outstanding monies still yet to be paid to the user
+  def funds_owed
+    Referral.where(referred_by: self.user_id,
+                   confirmed: true, revoked: false, fee_paid: false)
+                   .map(&:fee).reduce(:+)
+  end
+
+  # All funds earned by a user up to the current date
+  def funds_earned
+    Referral.where(referred_by: self.user_id, fee_paid: true)
+                     .map(&:fee).reduce(:+)
+  end
+
 
   def self.to_csv(options = {})
     CSV.generate(options) do |csv|
