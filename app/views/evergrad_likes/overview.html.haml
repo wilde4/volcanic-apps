@@ -17,7 +17,8 @@
                 .row
                   .col-xs-12
                     %strong= job.job_title
-                    (#{job.job_reference}) - Expiry: #{job.expiry_date.strftime('%d %b %y')}
+                    (#{job.job_reference}) - Expiry: 
+                    = job.expiry_date.strftime('%d %b %y') if job.expiry_date.present?
                     %br
                     Total Likes:
                     = LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id).count
