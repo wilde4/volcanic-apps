@@ -10,6 +10,8 @@ class Referral < ActiveRecord::Base
   validates :account_number, length: { is: 8 }, allow_blank: true
   validates :sort_code, length: { is: 6 }, allow_blank: true
 
+  scope :by_dataset, -> id { where(dataset_id: id) }
+
   def initialize
     super
     generate_token
@@ -47,15 +49,15 @@ class Referral < ActiveRecord::Base
 
   # Outstanding monies still yet to be paid to the user
   def funds_owed
-    Referral.where(referred_by: self.user_id,
+    Referral.where(referred_by: self.id,
                    confirmed: true, revoked: false, fee_paid: false)
-                   .map(&:fee).reduce(:+)
+                   .map(&:fee).reduce(:+) || 0
   end
 
   # All funds earned by a user up to the current date
   def funds_earned
-    Referral.where(referred_by: self.user_id, fee_paid: true)
-                     .map(&:fee).reduce(:+)
+    Referral.where(referred_by: self.id, fee_paid: true)
+                     .map(&:fee).reduce(:+) || 0
   end
 
 
