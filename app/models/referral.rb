@@ -10,6 +10,8 @@ class Referral < ActiveRecord::Base
   validates :account_number, length: { is: 8 }, allow_blank: true
   validates :sort_code, length: { is: 6 }, allow_blank: true
 
+  scope :by_dataset, -> id { where(dataset_id: id) }
+
   def initialize
     super
     generate_token

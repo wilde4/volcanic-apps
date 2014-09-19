@@ -28,6 +28,8 @@ Apps::Application.routes.draw do
     get "payment_form"          => 'referral#payment_form',         as: :referral_payment_new
     patch "save_payment_info"   => 'referral#save_payment_info',    as: :referral_payment_save
     get 'referral_report'   => 'referral#referral_report',      as: :referral_report
+    post "activate_app"     => 'referral#activate_app',   as: :referral_activate_app
+    post "deactivate_app"   => 'referral#deactivate_app', as: :referral_deactivate_app
   end
 
   scope :inventories do
