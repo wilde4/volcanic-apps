@@ -14,7 +14,7 @@ class ReferralController < ApplicationController
     :save_payment_info, :referral_report, :activate_app, :deactivate_app]
 
   before_action :set_key, only: [:create_referral, :full_referral,
-    :referrals_for_period, :most_referrals]
+    :referrals_for_period]
 
   def index
   end
@@ -286,7 +286,7 @@ class ReferralController < ApplicationController
   # Params:
   #   * limit - Number of users to take
   def most_referrals
-    metrics = Referral.by_dataset(@key.app_dataset_id)
+    metrics = Referral.by_dataset(params[:dataset_id])
                       .group(:referred_by)
                       .count.sort_by{|k,v| v}
                       .reverse.reject{|r| r[0] == nil}
