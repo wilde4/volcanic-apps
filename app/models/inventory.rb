@@ -27,7 +27,8 @@ class Inventory < ActiveRecord::Base
     [
       { type: 'Credit' },
       { type: 'Job' },
-      { type: 'EG_Job' }
+      { type: 'EG_Job' },
+      { type: 'Referral' }
     ]
   end
 

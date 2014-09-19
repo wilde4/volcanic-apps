@@ -35,6 +35,15 @@ class ReferralController < ApplicationController
       if params['registration_answer_hash']['referral-code']
         referer = Referral.find_by(token: params['registration_answer_hash']['referral-code'])     
         referral.referred_by = referer.id if referer
+
+        fee_item = Inventory.by_object('Referral')
+                            .select{|iv| iv.within_date}
+                            .sort_by{|i| i.price }
+                            .first
+                            byebug
+        if fee_item
+          referral.fee = fee_item.price
+        end
       end
 
       respond_to do |format|
