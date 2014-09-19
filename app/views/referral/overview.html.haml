@@ -1,6 +1,18 @@
 / = stylesheet_link_tag "application"
 / = javascript_include_tag "application"
 
+= form_for :referrals, url: relative_link('referrals_for_period'), method: :get do |f|
+  .row
+    .col-md-6.col-md-offset-6
+      %p.text-right
+        %label From
+        = date_select '', :start_date, default: Date.parse("2010-01-01"), start_year: 2010, end_year: 2020
+      %p.text-right
+        %label To
+        = date_select '', :end_date, default: Date.parse("2020-01-01"), start_year: 2010, end_year: 2020
+      %p.text-right
+        = f.submit "Filter Referrals"
+
 .panel-group#accordion
   - if @referrals.present?
     - @referrals.each_with_index do |referral, i|
@@ -8,7 +20,7 @@
         .panel-heading
           %h4.panel-title
             = link_to referral[0], "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
-        .panel-collapse.collapse{id: "referrer-#{i}"}
+        .panel-collapse{id: "referrer-#{i}"}
           .panel-body
             -referral[1].each do |ref|
               .row
@@ -26,7 +38,7 @@
                 - if !ref.revoked?
                   .col-xs-2.revoke= link_to "Revoke", referral_revoke_url(ref, format: :json), remote: true
   - else
-    %p No referrals have been made yet :(
+    %p No referrals have been made during this time period :(
 
   :javascript
     $(function() {
