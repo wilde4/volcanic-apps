@@ -1,21 +1,39 @@
-= stylesheet_link_tag "application"
-= javascript_include_tag "application"
+/ = stylesheet_link_tag "application"
+/ = javascript_include_tag "application"
 
-%h5 From here, you can monitor how successful a company is using Evergrad, select a company below to view their matches.
+%h5 From here, you can monitor how successful a company is using Evergrad, select a company below to view their likes and matches.
 
 .panel-group#accordion
-  - if @matches.present?
-    - @matches.each_with_index do |match, i|
-      .panel.panel-default
-        .panel-heading
-          %h4.panel-title
-            = link_to match[0], "#match-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
-        .panel-collapse.collapse{id: "match-#{i}"}
-          .panel-body
-            -match[1].each do |grad|
-              .row
-                .col-xs-2= grad.created_at.strftime('%d %b %y %H:%M:%S')
-                .col-xs-3= "#{grad.first_name} #{grad.last_name}"
-                .col-xs-4= link_to "User Profile", "/admin/users/#{grad.user_id}"
+  - if @employers.present?
+    - @employers.each_with_index do |employer, i|
+      - if employer.registration_answers['company-name'].present?
+        .panel.panel-default
+          .panel-heading
+            %h4.panel-title
+              = link_to "#{employer.registration_answers['company-name']} (#{employer.first_name} #{employer.last_name}) - #{pluralize(LikesJob.where(user_id: employer.user_id).count, 'Job')}", "#match-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+          .panel-collapse.collapse{id: "match-#{i}"}
+            .panel-body
+              - LikesJob.where(user_id: employer.user_id).order('created_at DESC').each do |job|
+                .row
+                  .col-xs-12
+                    %strong= job.job_title
+                    (#{job.job_reference}) - Expiry: #{job.expiry_date.strftime('%d %b %y')}
+                    %br
+                    Total Likes:
+                    = LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id).count
+                    |
+                    Total Matches:
+                    = LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id, match: true).count
+                    .well
+                      - LikesLike.where(likeable_type: 'Job', likeable_id: job.job_id).each do |like|
+                        .row
+                          .col-xs-2= like.created_at.strftime('%d %b %y %H:%M')
+                          - grad = LikesUser.find_by(user_id: like.user_id)
+                          .col-xs-3= "#{grad.first_name} #{grad.last_name}" if grad.present?
+                          .col-xs-3
+                            %b= "MATCH" if like.match
+                          .col-xs-4= link_to "View Grad Profile", "/admin/users/#{grad.user_id}" if grad.present?
+                .clearfix
+
   - else
-    %p No matches available yet! :(
+    %p No Likes available yet! :(

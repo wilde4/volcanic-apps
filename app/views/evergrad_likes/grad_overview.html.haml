@@ -1,0 +1,23 @@
+%h5 From here, you can monitor how successfully a Graduate is using Evergrad.
+
+.panel-group#accordion
+  - if @grads.present?
+    - @grads.each_with_index do |grad, i|
+      .panel.panel-default
+        .panel-heading
+          %h4.panel-title
+            = link_to "#{grad.first_name} #{grad.last_name} - #{pluralize(LikesLike.where(likeable_type: 'User', likeable_id: grad.user_id).count, 'Like')}", "#match-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+        .panel-collapse.collapse{id: "match-#{i}"}
+          .panel-body
+            - LikesLike.where(likeable_type: 'User', likeable_id: grad.user_id).each do |like|
+              .row
+                .col-xs-2= like.created_at.strftime('%d %b %y %H:%M')
+                - employer = LikesUser.find_by(user_id: like.user_id)
+                .col-xs-3= "#{employer.registration_answers['company-name']} (#{employer.first_name} #{employer.last_name})" if employer.present?
+                .col-xs-3
+                  %b= "MATCH" if like.match
+                .col-xs-4= link_to "View Grad Profile", "/admin/users/#{employer.user_id}" if employer.present?
+              .clearfix
+
+  - else
+    %p No Likes available yet! :(

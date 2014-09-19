@@ -231,6 +231,9 @@ class ReferralController < ApplicationController
       elsif params[:data][:start_date].present?
         start_date = Date.parse(params[:data][:start_date])
         end_date = Date.parse(params[:data][:end_date])
+      else
+        start_date = Date.parse("2010-01-01")
+        end_date = Date.parse("2020-01-01")
       end
     else
       start_date = Date.parse("2010-01-01")

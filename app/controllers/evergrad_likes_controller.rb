@@ -235,30 +235,43 @@ class EvergradLikesController < ApplicationController
   end
 
   def overview
-    employers = LikesUser.where("extra like ?", "%employer%")
-    match_data = {}
+    @employers = LikesUser.where("extra like ?", "%employer%")
 
-    employers.each do |employer|
-      employer_str = "#{employer.registration_answers["company-name"]} (#{employer.first_name} #{employer.last_name})"
-      
-      matched_grads = []
-      employer_jobs = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
-      job_matches = LikesLike.where(likeable_type: 'Job', likeable_id: employer_jobs, match: true)
-      
-      job_matches.each do |match|
-        matched_grads << LikesUser.find_by(user_id: match.user_id)
-      end
+    # likes_data = {}
 
-      match_data[employer_str] = matched_grads.reverse if !matched_grads.blank?
-    end
+    # employers.each do |employer|
+    #   employer_str = "#{employer.registration_answers["company-name"]} (#{employer.first_name} #{employer.last_name})"
+      
+    #   employers_likes = []
+    #   employer_jobs = LikesJob.where(user_id: employer.user_id).live.map(&:job_id)
+    #   job_likes = LikesLike.where(likeable_type: 'Job', likeable_id: employer_jobs)
+      
+    #   job_likes.each do |like|
+    #     employers_likes << like
+    #   end
+
+    #   likes_data[employer_str] = employers_likes.reverse if !employers_likes.blank?
+    # end
     
     respond_to do |format|
       format.html {
-        @matches = match_data
         render action: 'overview', layout: false
       }
       format.json { render json: {
-          success: true, count: match_data.count, matches: match_data
+          success: true, count: likes_data.count, likes: likes_data
+        }
+      }
+    end
+  end
+
+  def grad_overview
+    @grads = LikesUser.where("extra like ?", "%graduate%")
+    respond_to do |format|
+      format.html {
+        render action: 'grad_overview', layout: false
+      }
+      format.json { render json: {
+          success: true, count: likes_data.count, likes: likes_data
         }
       }
     end
