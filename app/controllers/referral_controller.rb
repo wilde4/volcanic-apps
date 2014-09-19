@@ -9,7 +9,7 @@ class ReferralController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_referral, except: [
-    :index, :create_referral, :funds_earned, :funds_owed,
+    :index, :create_referral, :funds_earned, :funds_owed, :confirm,
     :referrals_for_period, :most_referrals, :referral_by_user, :payment_form,
     :save_payment_info, :referral_report]
 
@@ -178,9 +178,11 @@ class ReferralController < ApplicationController
     end
   end
 
-  # POST /referrals(/:id)/confirm
+  # POST /referrals/confirm
   # Confirms a user's referral token
   def confirm
+    logger.info "--- params = #{params.inspect}"
+    @referral = Referral.find_by(user_id: params[:like][:user_id])
     if @referral
       @referral.confirmed = true
       @referral.confirmed_at = DateTime.now

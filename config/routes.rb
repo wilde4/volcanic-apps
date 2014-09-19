@@ -18,7 +18,7 @@ Apps::Application.routes.draw do
     get "(/:id)/referred"       => 'referral#get_referred',         as: :get_referred
     get "(/:id)/confirmed"      => 'referral#confirmed',            as: :referral_confirmed
     get "(/:id)/generate"       => 'referral#generate',             as: :referral_generate
-    get "(/:id)/confirm"        => 'referral#confirm',              as: :referral_confirm
+    post "confirm"              => 'referral#confirm',              as: :referral_confirm
     get "(/:id)/revoke"         => 'referral#revoke',               as: :referral_revoke
     get "referrals_for_period"  => 'referral#referrals_for_period', as: :referrals_for_period
     get "most_referrals"        => 'referral#most_referrals',       as: :most_referrals
