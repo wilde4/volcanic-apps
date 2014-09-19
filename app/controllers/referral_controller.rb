@@ -238,8 +238,19 @@ class ReferralController < ApplicationController
   #   * start_date - Start of reporting period
   #   * end_date   - End of reporting period
   def referrals_for_period
-    start_date = (params[:data].present? and params[:data][:start_date].present?) ? Date.parse(params[:data][:start_date]) : Date.parse("2000-01-01")
-    end_date = (params[:data].present? and params[:data][:end_date].present?) ? Date.parse(params[:data][:end_date]) : Date.parse("2050-01-01")
+    if params[:data]
+      if params[:data]['start_date(1i)'].present?
+        start_date = Date.new params[:data]["start_date(1i)"].to_i, params[:data]["start_date(2i)"].to_i, params[:data]["start_date(3i)"].to_i
+        end_date = Date.new params[:data]["end_date(1i)"].to_i, params[:data]["end_date(2i)"].to_i, params[:data]["end_date(3i)"].to_i
+      elsif params[:data][:start_date].present?
+        start_date = Date.parse(params[:data][:start_date])
+        end_date = Date.parse(params[:data][:end_date])
+      end
+    else
+      start_date = Date.parse("2010-01-01")
+      end_date = Date.parse("2020-01-01")
+    end
+
 
     refgroups = []
 
@@ -290,7 +301,7 @@ class ReferralController < ApplicationController
 
     @referrals.each do |ref|
       referrer = Referral.find(ref[0])
-      ref.unshift(referrer.full_name)
+      ref.unshift(referrer.partial_name)
     end
 
     respond_to do |format|
