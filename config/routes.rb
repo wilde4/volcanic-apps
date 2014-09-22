@@ -68,8 +68,8 @@ Apps::Application.routes.draw do
     get 'jobs_paid' => 'evergrad_likes#jobs_paid', as: :evergrad_jobs_paid
     get 'overview' => 'evergrad_likes#overview', as: :evergrad_likes_overview
     get 'grad_overview' => 'evergrad_likes#grad_overview', as: :evergrad_grad_likes_overview
-    post "activate_app"     => 'inventory#activate_app',   as: :evergrad_likes_activate_app
-    post "deactivate_app"   => 'inventory#deactivate_app', as: :evergrad_likes_deactivate_app
+    post "activate_app"     => 'evergrad_likes#activate_app',   as: :evergrad_likes_activate_app
+    post "deactivate_app"   => 'evergrad_likes#deactivate_app', as: :evergrad_likes_deactivate_app
   end
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
