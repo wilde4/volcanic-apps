@@ -9,7 +9,7 @@ class ReferralController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_referral, except: [
-    :index, :create_referral, :funds_earned, :funds_owed, :confirm,
+    :index, :create_referral, :funds_earned, :funds_owed, :confirm, :notification_events,
     :referrals_for_period, :most_referrals, :referral_by_user, :payment_form,
     :save_payment_info, :referral_report, :activate_app, :deactivate_app]
 
@@ -267,6 +267,8 @@ class ReferralController < ApplicationController
     refcounts.each do |k,v|
       referer = referrals.find_by(id: k)
       if referer
+        # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "42a8871d56d39ab3181a39cf95507ba6", "event_name" : "graduate_owed_fees", "user_id" : "2433", "outstanding_amount" : '45.50', "amount_earned_already" : '30.00'}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
+        # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'graduate_owed_fees', api_key: @key.api_key, user_id: referer.user_id, outstanding_amount: '45.50', amount_earned_already: '30.00'}, :headers => { 'Content-Type' => 'application/json' }})
         ref = ["#{referer.full_name} (#{v} Referrals)", referrals.select{ |r| r.referred_by == k } ]
         refgroups << ref
       end
@@ -343,6 +345,21 @@ class ReferralController < ApplicationController
     respond_to do |format|
       format.csv { send_data @refs.to_csv }
     end
+  end
+
+  def notification_events
+    render json: {
+      graduate_owed_fees: {
+        description: 'A graduate is owed fees',
+        targets: [:user],
+        tags: [:name, :outstanding_amount, :amount_earned_already]
+      },
+      graduate_not_owed_fees: {
+        description: 'A graduate is not owed fees',
+        targets: [:user],
+        tags: [:name, :outstanding_amount, :amount_earned_already]
+      }
+    }
   end
 
 

@@ -20,6 +20,7 @@
         .panel-heading
           %h4.panel-title
             = link_to referral[0], "#referrer-#{i}", data: { parent: '#accordion', toggle: 'collapse' }
+            .pull-right
         .panel-collapse.collapse{id: "referrer-#{i}"}
           .panel-body
             -referral[1].each do |ref|
