@@ -16,7 +16,7 @@ module Clockwork
   # every(3.minutes, 'less.frequent.job')
   # every(1.hour, 'hourly.job')
 
-  every(30.seconds, 'send_referral_email.job') do
+  every(1.month, 'send_referral_email.job') do
     SendReferralEmail.send_funds_email(18)
   end
 
