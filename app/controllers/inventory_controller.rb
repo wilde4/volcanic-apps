@@ -24,7 +24,7 @@ class InventoryController < ApplicationController
     if @key
       @inventory = Inventory.new
       @inventory.dataset_id = @key.app_dataset_id
-      @inv_objs = Inventory.object_types
+      @inv_objs = Inventory.object_types(@inventory.dataset_id)
     else
       redirect_to action: 'index'
     end
@@ -32,7 +32,7 @@ class InventoryController < ApplicationController
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
-    @inv_objs = Inventory.object_types
+    @inv_objs = Inventory.object_types(@inventory.dataset_id)
   end
 
    def update
@@ -130,7 +130,7 @@ class InventoryController < ApplicationController
       when "Job"
         http_method = :put
         resource_action = "#{resource}"
-      when "EG_Job"
+      when "EG_Job_individual_employer", "EG_Job_employer"
         # UPDATE JOB paid: true
         job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
         job_likes.update(paid: true) if job_likes

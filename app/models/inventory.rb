@@ -23,13 +23,23 @@ class Inventory < ActiveRecord::Base
     active_start && active_end
   end
 
-  def self.object_types
-    [
+  def self.object_types(dataset_id = nil)
+    object_types = [
       { type: 'Credit' },
       { type: 'Job' },
-      { type: 'EG_Job' },
       { type: 'Referral' }
     ]
+
+    case dataset_id
+    when 18
+      object_types.delete('Job') # replaced with bespoke types
+      object_types.concat ([
+        { type: 'EG_Job_individual_employer' },
+        { type: 'EG_Job_employer'}]
+      )
+    end
+
+    object_types
   end
 
 private
