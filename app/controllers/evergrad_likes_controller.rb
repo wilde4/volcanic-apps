@@ -129,7 +129,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_graduate", "user_id" : "2659"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', user_id: @job.user_id}, :headers => { 'Content-Type' => 'application/json' }})
-            @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', api_key: @key.api_key, user_id: @job.user_id},
+            @response = HTTParty.post('http://evergrad.staging.volcanic.uk/api/v1/event_services.json', {:body => {event_name: 'match_made_by_graduate', api_key: @key.api_key, user_id: @job.user_id},
               #:headers => { 'Content-Type' => 'application/json' }
               })
             @matched_like.update(match: true) 
@@ -146,7 +146,7 @@ class EvergradLikesController < ApplicationController
             # SEND MATCH EMAIL
             # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "b9461f78cb8b4ca70fbb369dc768f719", "event_name" : "match_made_by_employer", "user_id" : "21125"}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
             # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', user_id: @graduate.user_id}, :headers => { 'Content-Type' => 'application/json' }})
-            @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', api_key: @key.api_key, user_id: @graduate.user_id},
+            @response = HTTParty.post('http://evergrad.staging.volcanic.uk/api/v1/event_services.json', {:body => {event_name: 'match_made_by_employer', api_key: @key.api_key, user_id: @graduate.user_id},
               #:headers => { 'Content-Type' => 'application/json' }
               })
             @matched_likes.update_all(match: true)

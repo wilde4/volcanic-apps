@@ -5,20 +5,8 @@
     = f.hidden_field :id, value: @referral.id
 
     .field
-      = f.label :account_name
+      = f.label :account_name, "PayPal Email Address"
       = f.text_field :account_name
-
-    .field
-      = f.label :account_number
-      = f.text_field :account_number
-
-    .field
-      = f.label :sort_code
-      = f.text_field :sort_code
-
-    .security-note.field
-      %i.glyphicon.glyphicon-lock
-      Your data is secured with 256-bit AES encryption.
 
   .form-actions
     = f.submit "Submit"

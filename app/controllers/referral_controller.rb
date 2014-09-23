@@ -14,7 +14,7 @@ class ReferralController < ApplicationController
     :save_payment_info, :referral_report, :activate_app, :deactivate_app]
 
   before_action :set_key, only: [:create_referral, :full_referral,
-    :referrals_for_period]
+    :referrals_for_period, :payment_form, :save_payment_info]
 
   def index
   end
@@ -321,7 +321,7 @@ class ReferralController < ApplicationController
   end
 
   def save_payment_info
-    render nothing: true, layout: false unless @key
+    render nothing: true, layout: false and return unless @key
     @referral = Referral.find(params[:referral][:id])
 
     if params[:referral][:sort_code]
@@ -366,7 +366,7 @@ class ReferralController < ApplicationController
 private
 
   def set_key
-    @key = Key.find_by(host: params[:referrer])
+    @key = Key.find_by(host: params[:referrer], app_name: 'referral')
   end
   
   def set_referral
