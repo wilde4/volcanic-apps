@@ -10,6 +10,7 @@ end
 
 match_count = 0
 if @user.extra["user_type"] == 'employer' or @user.extra["user_type"] == 'individual_employer'
+  json.user_type @user.extra["user_type"]
   json.jobs @jobs do |job|
     json.job_id job.job_id
     json.job_title job.job_title
