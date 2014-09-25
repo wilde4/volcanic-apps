@@ -25,7 +25,9 @@
           .panel-body
             -referral[1].each do |ref|
               .row
-                .col-xs-2= "#{ref.full_name} (ID: #{ref.user_id})"
+                .col-xs-2
+                  = link_to "#{ref.full_name}", "/admin/users/#{ref.user_id}"
+                  = "(ID: #{ref.user_id})"
                 %attr.col-xs-3{title: "#{ref.confirmed_at if ref.confirmed}"}
                   = "Confirmed?: #{ref.confirmed? ? 'Yes' : 'No'}"
 

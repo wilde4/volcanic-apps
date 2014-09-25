@@ -297,6 +297,40 @@ class EvergradLikesController < ApplicationController
     end
   end
 
+  # Unlike a user, deletes any matches that exist:
+  def unlike_user
+    graduate = LikesLike.find_by(likeable_id: params[:like][:likeable_id])
+    job_ids = LikesJob.where(user_id: params[:like][:user_id]).map(&:job_id)
+    matched_likes = LikesLike.where(likeable_type: 'Job', likeable_id: job_ids, user_id: graduate.likeable_id)
+    matched_likes.update_all(match: false) if matched_likes.present?
+
+    destroyed_like = LikesLike.find_by(like_id: params[:like][:id])
+    destroyed_like.destroy if destroyed_like.present?
+
+    respond_to do |format|
+      format.json { render json: { success: true } }
+      format.html { render nothing: true }
+    end
+  end
+
+  # Unlike a job, deletes any matches that exist:
+  def unlike_job
+    job = LikesJob.find_by(job_id: params[:like][:likeable_id])
+
+    # Find the user who posted the job, and find the job that was liked
+    matched_like = LikesLike.find_by(likeable_type: 'User', likeable_id: params[:like][:user_id], user_id: job.user_id)
+    matched_like.update(match: false) if matched_like.present? 
+
+    # Destroy the Like in the LikesLike table
+    destroyed_like = LikesLike.find_by(like_id: params[:like][:id])
+    destroyed_like.destroy if destroyed_like.present?
+
+    respond_to do |format|
+      format.json { render json: { success: true } }
+      format.html { render nothing: true }
+    end
+  end
+
 private
 
   def set_key
