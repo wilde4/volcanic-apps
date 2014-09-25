@@ -161,6 +161,15 @@ class EvergradLikesController < ApplicationController
     end
   end
 
+  def delete_like
+    @like = LikesLike.find_by(like_id: params[:like][:id])
+    if @like.destroy
+      render json: { success: true }
+    else
+      render json: { success: false, status: "Didn't destroy Like" }
+    end
+  end
+
   def likes_made
     @likes = LikesLike.where(user_id: params[:id], match: false)
     @likes.delete_if { |l| l.likeable_type == 'User' and LikesUser.find_by(user_id: l.likeable_id).blank? }
