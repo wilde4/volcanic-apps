@@ -125,11 +125,24 @@ class InventoryController < ApplicationController
       case inventory_item.object_type
       when "Credit"
         http_method = :post
-        resource_action = "#{resource}"
-        attributes = { user_token: params[:data][:user_token], value: object[:attribute] }
-      when "Job"
-        http_method = :put
-        resource_action = "#{resource}"
+        resource_action = "credits"
+        attribute_key = :credit
+        attributes = { user_token: params[:data][:user_token], value: 1 }
+
+      when "Job", "Premium Job", "Job of the Week"
+        # Generate a credit for the job:
+        req_data = {
+          api_key: @key.api_key,
+          credit: { user_token: params[:data][:user_token], value: 1 }
+        }
+        #credit_response = HTTParty.post("http://#{@key.host}:3000/api/v1/credits.json", { body: req_data })
+
+        # Setup a call to /jobs to set a job as paid
+        http_method = :post
+        resource_action = "jobs/#{params[:data][:job_id]}/set_paid"
+        attribute_key = :job
+        attributes = { user_token: params[:data][:user_token], paid: true, expiry_date: 30.days.from_now }
+
       when "EG_Job_individual_employer", "EG_Job_employer"
         # UPDATE JOB paid: true
         job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
@@ -143,16 +156,14 @@ class InventoryController < ApplicationController
       end
 
       # Build the endpoint to talk to, and the query params in request_data
-      endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
-
+      endpoint_str = "http://#{@key.host}:3000/api/v1/#{resource_action}.json"
       request_data = {
         api_key: @key.api_key,
-        object[:type].to_sym.downcase => attributes # builds params[:<object_type>][:<data>]
+        attribute_key => attributes # builds params[:<object_type>][:<data>]
       }
 
       # Make HTTParty go talk to the API:
       response = HTTParty.send(http_method, endpoint_str, { body: request_data })
-
       respond_to do |format|
         format.json{ render json: response.body }
       end

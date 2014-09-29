@@ -32,13 +32,17 @@ class Inventory < ActiveRecord::Base
 
     case dataset_id
     when 18
-      object_types.delete('Job') # replaced with bespoke types
+      object_types.delete({type: 'Job' }) # replaced with bespoke types
       object_types.concat ([
         { type: 'EG_Job_individual_employer' },
         { type: 'EG_Job_employer'}]
       )
+    when 55
+      object_types.concat ([
+        { type: 'Premium Job' },
+        { type: 'Job of the Week' }]
+      )
     end
-
     object_types
   end
 
