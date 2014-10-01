@@ -19,7 +19,8 @@ class FeaturedJobsController < ApplicationController
           job_description: params[:job][:job_description],
           job_location: params[:job][:job_location],
           salary_free: params[:job][:salary_free],
-          cached_slug: params[:job][:cached_slug]
+          cached_slug: params[:job][:cached_slug],
+          company_logo: params[:user_profile][:avatar_medium_uncropped_path]
         }
       )
         render json: { success: true, job_id: @job.id }
@@ -39,7 +40,8 @@ class FeaturedJobsController < ApplicationController
         job_description: params[:job][:job_description],
         job_location: params[:job][:job_location],
         salary_free: params[:job][:salary_free],
-        cached_slug: params[:job][:cached_slug]
+        cached_slug: params[:job][:cached_slug],
+        company_logo: params[:user_profile][:avatar_medium_uncropped_path]
       }
 
       if @job.save
