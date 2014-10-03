@@ -215,7 +215,7 @@ class EvergradLikesController < ApplicationController
   end
 
   def all_matches
-    @match_count = LikesLike.where(likeable_type: 'User', match: true).count
+    @match_count = LikesLike.where(likeable_type: 'Job', match: true).count
     render json: { match_count: @match_count }
   end
 
