@@ -75,6 +75,15 @@ Apps::Application.routes.draw do
     post 'unlike_user' => 'evergrad_likes#unlike_user', as: :evergrad_likes_unlike_user
     post 'unlike_job' => 'evergrad_likes#unlike_job', as: :evergrad_likes_unlike_job
   end
+
+  scope :featured_jobs do
+    post "activate_app"     => 'featured_jobs#activate_app'
+    post "deactivate_app"   => 'featured_jobs#deactivate_app'
+    post "save_job"         => 'featured_jobs#save_job'
+    post "set_featured"     => 'featured_jobs#set_featured'
+    get "featured"          => 'featured_jobs#featured'
+  end
+
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

@@ -21,13 +21,9 @@ class InventoryController < ApplicationController
 
   # Loads up the HTML form for use in the apps dashboard
   def new
-    if @key
-      @inventory = Inventory.new
-      @inventory.dataset_id = @key.app_dataset_id
-      @inv_objs = Inventory.object_types(@inventory.dataset_id)
-    else
-      redirect_to action: 'index'
-    end
+    @inventory = Inventory.new
+    @inventory.dataset_id = @key.app_dataset_id
+    @inv_objs = Inventory.object_types(@inventory.dataset_id)
   end
 
   def edit
@@ -116,53 +112,83 @@ class InventoryController < ApplicationController
   # Params:
   #   * inventory_id - ID of the inventory object item purchased
   #   * purchased_id - The specific record ID that was purchased (Job(10), User(1442) etc.)
-  #   * data - A splat of data that will help the action comm. with the API
+  #   * data - An array of data that will help the action comm. with the API
   def post_purchase
-    if @key # if it's from an authenticated host
-      inventory_item = Inventory.find(params[:data][:inventory_id])
+    inventory_item = Inventory.find(params[:data][:inventory_id])
 
-      # Work out the field to be edited, will be a record in future
-      case inventory_item.object_type
-      when "Credit"
-        http_method = :post
-        resource_action = "#{resource}"
-        attributes = { user_token: params[:data][:user_token], value: object[:attribute] }
-      when "Job"
-        http_method = :put
-        resource_action = "#{resource}"
-      when "EG_Job_individual_employer", "EG_Job_employer"
-        # UPDATE JOB paid: true
-        job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
-        job_likes.update(paid: true) if job_likes
+    # Work out the field to be edited, will be a record in future
+    case inventory_item.object_type
+    when "Credit"
+      buy_credit(params)
 
-        response = {state: 'success'}
-        respond_to do |format|
-          format.json{ render json: response }
+    when "Job", "Premium Job"
+      # generate a credit:
+      #buy_credit(params)
+
+      # set the job as paid for:
+      response = set_job_paid(params)
+
+    when "Job of the Week"
+      response = set_job_paid(params)
+      if JSON.parse(response)["response"]["status"] == "success"
+        days_active = params[:data][:period].to_i
+        job = FeaturedJob.find_by(job_id: params[:data][:job_id])
+
+        job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
+        job.feature_end = job.feature_start + days_active.days
+        if job.save
+          response = { success: true, message: "Successfully saved Job." }
+        else
+          response = { success: false, errors: job.errors }
         end
-        return
       end
 
-      # Build the endpoint to talk to, and the query params in request_data
-      endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
+    when "EG_Job_individual_employer", "EG_Job_employer"
+      # UPDATE JOB paid: true
+      job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
+      job_likes.update(paid: true) if job_likes
 
-      request_data = {
-        api_key: @key.api_key,
-        object[:type].to_sym.downcase => attributes # builds params[:<object_type>][:<data>]
-      }
+      response = { state: 'success' }
+    end
 
-      # Make HTTParty go talk to the API:
-      response = HTTParty.send(http_method, endpoint_str, { body: request_data })
-
-      respond_to do |format|
-        format.json{ render json: response.body }
-      end
+    respond_to do |format|
+      format.json{ render json: response }
     end
   end
 
 private
 
+  def buy_credit(params)
+    resource_action = "credits"
+    attribute_key = :credit
+    attributes = { user_token: params[:data][:user_token], value: 1 }
+    post_to_api(resource_action, attribute_key, attributes)
+  end
+
+  # Performs logic to get a Job set as 'paid' via the API
+  def set_job_paid(params)
+    resource_action = "jobs/#{params[:data][:job_id]}/set_paid"
+    attribute_key = :job
+    attributes = { user_token: params[:data][:user_token], paid: true, expiry_date: 30.days.from_now }
+    post_to_api(resource_action, attribute_key, attributes)
+  end
+
+  # Sends a post request to the API, on the path in resource_action
+  # Data K/V is akin to "credit: credit_data_hash"
+  def post_to_api(resource_action, attribute_key, attributes)
+    endpoint_str = "http://#{@key.host}:8080/api/v1/#{resource_action}.json"
+    data = {
+      api_key: @key.api_key,
+      attribute_key => attributes # builds params[:<object_type>][:<data>]
+    }
+    # Make HTTParty go talk to the API:
+    response = HTTParty.post(endpoint_str, { body: data })
+    return response.body
+  end
+
   def set_key
     @key = Key.find_by(host: params[:referrer])
+    render nothing: true, status: 401 and return if @key.blank?
   end
 
   def inventory_params
