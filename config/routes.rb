@@ -59,6 +59,7 @@ Apps::Application.routes.draw do
     post 'save_user' => 'evergrad_likes#save_user', as: :save_user
     post 'save_job' => 'evergrad_likes#save_job', as: :save_job
     post 'save_like' => 'evergrad_likes#save_like', as: :save_like
+    post 'delete_like' => 'evergrad_likes#delete_like', as: :delete_like
     get '(/:id)/likes_made' => 'evergrad_likes#likes_made', as: :user_likes_made
     get '(/:id)/likes_received' => 'evergrad_likes#likes_received', as: :user_likes_received
     get '(/:id)/matches' => 'evergrad_likes#matches', as: :user_matches
