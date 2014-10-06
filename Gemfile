@@ -20,6 +20,8 @@ gem "httparty"
 gem 'gibberish' # For referral payment data
 gem 'figaro'
 gem 'clockwork'
+gem 'nokogiri'
+gem 'stringex'
 
 group :development do
   gem 'sqlite3'

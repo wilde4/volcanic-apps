@@ -41,4 +41,22 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def update_settings
+    settings = AppSetting.find_by(dataset_id: params[:dataset_id])
+
+    if settings.present?
+      settings.update(settings: params[:settings])
+    else
+      settings = AppSetting.create(dataset_id: params[:dataset_id], settings: params[:settings])
+    end
+
+    respond_to do |format|
+      if settings.errors.blank?
+        format.json { render json: { success: true, message: 'Updated App Settings.' }}
+      else
+        format.json { render json: { success: false, error: settings.errors } }
+      end
+    end
+  end
+
 end

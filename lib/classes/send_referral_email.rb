@@ -1,3 +1,4 @@
+=begin
 class SendReferralEmail
 
   def self.send_funds_email(dataset_id)
@@ -13,7 +14,7 @@ class SendReferralEmail
         # curl -X POST -H "Content-Type: application/json" -d '{"api_key" : "42a8871d56d39ab3181a39cf95507ba6", "event_name" : "graduate_owed_fees", "user_id" : "2433", "outstanding_amount" : '45.50', "amount_earned_already" : '30.00'}' http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json
         # @response = HTTParty.post('http://evergrad.localhost.volcanic.co:3000/api/v1/event_services.json', {:body => {event_name: 'graduate_owed_fees', api_key: @key.api_key, user_id: referer.user_id, outstanding_amount: '45.50', amount_earned_already: '30.00'}, :headers => { 'Content-Type' => 'application/json' }})
         @response = HTTParty.post(
-          'http://evergrad.com/api/v1/event_services.json', {
+          'http:///api/v1/event_services.json', {
             :body =>
             {
               event_name: event_str,
@@ -34,3 +35,4 @@ private
   end
 
 end
+=end

@@ -20,21 +20,7 @@ module Clockwork
     SendReferralEmail.send_funds_email(18)
   end
 
-
-=begin
-  every(1.day, 'update_reports.job', :at => '00:01') do
-    SaveSiteStats.save(nil, nil)
+  every(1.week, 'poll_talentrover_feed.job') do
+    TalentRoverApp.pollJobsFeed
   end
-  every(1.day, 'daily_job_alerts.job', :at => '16:30', :if => lambda { |t| t.wday(1..5) }) do
-    SendJobAlerts.send_daily_email_alerts(nil, nil)
-  end
-  every(1.week, 'weekly_job_alerts.job', :at => 'Friday 16:00') do
-    SendJobAlerts.send_weekly_email_alerts(nil, nil)
-  end
-  
-  every(1.day, 'update_user_index.job', :at => '03:00') do
-    User.import
-  end
-=end
-  
 end

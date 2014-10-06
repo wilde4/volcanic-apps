@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140930104343) do
+ActiveRecord::Schema.define(version: 20141003101535) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -22,6 +22,11 @@ ActiveRecord::Schema.define(version: 20140930104343) do
     t.boolean "shared_social",     default: false
     t.boolean "completed_profile", default: false
     t.string  "level"
+  end
+
+  create_table "app_settings", force: true do |t|
+    t.integer "dataset_id"
+    t.text    "settings"
   end
 
   create_table "featured_jobs", force: true do |t|

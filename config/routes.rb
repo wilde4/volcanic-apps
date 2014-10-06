@@ -84,6 +84,13 @@ Apps::Application.routes.draw do
     get "featured"          => 'featured_jobs#featured'
   end
 
+  scope :talent_rover do
+    post "update_settings"  => 'talent_rover#update_settings'
+    post "activate_app"     => 'talent_rover#activate_app'
+    post "deactivate_app"   => 'talent_rover#deactivate_app'
+    post "parse_jobs"       => 'talent_rover#parse_jobs'
+  end
+
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
