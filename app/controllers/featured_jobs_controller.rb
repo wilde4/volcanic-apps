@@ -54,6 +54,10 @@ class FeaturedJobsController < ApplicationController
 
   def featured
     @featured = FeaturedJob.featured
+    if params[:length].present?
+      len = params[:length].to_i
+      @featured.extra['job_description'] = @featured.extra['job_description'].truncate(len)
+    end
     render json: @featured.as_json
   end
 
