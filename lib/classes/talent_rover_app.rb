@@ -6,6 +6,7 @@ class TalentRoverApp
     registered_hosts = Key.where(app_name: 'talent_rover')
 
     registered_hosts.each do |reg_host|
+      puts "Polling for: #{reg_host.host}"
       @key = reg_host
       parse_jobs
     end
@@ -46,8 +47,8 @@ private
   end
 
   def self.post_payload(payload)
-    #net = Net::HTTP.new(@key.host, 80)
     net = Net::HTTP.new(@key.host, 80)
+    #net = Net::HTTP.new(@key.host, 3000)
     request = Net::HTTP::Post.new("/api/v1/jobs.json")
     request.set_form_data( payload )
     net.read_timeout = net.open_timeout = 10
@@ -56,8 +57,9 @@ private
       http.request(request)
     end
 
+    puts "#{response.code} - #{response.read_body}"
+
     if response.code.to_i != 200
-      puts "#{response.code} - #{response.read_body}"
       return false
     else
       return true
