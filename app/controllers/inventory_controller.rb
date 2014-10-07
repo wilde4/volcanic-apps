@@ -122,11 +122,12 @@ class InventoryController < ApplicationController
       buy_credit(params)
 
     when "Job", "Premium Job"
-      # generate a credit:
-      #buy_credit(params)
-
-      # set the job as paid for:
-      response = set_job_paid(params)
+      # charge a credit
+      response = create_and_charge_credit(params, 1)
+      if JSON.parse(response)["response"]["status"] == "success"
+        # set the job as paid for:
+        response = set_job_paid(params)
+      end
 
     when "Job of the Week"
       response = set_job_paid(params)
@@ -158,10 +159,19 @@ class InventoryController < ApplicationController
 
 private
 
-  def buy_credit(params)
+  # Create a credit, then immediately use it:
+  def create_and_charge_credit(params, value)
+    change_credit(params, -value) if change_credit(params, value)
+  end
+
+  def change_credit(params, credit_value)
     resource_action = "credits"
     attribute_key = :credit
-    attributes = { user_token: params[:data][:user_token], value: 1 }
+    attributes = {
+      user_token: params[:data][:user_token],
+      payment_id: params[:data][:payment_id],
+      value: credit_value 
+    }
     post_to_api(resource_action, attribute_key, attributes)
   end
 
@@ -169,14 +179,18 @@ private
   def set_job_paid(params)
     resource_action = "jobs/#{params[:data][:job_id]}/set_paid"
     attribute_key = :job
-    attributes = { user_token: params[:data][:user_token], paid: true, expiry_date: 30.days.from_now }
+    attributes = {
+      user_token: params[:data][:user_token],
+      paid: true,
+      expiry_date: 30.days.from_now
+    }
     post_to_api(resource_action, attribute_key, attributes)
   end
 
   # Sends a post request to the API, on the path in resource_action
   # Data K/V is akin to "credit: credit_data_hash"
   def post_to_api(resource_action, attribute_key, attributes)
-    endpoint_str = "http://#{@key.host}:8080/api/v1/#{resource_action}.json"
+    endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
     data = {
       api_key: @key.api_key,
       attribute_key => attributes # builds params[:<object_type>][:<data>]
