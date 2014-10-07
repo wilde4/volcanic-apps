@@ -21,6 +21,6 @@ module Clockwork
   end
 
   every(1.hour, 'poll_talentrover_feed.job') do
-    TalentRoverApp.pollJobsFeed
+    TalentRoverApp.poll_jobs_feed
   end
 end
