@@ -20,7 +20,7 @@ module Clockwork
     SendReferralEmail.send_funds_email(18)
   end
 
-  every(1.week, 'poll_talentrover_feed.job') do
+  every(1.hour, 'poll_talentrover_feed.job') do
     TalentRoverApp.pollJobsFeed
   end
 end
