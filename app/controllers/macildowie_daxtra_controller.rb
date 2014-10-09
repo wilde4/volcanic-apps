@@ -27,6 +27,33 @@ class MacildowieDaxtraController < ApplicationController
     end
   end
 
+  def save_job
+    @job = MacDaxtraJob.find_by(job_id: params[:job][:id])
+    if @job.present?
+      if @job.update(
+        job: params[:job], 
+        job_type: params[:jobtype], 
+        disciplines: params[:disciplines]
+      )
+        render json: { success: true, job_id: @job.id }
+      else
+        render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
+      end
+    else
+      @job = MacDaxtraJob.new
+      @job.job_id = params[:job][:id]
+      @job.job = params[:job]
+      @job.job_type = params[:job_type]
+      @job.disciplines = params[:disciplines]
+
+      if @job.save
+        render json: { success: true, job_id: @job.id }
+      else
+        render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
+      end
+    end
+  end
+
   def email_data
     @user = MacDaxtraUser.find_by(user_id: params[:user_id])
     @name = "#{@user.user_profile[:first_name]} #{@user.user_profile[:last_name]}"
@@ -48,15 +75,26 @@ class MacildowieDaxtraController < ApplicationController
         @headers["X-Aplitrak-Responding-Board"] = "DJ"
         @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
       end
-      # @headers = {
-      #   "X-Aplitrak-Original-From-Address" => @user.email,
-      #   "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
-      #   "X-Aplitrak-Job-Type" => job_type,
-      #   "X-Aplitrak-Itris_discipline" => discipline_of_interest,
-      #   "X-Aplitrak-Salary_form" => salary_choice,
-      #   "X-Aplitrak-Responding-Board" => "NEWC",
-      #   "X-Aplitrak-Responding-Board-Name" => "newcandidate"
-      # }
+    elsif params[:email_name] == 'apply_for_vacancy'
+      @job = MacDaxtraJob.find_by(job_id: params[:job_id])
+      @subject = "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}"
+      @headers = {
+        "X-Mailer" => "Aplitrak Responce Management v2 (codename Apil2)",
+        'X-Aplitrak-Responding-Board' => "5671",
+        'X-Aplitrak-Responding-Board-Name' => "Macildowie New",
+        "X-Aplitrak-Original-From-Address" => @user.email,
+        'X-Aplitrak-Original-Consultant' => @job.job["contact_name"],
+        'X-Aplitrak-Original-Send_to_email' => @job.job["application_email"],
+        'X-Aplitrak-Original-Ref' => @job.job["job_reference"],
+        'X-Aplitrak-Original-Jobtitle' => @job.job["job_title"],
+        'X-Aplitrak-Original-Subject' => "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}",
+        'X-Aplitrak-Company' => "macildowie",
+        'X-Aplitrak-User-Id' => @user.user_id.to_s,
+        'X-Aplitrak-Time-Recived' => Time.now.to_formatted_s(:long),
+        'X-Aplitrak-Job-Type' => @job.job_type,
+        'X-Aplitrak-Salary_form' => @job.job["salary_low"],
+        'X-Aplitrak-Itris_discipline' => @job.disciplines.last["name"]
+      }
     end
   end
 

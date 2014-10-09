@@ -94,6 +94,7 @@ Apps::Application.routes.draw do
   scope :macildowie_daxtra do
     get "email_data"     => 'macildowie_daxtra#email_data'
     post 'save_user' => 'macildowie_daxtra#save_user'
+    post 'save_job' => 'macildowie_daxtra#save_job'
     post "activate_app"     => 'macildowie_daxtra#activate_app',   as: :macildowie_daxtra_activate_app
     post "deactivate_app"   => 'macildowie_daxtra#deactivate_app', as: :macildowie_daxtra_deactivate_app
   end
