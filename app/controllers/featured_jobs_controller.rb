@@ -53,8 +53,8 @@ class FeaturedJobsController < ApplicationController
   end
 
   def featured
-    @featured = FeaturedJob.featured
-    if params[:length].present?
+    @featured = FeaturedJob.where("? BETWEEN feature_start AND feature_end", DateTime.now).first
+    if @featured && params[:length].present?
       len = params[:length].to_i
       @featured.extra['job_description'] = @featured.extra['job_description'].truncate(len)
     end
@@ -98,7 +98,7 @@ class FeaturedJobsController < ApplicationController
 private
 
   def set_key
-    @key = Key.find_by(host: params[:referrer])
+    @key = Key.find_by(host: params[:referrer], app_name: 'featured_jobs')
     render nothing: true, status: 401 and return if @key.blank?
   end
 
