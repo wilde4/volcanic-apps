@@ -125,6 +125,9 @@ class InventoryController < ApplicationController
       # charge a credit
       response = create_and_charge_credit(params, 1)
       if JSON.parse(response)["response"]["status"] == "success"
+        if inventory_item.object_type == "Premium Job"
+          params.require(:data).merge!({ hot: true })
+        end
         # set the job as paid for:
         response = set_job_paid(params)
       end
@@ -184,7 +187,8 @@ private
       user_token: params[:data][:user_token],
       paid: true,
       expiry_date: 30.days.from_now,
-      api_key: @key.api_key
+      api_key: @key.api_key,
+      hot: params[:data][:hot]
     }
     post_to_api(resource_action, attribute_key, attributes)
   end
