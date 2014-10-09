@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141003101535) do
+ActiveRecord::Schema.define(version: 20141009102307) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -89,6 +89,16 @@ ActiveRecord::Schema.define(version: 20141003101535) do
     t.string   "first_name"
     t.string   "last_name"
     t.text     "extra"
+    t.text     "registration_answers"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "mac_daxtra_users", force: true do |t|
+    t.integer  "user_id"
+    t.string   "email"
+    t.string   "user_type"
+    t.text     "user_profile"
     t.text     "registration_answers"
     t.datetime "created_at"
     t.datetime "updated_at"
