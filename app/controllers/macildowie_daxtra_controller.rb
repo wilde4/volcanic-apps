@@ -75,6 +75,17 @@ class MacildowieDaxtraController < ApplicationController
         @headers["X-Aplitrak-Responding-Board"] = "DJ"
         @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
       end
+    elsif params[:email_name] == 'updated_cv_from_candidate'
+      @subject = "#{job_type}/Updated/UPD/#{@name}/#{discipline_of_interest}"
+      @headers = {
+        "X-Aplitrak-Original-From-Address" => @user.email,
+        "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
+        "X-Aplitrak-Job-Type" => job_type,
+        "X-Aplitrak-Itris_discipline" => discipline_of_interest,
+        "X-Aplitrak-Salary_form" => salary_choice,
+        "X-Aplitrak-Responding-Board" => "UPD",
+        "X-Aplitrak-Responding-Board-Name" => "updated"
+      }
     elsif params[:email_name] == 'apply_for_vacancy'
       @job = MacDaxtraJob.find_by(job_id: params[:job_id])
       @subject = "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}"
