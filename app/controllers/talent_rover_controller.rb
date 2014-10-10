@@ -8,7 +8,6 @@ class TalentRoverController < ApplicationController
   before_filter :set_key, only: [:parse_jobs]
 
   def parse_jobs
-    byebug
     @job_data = get_xml
     jobs = @job_data.xpath("//job")
     
@@ -75,8 +74,7 @@ private
   end
 
   def set_key
-    byebug
-    @key = Key.find_by(host: params[:referrer], app_name: params[:controller])
+    @key = Key.find_by(host: params[:referrer], app_name: 'talent_rover')
     render nothing: true, status: 401 and return if @key.blank?
   end
 end

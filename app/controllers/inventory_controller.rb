@@ -125,6 +125,9 @@ class InventoryController < ApplicationController
       # charge a credit
       response = create_and_charge_credit(params, 1)
       if JSON.parse(response)["response"]["status"] == "success"
+        if inventory_item.object_type == "Premium Job"
+          params.require(:data).merge!({ hot: true })
+        end
         # set the job as paid for:
         response = set_job_paid(params)
       end
@@ -170,7 +173,8 @@ private
     attributes = {
       user_token: params[:data][:user_token],
       payment_id: params[:data][:payment_id],
-      value: credit_value 
+      value: credit_value,
+      api_key: @key.api_key
     }
     post_to_api(resource_action, attribute_key, attributes)
   end
@@ -182,7 +186,9 @@ private
     attributes = {
       user_token: params[:data][:user_token],
       paid: true,
-      expiry_date: 30.days.from_now
+      expiry_date: 30.days.from_now,
+      api_key: @key.api_key,
+      hot: params[:data][:hot]
     }
     post_to_api(resource_action, attribute_key, attributes)
   end
@@ -192,7 +198,6 @@ private
   def post_to_api(resource_action, attribute_key, attributes)
     endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
     data = {
-      api_key: @key.api_key,
       attribute_key => attributes # builds params[:<object_type>][:<data>]
     }
     # Make HTTParty go talk to the API:
@@ -201,7 +206,7 @@ private
   end
 
   def set_key
-    @key = Key.find_by(host: params[:referrer])
+    @key = Key.find_by(host: params[:referrer], app_name: 'inventory')
     render nothing: true, status: 401 and return if @key.blank?
   end
 
