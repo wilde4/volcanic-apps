@@ -75,7 +75,7 @@ class MacildowieDaxtraController < ApplicationController
         @headers["X-Aplitrak-Responding-Board"] = "DJ"
         @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
       end
-    elsif params[:email_name] == 'updated_cv_from_candidate'
+    elsif params[:email_name] == 'updated_cv_from_candidate' or params[:email_name] == 'updated_candidate'
       @subject = "#{job_type}/Updated/UPD/#{@name}/#{discipline_of_interest}"
       @headers = {
         "X-Aplitrak-Original-From-Address" => @user.email,
