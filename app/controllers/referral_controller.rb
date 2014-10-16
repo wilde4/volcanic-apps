@@ -316,7 +316,7 @@ class ReferralController < ApplicationController
   end
 
   def payment_form
-    @referral = Referral.find_by(user_id: params[:data][:user_id])
+    @referral = Referral.find_by(user_id: params[:data][:user_id]) if params[:data]
     render nothing: true if @referral.blank?
   end
 
