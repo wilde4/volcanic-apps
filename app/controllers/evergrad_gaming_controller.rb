@@ -16,24 +16,28 @@ class EvergradGamingController < ApplicationController
     status = ""
     completed_achievements = []
 
-    @achievement = Achievement.find_or_create_by(user_id: params[:user][:id]) do |a|
-      a.signed_up = true
-    end
+    if params[:user]
+      @achievement = Achievement.find_or_create_by(user_id: params[:user][:id]) do |a|
+        a.signed_up = true
+      end
 
-    if params[:user][:percentage_complete].present? && params[:user][:percentage_complete] > 99
-      completed_achievements << :completed_profile
-    end
+      if params[:user][:percentage_complete].present? && params[:user][:percentage_complete] > 99
+        completed_achievements << :completed_profile
+      end
 
-    if params[:registration_answers_hash].present? && params[:registration_answer_hash]['video-introduction'].present?
-      completed_achievements << :uploaded_cv
-    end
+      if params[:registration_answers_hash].present? && params[:registration_answer_hash]['video-introduction'].present?
+        completed_achievements << :uploaded_cv
+      end
 
-    if params[:evergrad_gaming][:achievement].present?
-      completed_achievements << params[:evergrad_gaming][:achievement]
-    end
-    
-    completed_achievements.each do |a_name|
-      status.concat update_achievement(@achievement, a_name).to_json
+      if params[:evergrad_gaming][:achievement].present?
+        completed_achievements << params[:evergrad_gaming][:achievement]
+      end
+      
+      completed_achievements.each do |a_name|
+        status.concat update_achievement(@achievement, a_name).to_json
+      end
+    else
+      status = "You must provide a user to set achievements."
     end
 
     render json: status
@@ -71,6 +75,7 @@ class EvergradGamingController < ApplicationController
 private
 
   def set_achievement
+    return false if params[:evergrad_gaming].blank?
     @achievement = Achievement.find_or_create_by(user_id: params[:evergrad_gaming][:user_id]) do |a|
       a.signed_up = true
     end
