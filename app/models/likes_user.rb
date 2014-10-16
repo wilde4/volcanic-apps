@@ -9,6 +9,7 @@ class LikesUser < ActiveRecord::Base
       user.id user_id
       user.first_name first_name
       user.last_name last_name
+      user.email email
       user.avatar_thumb_path extra["avatar_thumb_path"]
       user.avatar_medium_cropped_path extra["avatar_medium_cropped_path"]
       user.avatar_medium_uncropped_path extra["avatar_medium_uncropped_path"]

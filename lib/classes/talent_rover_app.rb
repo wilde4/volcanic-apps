@@ -20,6 +20,7 @@ class TalentRoverApp
     
     jobs.each do |job|
       job_payload = Hash.new
+      job_payload["job[job_type]"] = "unspecified"
       job_payload["job[api_key]"] = @key.api_key
 
       # Map the general attributes onto the payload
@@ -28,16 +29,25 @@ class TalentRoverApp
         job_payload["job[#{v}]"] = child.text if child.text.present?
       end
 
-      if job_payload["job[discipline]"].present?
-        job_payload["job[discipline]"] = job_payload["job[discipline]"].to_url
+      ['discipline', 'job_functions'].each do |url_field|
+        if job_payload["job[#{url_field}]"].present?
+          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"].to_url
+        end
       end
+
+      lang_nodes = job.xpath("languages")
+      languages = lang_nodes.map(&:text).reject(&:empty?).join(', ')
+      job_payload["job[extra][languages]"] = languages
 
       # Map the job location, drop empties and comma-join:
       addr_nodes = job.xpath("city | state | country | postalcode")
       job_location = addr_nodes.map(&:text).reject(&:empty?).join(', ')
       job_payload["job[job_location]"] = job_location if job_location.present?
+
       post_payload(job_payload) unless job_payload["job[discipline]"].blank?
     end
+
+    render json: {success: true}
   end
 
 private
@@ -67,14 +77,15 @@ private
   end
 
   def self.attribute_mapping
-    {
+     {
       title: 'job_title',
       referencenumber: 'job_reference',
       url: 'application_url',
       description: 'job_description',
       salary: 'salary_free',
       jobtype: 'job_type',
-      category: 'discipline'
+      category: 'discipline',
+      function: 'job_functions'
     }
   end
 end
