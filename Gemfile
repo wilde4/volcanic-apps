@@ -24,6 +24,7 @@ gem 'nokogiri'
 gem 'stringex'
 
 gem 'newrelic_rpm', "~> 3.7.2.195"
+gem 'honeybadger'
 
 group :development do
   gem 'sqlite3'
