@@ -94,12 +94,5 @@ class FeaturedJobsController < ApplicationController
       end
     end
   end
-
-private
-
-  def set_key
-    @key = Key.find_by(host: params[:referrer], app_name: 'featured_jobs')
-    render nothing: true, status: 401 and return if @key.blank?
-  end
-
+  
 end

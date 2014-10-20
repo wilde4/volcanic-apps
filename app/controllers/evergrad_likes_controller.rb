@@ -331,10 +331,4 @@ class EvergradLikesController < ApplicationController
     end
   end
 
-private
-
-  def set_key
-    @key = Key.find_by(host: params[:referrer], app_name: 'evergrad_likes')
-  end
-
 end

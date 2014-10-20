@@ -360,10 +360,6 @@ class ReferralController < ApplicationController
 
 private
 
-  def set_key
-    @key = Key.find_by(host: params[:referrer], app_name: 'referral')
-  end
-  
   def set_referral
     @referral = Referral.find(params[:id])
   end
