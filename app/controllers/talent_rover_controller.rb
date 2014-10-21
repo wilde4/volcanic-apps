@@ -80,9 +80,4 @@ private
       function: 'job_functions'
     }
   end
-
-  def set_key
-    @key = Key.find_by(host: params[:referrer], app_name: 'talent_rover')
-    render nothing: true, status: 401 and return if @key.blank?
-  end
 end

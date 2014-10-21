@@ -36,18 +36,16 @@ class TalentRoverApp
       end
 
       lang_nodes = job.xpath("languages")
-      languages = lang_nodes.map(&:text).reject(&:empty?).join(', ')
+      languages = lang_nodes.text.gsub(';', ',')
       job_payload["job[extra][languages]"] = languages
 
       # Map the job location, drop empties and comma-join:
-      addr_nodes = job.xpath("city | state | country | postalcode")
+      addr_nodes = job.xpath("city | country")
       job_location = addr_nodes.map(&:text).reject(&:empty?).join(', ')
       job_payload["job[job_location]"] = job_location if job_location.present?
 
       post_payload(job_payload) unless job_payload["job[discipline]"].blank?
     end
-
-    render json: {success: true}
   end
 
 private

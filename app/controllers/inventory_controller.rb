@@ -6,7 +6,7 @@ class InventoryController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
-  before_action :set_key, only: [:index, :new, :post_purchase]
+  before_action :set_key, only: [:index, :edit, :new, :post_purchase]
 
   # GET /inventories/index
   # Outputs all Inventory Items in the system
@@ -203,11 +203,6 @@ private
     # Make HTTParty go talk to the API:
     response = HTTParty.post(endpoint_str, { body: data })
     return response.body
-  end
-
-  def set_key
-    @key = Key.find_by(host: params[:referrer], app_name: 'inventory')
-    render nothing: true, status: 401 and return if @key.blank?
   end
 
   def inventory_params

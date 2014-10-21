@@ -31,7 +31,7 @@ class ApplicationController < ActionController::Base
   end
 
   def deactivate_app
-    key = Key.where(host: params[:data][:referrer], app_name: params[:controller]).first
+    key = Key.where(app_dataset_id: params[:data][:app_dataset_id], app_name: params[:controller]).first
     respond_to do |format|
       if key
         format.json { render json: { success: key.destroy }}
@@ -57,6 +57,21 @@ class ApplicationController < ActionController::Base
         format.json { render json: { success: false, error: settings.errors } }
       end
     end
+  end
+
+protected
+
+  def set_key
+    if params[:data].present?
+      app_dataset_id = params[:data][:dataset_id]
+    elsif params[:like].present?
+      app_dataset_id = params[:like][:dataset_id]
+    elsif params[:user].present?
+      app_dataset_id = params[:user][:dataset_id]
+    end
+    
+    @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])
+    render nothing: true, status: 401 and return if @key.blank?
   end
 
 end
