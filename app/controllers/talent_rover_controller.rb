@@ -24,7 +24,7 @@ class TalentRoverController < ApplicationController
 
       ['discipline', 'job_functions'].each do |url_field|
         if job_payload["job[#{url_field}]"].present?
-          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"].to_url
+          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"]
         end
       end
 
