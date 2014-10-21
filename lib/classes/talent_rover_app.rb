@@ -37,7 +37,7 @@ class TalentRoverApp
 
       lang_nodes = job.xpath("languages")
       languages = lang_nodes.text.gsub(';', ',')
-      job_payload["job[extra][languages]"] = languages
+      job_payload["job[extra][skills]"] = languages
 
       # Map the job location, drop empties and comma-join:
       addr_nodes = job.xpath("city | country")
