@@ -46,6 +46,7 @@ GEM
     columnize (0.8.9)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
+    daemons (1.1.9)
     debugger-linecache (1.2.0)
     erubis (2.7.0)
     excon (0.33.0)
@@ -185,6 +186,7 @@ DEPENDENCIES
   byebug
   clockwork
   coffee-rails (~> 4.0.0)
+  daemons
   factory_girl_rails
   faker
   figaro

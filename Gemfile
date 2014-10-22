@@ -19,7 +19,10 @@ gem "httparty"
 
 gem 'gibberish' # For referral payment data
 gem 'figaro'
+
 gem 'clockwork'
+gem 'daemons'
+
 gem 'nokogiri'
 gem 'stringex'
 
