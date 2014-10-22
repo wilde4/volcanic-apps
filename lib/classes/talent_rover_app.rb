@@ -33,6 +33,15 @@ class TalentRoverApp
       languages = lang_nodes.text.gsub(';', ',')
       job_payload["job[extra][skills]"] = languages
 
+      # Expiry = date + 30 days
+      begin
+        date = Date.parse(job_payload["job[created_at]"])
+        job_payload["job[expiry_date]"] = date + 30.days
+      rescue Exception => e
+        puts "[WARN] #{e}"
+        job_payload["job[expiry_date]"] = Date.today + 30.days
+      end
+
       # Map the job location, drop empties and comma-join:
       addr_nodes = job.xpath("city | country")
       job_location = addr_nodes.map(&:text).reject(&:empty?).join(', ')
@@ -76,7 +85,8 @@ private
       salary: 'salary_free',
       jobtype: 'job_type',
       category: 'discipline',
-      function: 'job_functions'
+      function: 'job_functions',
+      date: 'created_at'
     }
   end
 end
