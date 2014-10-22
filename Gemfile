@@ -29,6 +29,9 @@ gem 'stringex'
 gem 'newrelic_rpm', "~> 3.7.2.195"
 gem 'honeybadger'
 
+gem 'unicorn'
+gem 'unicorn-worker-killer'
+
 group :development do
   gem 'sqlite3'
   gem 'byebug'
@@ -42,6 +45,6 @@ group :test do
 end
 
 group :production do
-  gem 'unicorn'
-  gem 'unicorn-worker-killer'
+  # gem 'unicorn'
+  # gem 'unicorn-worker-killer'
 end

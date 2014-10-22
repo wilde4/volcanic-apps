@@ -24,13 +24,13 @@ class TalentRoverController < ApplicationController
 
       ['discipline', 'job_functions'].each do |url_field|
         if job_payload["job[#{url_field}]"].present?
-          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"].to_url
+          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"]
         end
       end
 
       lang_nodes = job.xpath("languages")
       languages = lang_nodes.map(&:text).reject(&:empty?).join(', ')
-      job_payload["job[extra][languages]"] = languages
+      job_payload["job[extra][skills]"] = languages
 
       # Map the job location, drop empties and comma-join:
       addr_nodes = job.xpath("city | state | country | postalcode")
