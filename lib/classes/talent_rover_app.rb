@@ -59,12 +59,12 @@ private
       response = net.start do |http|
         http.request(request)
       end
-    rescue
-      puts "[FAIL] http.request failed to post payload"
-    end
 
-    puts "#{response.code} - #{response.read_body}"
-    return response.code.to_i == 200
+      puts "#{response.code} - #{response.read_body}"
+      return response.code.to_i == 200
+    rescue Exception => e
+      puts "[FAIL] http.request failed to post payload: #{e}"
+    end
   end
 
   def self.attribute_mapping
