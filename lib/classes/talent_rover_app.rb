@@ -29,12 +29,6 @@ class TalentRoverApp
         job_payload["job[#{v}]"] = child.text if child.text.present?
       end
 
-      ['discipline', 'job_functions'].each do |url_field|
-        if job_payload["job[#{url_field}]"].present?
-          job_payload["job[#{url_field}]"] = job_payload["job[#{url_field}]"]
-        end
-      end
-
       lang_nodes = job.xpath("languages")
       languages = lang_nodes.text.gsub(';', ',')
       job_payload["job[extra][skills]"] = languages
@@ -55,23 +49,22 @@ private
   end
 
   def self.post_payload(payload)
-    # net = Net::HTTP.new(@key.host, 80)
-    net = Net::HTTP.new(@key.host, 3000)
+    port = Rails.env.development? ? 3000 : 80
+    net = Net::HTTP.new(@key.host, port)
     request = Net::HTTP::Post.new("/api/v1/jobs.json")
     request.set_form_data( payload )
     net.read_timeout = net.open_timeout = 10
 
-    response = net.start do |http|
-      http.request(request)
+    begin
+      response = net.start do |http|
+        http.request(request)
+      end
+    rescue
+      puts "[FAIL] http.request failed to post payload"
     end
 
     puts "#{response.code} - #{response.read_body}"
-
-    if response.code.to_i != 200
-      return false
-    else
-      return true
-    end
+    return response.code.to_i == 200
   end
 
   def self.attribute_mapping
