@@ -99,6 +99,12 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'macildowie_daxtra#deactivate_app', as: :macildowie_daxtra_deactivate_app
   end
 
+  scope :indeed do
+    post "activate_app"     => 'indeed#activate_app'
+    post "deactivate_app"   => 'indeed#deactivate_app'
+    get "index"             => 'indeed#index'
+  end
+
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
