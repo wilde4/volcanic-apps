@@ -58,8 +58,7 @@ private
   end
 
   def self.post_payload(payload)
-    port = Rails.env.development? ? 3000 : 80
-    net = Net::HTTP.new(@key.host, port)
+    net = Net::HTTP.new(@key.host, 80)
     request = Net::HTTP::Post.new("/api/v1/jobs.json")
     request.set_form_data( payload )
     net.read_timeout = net.open_timeout = 10
