@@ -122,16 +122,20 @@ class InventoryController < ApplicationController
       buy_credit(params)
 
     when "Job", "Premium Job"
-      # charge a credit
-      response = create_and_charge_credit(params, 1)
-      if JSON.parse(response)["response"]["status"] == "success"
-        if inventory_item.object_type == "Premium Job"
-          params.require(:data).merge!({ hot: true })
-        end
-        # set the job as paid for:
-        response = set_job_paid(params)
+      # charge a credit, or set if purc_via_credit
+      if params[:data][:purchased_id].present?
+        response = create_and_charge_credit(params, 1)
+        credit_charged = JSON.parse(response)["response"]["status"] == "success"
+      else
+        credit_charged = true
       end
 
+      if inventory_item.object_type == "Premium Job"
+        params.require(:data).merge!({ hot: true })
+      end
+      # set the job as paid for:
+      response = set_job_paid(params)
+      
     when "Job of the Week"
       response = set_job_paid(params)
       if JSON.parse(response)["response"]["status"] == "success"
@@ -196,7 +200,7 @@ private
   # Sends a post request to the API, on the path in resource_action
   # Data K/V is akin to "credit: credit_data_hash"
   def post_to_api(resource_action, attribute_key, attributes)
-    endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
+    endpoint_str = "http://#{@key.host}:3002/api/v1/#{resource_action}.json"
     data = {
       attribute_key => attributes # builds params[:<object_type>][:<data>]
     }
