@@ -200,7 +200,7 @@ private
   # Sends a post request to the API, on the path in resource_action
   # Data K/V is akin to "credit: credit_data_hash"
   def post_to_api(resource_action, attribute_key, attributes)
-    endpoint_str = "http://#{@key.host}:3002/api/v1/#{resource_action}.json"
+    endpoint_str = "http://#{@key.host}/api/v1/#{resource_action}.json"
     data = {
       attribute_key => attributes # builds params[:<object_type>][:<data>]
     }
