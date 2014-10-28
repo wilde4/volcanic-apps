@@ -105,6 +105,12 @@ Apps::Application.routes.draw do
     get "index"             => 'indeed#index'
   end
 
+  scope :zapier do
+    get "index"             => 'zapier#index'
+    post "activate_app"     => 'zapier#activate_app'
+    post "deactivate_app"   => 'zapier#deactivate_app'
+  end
+
   
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

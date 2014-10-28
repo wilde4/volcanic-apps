@@ -1,0 +1,27 @@
+.col-sm-10.col-sm-offset-1
+  .panel.panel-default
+    .panel-heading
+      %h4.panel-title What is Zapier?
+    .panel-body
+      %p Zapier enables you to automate tasks between Volcanic and other online apps (like Salesforce, Basecamp, and Gmail).
+      %p With Zapier there is no more waiting for app developers to build integrations.
+      %i Just you and your favorite web apps getting stuff done.
+
+  .panel.panel-default
+    .panel-heading
+      %h4.panel-title Your Zapier Settings
+    .panel-body
+      .col-xs-6
+        %p
+          %strong Host Domain: 
+        = @key.host
+      .col-xs-6
+        %p
+          %strong API Key:
+        = @key.api_key
+
+  %a{href: 'https://zapier.com/developer/invite/13539/803e56aed3025e791dcaa2c5ca79c457'}
+    .well{style: 'text-align: center;'}
+      Go to Zapier
+   
+    
