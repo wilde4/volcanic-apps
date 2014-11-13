@@ -26,7 +26,8 @@ class TalentRoverApp
       # Map the general attributes onto the payload
       attribute_mapping.each do |k,v|
         child = job.xpath("#{k}")
-        job_payload["job[#{v}]"] = child.text if child.text.present?
+        puts child.text.strip if child.text.present? and v == 'discipline'
+        job_payload["job[#{v}]"] = child.text.strip if child.text.present?
       end
 
       lang_nodes = job.xpath("languages")
@@ -36,10 +37,10 @@ class TalentRoverApp
       # Expiry = date + 30 days
       begin
         date = Date.parse(job_payload["job[created_at]"])
-        job_payload["job[expiry_date]"] = date + 30.days
+        job_payload["job[expiry_date]"] = date + 365.days
       rescue Exception => e
         puts "[WARN] #{e}"
-        job_payload["job[expiry_date]"] = Date.today + 30.days
+        job_payload["job[expiry_date]"] = Date.today + 365.days
       end
 
       # Map the job location, drop empties and comma-join:
