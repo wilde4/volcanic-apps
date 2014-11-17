@@ -24,7 +24,7 @@ class Inventory < ActiveRecord::Base
   end
 
   def self.object_actions
-    ['Activate Job Listing for 7 days', 'Activate Job Listing for 30 days', 'Schedule as Job of the Week', 'Mark Job Listing as paid', 'Purchase credits', 'Provide Candidate search for x days', 'Provide CV Downloads for x days', 'Deduct a credit']
+    ['Activate Job Listing for 7 days', 'Activate Job Listing for 30 days', 'Activate Featured Job Listing for 7 days', 'Activate Featured Job Listing for 30 days', 'Schedule as Job of the Week', 'Mark Job Listing as paid', 'Purchase credits', 'Provide Candidate search for x days', 'Provide CV Downloads for x days', 'Deduct a credit']
   end
 
   def self.object_types(dataset_id = nil)

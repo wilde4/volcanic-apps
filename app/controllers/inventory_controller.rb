@@ -124,50 +124,73 @@ class InventoryController < ApplicationController
   #   * inventory_id - ID of the inventory object item purchased
   #   * purchased_id - The specific record ID that was purchased (Job(10), User(1442) etc.)
   #   * data - An array of data that will help the action comm. with the API
+  # json: {"data"=>{"dataset_id"=>55, "inventory_id"=>"8", "user_id"=>42176, "job_id"=>35927}
   def post_purchase
     inventory_item = Inventory.find(params[:data][:inventory_id])
 
     # Work out the field to be edited, will be a record in future
-    case inventory_item.object_type
-    when "Credit"
-      buy_credit(params)
+    case inventory_item.object_action
+    when 'Activate Job Listing for 7 days', 'Activate Job Listing for 30 days', 'Activate Featured Job Listing for 7 days', 'Activate Featured Job Listing for 30 days'
+      days = 7 if inventory_item.object_action == 'Activate Job Listing for 7 days' or inventory_item.object_action == 'Activate Featured Job Listing for 7 days'
+      days = 30 if inventory_item.object_action == 'Activate Job Listing for 30 days' or inventory_item.object_action == 'Activate Featured Job Listing for 30 days'
+      hot = true if inventory_item.object_action == 'Activate Featured Job Listing for 7 days' or inventory_item.object_action == 'Activate Featured Job Listing for 30 days'
+      hot = false if inventory_item.object_action == 'Activate Job Listing for 7 days' or inventory_item.object_action == 'Activate Job Listing for 30 days'
 
-    when "Job", "Premium Job"
-      # charge a credit, or set if purc_via_credit
       if params[:data][:purchased_id].present?
+        # HAVE JUST PAID THROUGH STRIPE
         response = create_and_charge_credit(params, 1)
-        credit_charged = JSON.parse(response)["response"]["status"] == "success"
       else
-        credit_charged = true
+        # NEED TO DEDUCT A RELEVANT CREDIT
+        response = charge_credit(params, 1, inventory_item.credit_type)
       end
+      credit_charged = JSON.parse(response)["response"]["status"] == "success"
+      response = credit_charged ? set_job_paid(params, days, hot) : { success: false }
 
-      if inventory_item.object_type == "Premium Job"
-        params.require(:data).merge!({ hot: true })
-      end
-      # set the job as paid for:
-      response = set_job_paid(params)
+    when 'Schedule as Job of the Week'
+    when 'Mark Job Listing as paid'
+    when 'Purchase credits'
+    when 'Provide Candidate search for x days'
+    when 'Provide CV Downloads for x days'
+    when 'Deduct a credit'
+    # when "Credit"
+    #   buy_credit(params)
+
+    # when "Job", "Premium Job"
+    #   # charge a credit, or set if purc_via_credit
+    #   if params[:data][:purchased_id].present?
+    #     response = create_and_charge_credit(params, 1)
+    #     credit_charged = JSON.parse(response)["response"]["status"] == "success"
+    #   else
+    #     credit_charged = true
+    #   end
+
+    #   if inventory_item.object_type == "Premium Job"
+    #     params.require(:data).merge!({ hot: true })
+    #   end
+    #   # set the job as paid for:
+    #   response = set_job_paid(params)
       
-    when "Job of the Week"
-      response = set_job_paid(params)
-      if JSON.parse(response)["response"]["status"] == "success"
-        days_active = params[:data][:period].to_i
-        job = FeaturedJob.find_by(job_id: params[:data][:job_id])
+    # when "Job of the Week"
+    #   response = set_job_paid(params)
+    #   if JSON.parse(response)["response"]["status"] == "success"
+    #     days_active = params[:data][:period].to_i
+    #     job = FeaturedJob.find_by(job_id: params[:data][:job_id])
 
-        job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
-        job.feature_end = job.feature_start + days_active.days
-        if job.save
-          response = { success: true, message: "Successfully saved Job." }
-        else
-          response = { success: false, errors: job.errors }
-        end
-      end
+    #     job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
+    #     job.feature_end = job.feature_start + days_active.days
+    #     if job.save
+    #       response = { success: true, message: "Successfully saved Job." }
+    #     else
+    #       response = { success: false, errors: job.errors }
+    #     end
+    #   end
 
-    when "EG_Job_individual_employer", "EG_Job_employer"
-      # UPDATE JOB paid: true
-      job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
-      job_likes.update(paid: true) if job_likes
+    # when "EG_Job_individual_employer", "EG_Job_employer"
+    #   # UPDATE JOB paid: true
+    #   job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
+    #   job_likes.update(paid: true) if job_likes
 
-      response = { state: 'success' }
+    #   response = { state: 'success' }
     end
 
     respond_to do |format|
@@ -194,16 +217,28 @@ private
     post_to_api(resource_action, attribute_key, attributes)
   end
 
+  def charge_credit(params, credit_value, credit_type)
+    resource_action = "credits"
+    attribute_key = :credit
+    attributes = {
+      user_token: params[:data][:user_token],
+      value: credit_value,
+      api_key: @key.api_key,
+      credit_type: credit_type
+    }
+    post_to_api(resource_action, attribute_key, attributes)
+  end
+
   # Performs logic to get a Job set as 'paid' via the API
-  def set_job_paid(params)
+  def set_job_paid(params, days, hot)
     resource_action = "jobs/#{params[:data][:job_id]}/set_paid"
     attribute_key = :job
     attributes = {
       user_token: params[:data][:user_token],
       paid: true,
-      expiry_date: 30.days.from_now,
+      expiry_date: days.to_i.days.from_now,
       api_key: @key.api_key,
-      hot: params[:data][:hot]
+      hot: hot
     }
     post_to_api(resource_action, attribute_key, attributes)
   end
