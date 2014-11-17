@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141009131200) do
+ActiveRecord::Schema.define(version: 20141117130511) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -44,11 +44,12 @@ ActiveRecord::Schema.define(version: 20141009131200) do
     t.string   "name"
     t.datetime "start_date"
     t.datetime "end_date"
-    t.decimal  "price",       precision: 8, scale: 2
+    t.decimal  "price",         precision: 8, scale: 2
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "object_type"
+    t.string   "object_action"
     t.integer  "dataset_id"
+    t.string   "credit_type"
   end
 
   create_table "keys", force: true do |t|

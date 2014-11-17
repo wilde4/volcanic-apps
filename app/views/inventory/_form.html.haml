@@ -11,8 +11,12 @@
       = f.text_field :name
 
     .field
-      = f.label :object_type
-      = f.select :object_type, options_for_select(@inv_objs.collect{|io| [io[:type]]}, @inventory.object_type), {include_blank: false}
+      = f.label :credit_type
+      = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type)
+
+    .field
+      = f.label :object_action
+      = f.select :object_action, options_for_select(@inv_objs, @inventory.object_action), {include_blank: false}
 
     .field
       = f.label :start_date

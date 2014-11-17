@@ -3,10 +3,10 @@ class Inventory < ActiveRecord::Base
   validates :name, presence: true
   validates :price, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
-  validates :object_type, presence: true
+  validates :object_action, presence: true
 
   scope :by_dataset, -> id { where(dataset_id: id) }
-  scope :by_object, -> type { where(object_type: type) }
+  scope :by_object, -> type { where(object_action: type) }
 
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
@@ -21,6 +21,10 @@ class Inventory < ActiveRecord::Base
     active_start = start_date.nil? || start_date <= Date.today
     active_end = end_date.nil? || end_date >= Date.today
     active_start && active_end
+  end
+
+  def self.object_actions
+    ['Activate Job Listing for 7 days', 'Activate Job Listing for 30 days', 'Schedule as Job of the Week', 'Mark Job Listing as paid', 'Purchase credits', 'Provide Candidate search for x days', 'Provide CV Downloads for x days', 'Deduct a credit']
   end
 
   def self.object_types(dataset_id = nil)

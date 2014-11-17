@@ -23,12 +23,21 @@ class InventoryController < ApplicationController
   def new
     @inventory = Inventory.new
     @inventory.dataset_id = @key.app_dataset_id
-    @inv_objs = Inventory.object_types(@inventory.dataset_id)
+    # @inv_objs = Inventory.object_types(@inventory.dataset_id)
+    @inv_objs = Inventory.object_actions
   end
 
   def edit
     @inventory = Inventory.find(params[:data][:inv_id])
-    @inv_objs = Inventory.object_types(@inventory.dataset_id)
+    # @inv_objs = Inventory.object_types(@inventory.dataset_id)
+    @inv_objs = Inventory.object_actions
+    credit_types_url = "http://#{@key.host}/api/v1/site.json"
+    logger.info "--- credit_types_url = #{credit_types_url}"
+    cr_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
+    # logger.info "--- cr_response = #{cr_response.body.inspect}"
+    response_json = JSON.parse(cr_response.body)
+    @credit_types = response_json["credit_types"]
+    logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
    def update
@@ -78,17 +87,19 @@ class InventoryController < ApplicationController
     end
   end
 
-  # GET /inventory/available
+  # GET /inventories/available
   # Get all available inventory for an Object Type:
   # Params:
   #   * type - Type of object to lookup (Job, Match, etc)
   def get_available
-    if inv_obj
-      @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
-    end
-
+    # if inv_obj
+    #   @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
+    # end
+    logger.info "--- params = #{params.inspect}"
+    @inventory_items = Inventory.where(dataset_id: params[:data][:dataset]).select{|iv| iv.within_date}
+    logger.info "--- @inventory_items = #{@inventory_items.inspect}"
     respond_to do |format|
-      format.json { render json: { success: true, items: @inventory || [] } }
+      format.json { render json: { success: true, items: @inventory_items || [] } }
     end
   end
 
@@ -211,7 +222,7 @@ private
 
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
-      :object_type, :dataset_id)
+      :object_action, :dataset_id, :credit_type)
   end
 
   def set_inventory_item
