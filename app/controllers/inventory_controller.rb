@@ -112,7 +112,7 @@ class InventoryController < ApplicationController
                           .select{|iv| iv.within_date}
                           .sort_by{|i| i.price }
                           .first
-
+    logger.info "--- @inventory = #{@inventory.inspect}"
     respond_to do |format|
       format.json { render json: { success: true, item: @inventory || [] } }
     end
@@ -136,17 +136,30 @@ class InventoryController < ApplicationController
       hot = true if inventory_item.object_action == 'Activate Featured Job Listing for 7 days' or inventory_item.object_action == 'Activate Featured Job Listing for 30 days'
       hot = false if inventory_item.object_action == 'Activate Job Listing for 7 days' or inventory_item.object_action == 'Activate Job Listing for 30 days'
 
-      if params[:data][:purchased_id].present?
+      if params[:data][:payment_id].present?
         # HAVE JUST PAID THROUGH STRIPE
-        response = create_and_charge_credit(params, 1)
+        response = create_and_charge_credit(params, 1, inventory_item.credit_type)
       else
         # NEED TO DEDUCT A RELEVANT CREDIT
-        response = charge_credit(params, 1, inventory_item.credit_type)
+        response = charge_credit(params, -1, inventory_item.credit_type)
       end
       credit_charged = JSON.parse(response)["response"]["status"] == "success"
-      response = credit_charged ? set_job_paid(params, days, hot) : { success: false }
+      response = credit_charged ? set_job_paid(params, days, hot) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
 
     when 'Schedule as Job of the Week'
+      # response = set_job_paid(params)
+      # if JSON.parse(response)["response"]["status"] == "success"
+      #   days_active = params[:data][:period].to_i
+      #   job = FeaturedJob.find_by(job_id: params[:data][:job_id])
+
+      #   job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
+      #   job.feature_end = job.feature_start + days_active.days
+      #   if job.save
+      #     response = { success: true, message: "Successfully saved Job." }
+      #   else
+      #     response = { success: false, errors: job.errors }
+      #   end
+      # end
     when 'Mark Job Listing as paid'
     when 'Purchase credits'
     when 'Provide Candidate search for x days'
@@ -201,18 +214,19 @@ class InventoryController < ApplicationController
 private
 
   # Create a credit, then immediately use it:
-  def create_and_charge_credit(params, value)
-    change_credit(params, -value) if change_credit(params, value)
+  def create_and_charge_credit(params, value, credit_type)
+    change_credit(params, -value, credit_type) if change_credit(params, value, credit_type)
   end
 
-  def change_credit(params, credit_value)
+  def change_credit(params, credit_value, credit_type)
     resource_action = "credits"
     attribute_key = :credit
     attributes = {
       user_token: params[:data][:user_token],
       payment_id: params[:data][:payment_id],
       value: credit_value,
-      api_key: @key.api_key
+      api_key: @key.api_key,
+      credit_type: credit_type
     }
     post_to_api(resource_action, attribute_key, attributes)
   end
