@@ -68,6 +68,8 @@ protected
       app_dataset_id = params[:like][:dataset_id]
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
+    elsif params[:dataset_id].present?
+      app_dataset_id = params[:dataset_id]
     end
 
     @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])

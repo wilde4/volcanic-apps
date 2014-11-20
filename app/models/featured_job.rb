@@ -11,6 +11,6 @@ class FeaturedJob < ActiveRecord::Base
                            .sort_by{|j| j.feature_end || Date.new(0000) }
                            .last.feature_end
 
-    last_expiry_date.blank? ? Date.today : last_expiry_date + 1.day
+    (last_expiry_date.blank? or last_expiry_date < Date.today) ? Date.today : last_expiry_date + 1.day
   end
 end

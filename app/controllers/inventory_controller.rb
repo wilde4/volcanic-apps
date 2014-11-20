@@ -147,19 +147,19 @@ class InventoryController < ApplicationController
       response = credit_charged ? set_job_paid(params, days, hot) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
 
     when 'Schedule as Job of the Week'
-      # response = set_job_paid(params)
-      # if JSON.parse(response)["response"]["status"] == "success"
-      #   days_active = params[:data][:period].to_i
-      #   job = FeaturedJob.find_by(job_id: params[:data][:job_id])
+      response = set_job_paid(params, 30, false)
+      if JSON.parse(response)["response"]["status"] == "success"
+        days_active = params[:data][:period].to_i
+        job = FeaturedJob.find_by(job_id: params[:data][:job_id])
 
-      #   job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
-      #   job.feature_end = job.feature_start + days_active.days
-      #   if job.save
-      #     response = { success: true, message: "Successfully saved Job." }
-      #   else
-      #     response = { success: false, errors: job.errors }
-      #   end
-      # end
+        job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
+        job.feature_end = job.feature_start + days_active.days
+        if job.save
+          response = { success: true, message: "Successfully saved Job." }
+        else
+          response = { success: false, errors: job.errors }
+        end
+      end
     when 'Mark Job Listing as paid'
     when 'Purchase credits'
     when 'Provide Candidate search for x days'
