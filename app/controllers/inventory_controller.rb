@@ -25,6 +25,13 @@ class InventoryController < ApplicationController
     @inventory.dataset_id = @key.app_dataset_id
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
+
+    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
+    # logger.info "--- cr_response = #{cr_response.body.inspect}"
+    response_json = JSON.parse(site_response.body)
+    logger.info "--- response_json = #{response_json.inspect}"
+    @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    @user_types = response_json["user_types"].present? ? response_json["user_types"] : []
   end
 
   def edit
@@ -174,6 +181,7 @@ class InventoryController < ApplicationController
     when 'Provide Candidate search for x days'
     when 'Provide CV Downloads for x days'
     when 'Deduct a credit'
+      response = charge_credit(params, -1, inventory_item.credit_type)
     # when "Credit"
     #   buy_credit(params)
 
