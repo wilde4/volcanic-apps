@@ -31,13 +31,14 @@ class InventoryController < ApplicationController
     @inventory = Inventory.find(params[:data][:inv_id])
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
-    credit_types_url = "http://#{@key.host}/api/v1/site.json"
-    logger.info "--- credit_types_url = #{credit_types_url}"
-    cr_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
+
+    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
     # logger.info "--- cr_response = #{cr_response.body.inspect}"
-    response_json = JSON.parse(cr_response.body)
-    @credit_types = response_json["credit_types"]
-    logger.info "--- @credit_types = #{@credit_types.inspect}"
+    response_json = JSON.parse(site_response.body)
+    logger.info "--- response_json = #{response_json.inspect}"
+    @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    @user_types = response_json["user_types"].present? ? response_json["user_types"] : []
+    # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
    def update
@@ -109,10 +110,10 @@ class InventoryController < ApplicationController
   #   * type - Type of object to lookup (Job, Match, etc)
   def cheapest_price
     @inventory = Inventory.by_object(params[:type])
-                          .select{|iv| iv.within_date}
-                          .sort_by{|i| i.price }
-                          .first
-    logger.info "--- @inventory = #{@inventory.inspect}"
+    @inventory = @inventory.where(user_type: params[:user_type]) if params[:user_type].present?
+    @inventory = @inventory.select{|iv| iv.within_date}.sort_by{|i| i.price }.first
+    
+    # logger.info "--- @inventory = #{@inventory.inspect}"
     respond_to do |format|
       format.json { render json: { success: true, item: @inventory || [] } }
     end
@@ -159,6 +160,14 @@ class InventoryController < ApplicationController
         else
           response = { success: false, errors: job.errors }
         end
+      end
+    when 'Mark Liked Job as Paid'
+      # UPDATE JOB paid: true
+      job_likes = LikesJob.find_by(job_id: params[:data][:job_id])
+      if job_likes.present? and job_likes.update(paid: true) 
+        response = { state: 'success' }
+      else
+        response = { state: "failed" }
       end
     when 'Mark Job Listing as paid'
     when 'Purchase credits'
@@ -271,7 +280,7 @@ private
 
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
-      :object_action, :dataset_id, :credit_type)
+      :object_action, :dataset_id, :credit_type, :user_type)
   end
 
   def set_inventory_item
