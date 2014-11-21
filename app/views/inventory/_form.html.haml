@@ -12,15 +12,15 @@
 
     .field
       = f.label :credit_type
-      = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type)
+      = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type), include_blank: true
 
     .field
       = f.label :user_type
-      = f.select :user_type, options_for_select(@user_types, @inventory.user_type)
+      = f.select :user_type, options_for_select(@user_types, @inventory.user_type), include_blank: true
 
     .field
       = f.label :object_action
-      = f.select :object_action, options_for_select(@inv_objs, @inventory.object_action), {include_blank: false}
+      = f.select :object_action, options_for_select(@inv_objs, @inventory.object_action), include_blank: false
 
     .field
       = f.label :start_date

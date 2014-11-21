@@ -26,7 +26,7 @@ class InventoryController < ApplicationController
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
 
-    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
+    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}", {})
     # logger.info "--- cr_response = #{cr_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
@@ -39,7 +39,7 @@ class InventoryController < ApplicationController
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
 
-    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json", {})
+    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}", {})
     # logger.info "--- cr_response = #{cr_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
@@ -104,7 +104,9 @@ class InventoryController < ApplicationController
     #   @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
     # end
     # logger.info "--- params = #{params.inspect}"
-    @inventory_items = Inventory.where(dataset_id: params[:data][:dataset]).select{|iv| iv.within_date}
+    @inventory_items = Inventory.where(dataset_id: params[:data][:dataset])
+    @inventory_items = @inventory_items.where.not(credit_type: nil).where.not(credit_type: '').where(start_date: nil, end_date: nil) if params[:data][:only_creditable].present? and params[:data][:only_creditable]
+    @inventory_items = @inventory_items.select{|iv| iv.within_date}
     # logger.info "--- @inventory_items = #{@inventory_items.inspect}"
     respond_to do |format|
       format.json { render json: { success: true, items: @inventory_items.as_json(only: [:id, :name]) || [] } }
