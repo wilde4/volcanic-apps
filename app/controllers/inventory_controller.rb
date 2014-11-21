@@ -103,11 +103,11 @@ class InventoryController < ApplicationController
     # if inv_obj
     #   @inventory = Inventory.by_object(inv_obj[:id]).select{|iv| iv.within_date}
     # end
-    logger.info "--- params = #{params.inspect}"
+    # logger.info "--- params = #{params.inspect}"
     @inventory_items = Inventory.where(dataset_id: params[:data][:dataset]).select{|iv| iv.within_date}
-    logger.info "--- @inventory_items = #{@inventory_items.inspect}"
+    # logger.info "--- @inventory_items = #{@inventory_items.inspect}"
     respond_to do |format|
-      format.json { render json: { success: true, items: @inventory_items || [] } }
+      format.json { render json: { success: true, items: @inventory_items.as_json(only: [:id, :name]) || [] } }
     end
   end
 
