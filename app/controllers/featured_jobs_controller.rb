@@ -7,6 +7,15 @@ class FeaturedJobsController < ApplicationController
 
   before_filter :set_key, only: [:save_job, :set_featured]
 
+  def index
+    @jobs_of_the_moment = FeaturedJob.where.not(feature_start: nil).order('feature_end DESC')
+
+    respond_to do |format|
+      format.html
+      format.json { render json: {success: true, items: @jobs_of_the_moment } }
+    end
+  end
+
   def save_job
     @job = FeaturedJob.find_by(job_id: params[:job][:id])
     if @job.present?
@@ -20,7 +29,10 @@ class FeaturedJobsController < ApplicationController
           job_location: params[:job][:job_location],
           salary_free: params[:job][:salary_free],
           cached_slug: params[:job][:cached_slug],
-          company_logo: params[:user_profile][:avatar_medium_uncropped_path]
+          company_logo: params[:user_profile][:avatar_medium_uncropped_path],
+          user: params[:user],
+          user_profile: params[:user_profile],
+          registration_answers: params[:registration_answer_hash]
         }
       )
         render json: { success: true, job_id: @job.id }
@@ -41,7 +53,10 @@ class FeaturedJobsController < ApplicationController
         job_location: params[:job][:job_location],
         salary_free: params[:job][:salary_free],
         cached_slug: params[:job][:cached_slug],
-        company_logo: params[:user_profile][:avatar_medium_uncropped_path]
+        company_logo: params[:user_profile][:avatar_medium_uncropped_path],
+        user: params[:user],
+        user_profile: params[:user_profile],
+        registration_answers: params[:registration_answer_hash]
       }
 
       if @job.save

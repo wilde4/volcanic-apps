@@ -1,0 +1,20 @@
+.table-responsive
+  %table.table
+    %thead
+      %tr
+        %th Job
+        %th Owner
+        %th Start Date
+        %th End Date
+    %tbody
+      - @jobs_of_the_moment.each do |job|
+        %tr
+          %td= link_to job.job_title, "/jobs/#{job.extra['cached_slug']}"
+          %td
+            - if job.extra['user_profile'].present?
+              = link_to "#{job.extra['user_profile']['first_name']} #{job.extra['user_profile']['last_name']}", "/admin/users/#{job.user_id}"
+              (#{job.extra['user']['email']})
+            - else
+              Not Known
+          %td= job.feature_start if job.feature_start
+          %td= job.feature_end if job.feature_end

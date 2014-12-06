@@ -82,6 +82,7 @@ Apps::Application.routes.draw do
     post "save_job"         => 'featured_jobs#save_job'
     post "set_featured"     => 'featured_jobs#set_featured'
     get "featured"          => 'featured_jobs#featured'
+    get 'index'             => 'featured_jobs#index', as: :featured_jobs_index
   end
 
   scope :talent_rover do
