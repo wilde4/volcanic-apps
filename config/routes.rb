@@ -107,11 +107,19 @@ Apps::Application.routes.draw do
   end
 
   scope :zapier do
-    get "index"             => 'zapier#index'
+    get 'index'             => 'zapier#index'
     post "activate_app"     => 'zapier#activate_app'
     post "deactivate_app"   => 'zapier#deactivate_app'
   end
 
-  
+  scope :bullhorn do
+    get 'index'             => 'bullhorn#index'
+    post 'save_user'        => 'bullhorn#save_user'
+    post 'activate_app'     => 'bullhorn#activate_app'
+    post 'deactivate_app'   => 'bullhorn#deactivate_app'
+    post 'update_settings'  => 'bullhorn#update_settings'
+  end
+
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

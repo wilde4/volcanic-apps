@@ -32,6 +32,10 @@ gem 'honeybadger'
 gem 'unicorn'
 gem 'unicorn-worker-killer'
 
+# gem 'bullhorn-rest'
+gem 'bullhorn-rest', git: 'https://github.com/getoutreach/bullhorn-rest.git'
+gem 'hashie'
+
 group :development do
   gem 'sqlite3'
   gem 'byebug'
