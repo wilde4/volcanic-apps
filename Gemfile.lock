@@ -1,6 +1,5 @@
-GIT
-  remote: https://github.com/getoutreach/bullhorn-rest.git
-  revision: 6ae47f94e1e47be95e25f73bdf2664819580e206
+PATH
+  remote: ../gems/bullhorn-rest
   specs:
     bullhorn-rest (0.0.1)
       activesupport
