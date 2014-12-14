@@ -46,30 +46,32 @@ class BullhornController < ApplicationController
   def post_user_to_bullhorn(user, params)
     settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
     client = Bullhorn::Rest::Client.new(
-      username: settings['Username'],
-      password: settings['Password'],
-      client_id: settings['Client ID'],
-      client_secret: settings['Client Secret']
+      username: settings['username'],
+      password: settings['password'],
+      client_id: settings['client_id'],
+      client_secret: settings['client_secret']
     )
     existing_candidate = client.search_candidates(query: 'email:"#{user.email}"')
-    logger.info "--- client.candidates = #{existing_candidate.inspect}"
+    logger.info "--- existing_candidate = #{existing_candidate.inspect}"
     if existing_candidate.record_count.to_i > 0
       logger.info '--- CANDIDATE RECORD FOUND'
     else
       logger.info '--- CANDIDATE RECORD NOT FOUND'
       # CREATE CANDIDATE
       attributes = {
-        first_name: user.user_profile['first_name'],
-        last_name: user.user_profile['last_name'],
-        name: "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        user_type: 'New Lead'
+        'firstName' => user.user_profile['first_name'],
+        'lastName' => user.user_profile['last_name'],
+        'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
+        'status' => 'New Lead',
+        # 'email' => user.email,
+        'source' => 'Company Website'
       }
       # attributes = {}
-      # attributes['firstName'] = user.user_profile.first_name,
-      # attributes['lastName'] = user.user_profile.last_name,
-      # attributes['name'] = "#{user.user_profile.first_name} #{user.user_profile.last_name}",
-      # attributes['userType'] = 'New Lead'
-      logger.info '--- CREATING CANDIDATE...'
+      # attributes['firstName'] = user.user_profile['first_name']
+      # attributes['lastName']  = user.user_profile['last_name']
+      # attributes['name']      = "#{user.user_profile['first_name']} #{user.user_profile['last_name']}"
+      # attributes['userType']  = 'New Lead'
+      logger.info "--- CREATING CANDIDATE with attributes: #{attributes.inspect} ..."
       response = client.create_candidate(attributes)
       logger.info "--- response = #{response.inspect}"
     end
