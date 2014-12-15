@@ -44,6 +44,17 @@ class BullhornController < ApplicationController
   private
 
   def post_user_to_bullhorn(user, params)
+    attributes = {
+      'firstName' => user.user_profile['first_name'],
+      'lastName' => user.user_profile['last_name'],
+      'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
+      'status' => 'New Lead',
+      'email' => user.email,
+      'source' => 'Company Website'
+    }
+    # companyName, address, desiredLocations, educationDegree,
+    # employmentPreference(perm, contract), mobile, namePrefix,
+    # occupation(job title), phone(home), phone2(work), salary(desired)
     settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
     client = Bullhorn::Rest::Client.new(
       username: settings['username'],
@@ -51,29 +62,32 @@ class BullhornController < ApplicationController
       client_id: settings['client_id'],
       client_secret: settings['client_secret']
     )
-    existing_candidate = client.search_candidates(query: 'email:"#{user.email}"')
-    logger.info "--- existing_candidate = #{existing_candidate.inspect}"
-    if existing_candidate.record_count.to_i > 0
-      logger.info '--- CANDIDATE RECORD FOUND'
+    # GET BULLHORN ID
+    if user.bullhorn_uid.present?
+      bullhorn_id = user.bullhorn_uid
     else
-      logger.info '--- CANDIDATE RECORD NOT FOUND'
-      # CREATE CANDIDATE
-      attributes = {
-        'firstName' => user.user_profile['first_name'],
-        'lastName' => user.user_profile['last_name'],
-        'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        'status' => 'New Lead',
-        # 'email' => user.email,
-        'source' => 'Company Website'
-      }
-      # attributes = {}
-      # attributes['firstName'] = user.user_profile['first_name']
-      # attributes['lastName']  = user.user_profile['last_name']
-      # attributes['name']      = "#{user.user_profile['first_name']} #{user.user_profile['last_name']}"
-      # attributes['userType']  = 'New Lead'
-      logger.info "--- CREATING CANDIDATE with attributes: #{attributes.inspect} ..."
-      response = client.create_candidate(attributes)
+      email_query = "email:\"#{URI::encode(user.email)}\""
+      existing_candidate = client.search_candidates(query: email_query, sort: 'id')
+      logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
+      if existing_candidate.record_count.to_i > 0
+        logger.info '--- CANDIDATE RECORD FOUND'
+        last_candidate = existing_candidate.data.last
+        bullhorn_id = last_candidate.id
+        @user.update(bullhorn_uid: bullhorn_id)
+      else
+        logger.info '--- CANDIDATE RECORD NOT FOUND'
+        bullhorn_id = nil
+      end
+    end
+    # CREATE CANDIDATE
+    if bullhorn_id.present?
+      logger.info "--- UPDATING #{bullhorn_id}: #{attributes.inspect} ..."
+      response = client.update_candidate(bullhorn_id, attributes.to_json)
       logger.info "--- response = #{response.inspect}"
+    else
+      logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
+      response = client.create_candidate(attributes.to_json)
+      @user.update(bullhorn_uid: response['changedEntityId'])
     end
   end
 end
