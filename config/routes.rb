@@ -115,6 +115,7 @@ Apps::Application.routes.draw do
   scope :bullhorn do
     get 'index'             => 'bullhorn#index'
     post 'save_user'        => 'bullhorn#save_user'
+    post 'upload_cv'        => 'bullhorn#upload_cv'
     post 'activate_app'     => 'bullhorn#activate_app'
     post 'deactivate_app'   => 'bullhorn#deactivate_app'
     post 'update_settings'  => 'bullhorn#update_settings'
