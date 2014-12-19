@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/bobop/bullhorn-rest.git
-  revision: c2b1ff2a3abf89cae2b2ed365268ab07b51f2dff
+  revision: ef4cb34b33d6888562574a0dc46c02cfdb32603e
   branch: create_candidates
   specs:
     bullhorn-rest (0.0.1)
