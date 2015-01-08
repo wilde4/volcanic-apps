@@ -22,5 +22,6 @@ module Clockwork
 
   every(1.hour, 'poll_talentrover_feed.job') do
     TalentRoverApp.poll_jobs_feed
+    # EclipseApp.poll_jobs_feed
   end
 end

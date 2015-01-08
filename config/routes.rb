@@ -92,6 +92,12 @@ Apps::Application.routes.draw do
     post "parse_jobs"       => 'talent_rover#parse_jobs'
   end
 
+  scope :eclipse do
+    post 'update_settings'  => 'eclipse#update_settings'
+    post 'activate_app'     => 'eclipse#activate_app'
+    post 'deactivate_app'   => 'eclipse#deactivate_app'
+  end
+
   scope :macildowie_daxtra do
     get "email_data"     => 'macildowie_daxtra#email_data'
     post 'save_user' => 'macildowie_daxtra#save_user'
