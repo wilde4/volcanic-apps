@@ -119,6 +119,7 @@ class InventoryController < ApplicationController
   #   * type - Type of object to lookup (Job, Match, etc)
   def cheapest_price
     @inventory = Inventory.by_object(params[:type])
+    @inventory = @inventory.where(dataset_id: params[:dataset_id])
     @inventory = @inventory.where(user_type: params[:user_type]) if params[:user_type].present?
     @inventory = @inventory.select{|iv| iv.within_date}.sort_by{|i| i.price }.first
     
