@@ -295,6 +295,6 @@ private
   end
 
   def set_inventory_item
-    @inventory = Inventory.find(params[:id])
+    @inventory = Inventory.find(params[:data][:id])
   end
 end

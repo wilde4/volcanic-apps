@@ -37,7 +37,7 @@ Apps::Application.routes.draw do
   scope :inventories do
     post "create_item"      => 'inventory#create_item',    as: :create_item
     get "index"             => 'inventory#index',          as: :inventory_index
-    get "(/:id)/inventory"  => 'inventory#get_inventory',  as: :inventory_lookup
+    get "inventory_item"    => 'inventory#get_inventory',  as: :inventory_lookup
     get "/available"        => 'inventory#get_available',  as: :inventory_available
     get "new"               => 'inventory#new',            as: :inventory_new
     get "edit"              => 'inventory#edit',           as: :inventory_edit
