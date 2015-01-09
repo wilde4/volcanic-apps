@@ -2,6 +2,7 @@ require 'clockwork'
 require File.expand_path('config/boot', File.dirname(__FILE__))
 require File.expand_path('config/environment', File.dirname(__FILE__))
 
+# FOR RUNNING REGULAR TASKS
 module Clockwork
   handler do |job|
     puts "Running #{job}"
@@ -22,6 +23,9 @@ module Clockwork
 
   every(1.hour, 'poll_talentrover_feed.job') do
     TalentRoverApp.poll_jobs_feed
-    # EclipseApp.poll_jobs_feed
+  end
+
+  every(1.hour, 'poll_eclipse_feed.job', at: '**:30') do
+    EclipseApp.poll_jobs_feed
   end
 end
