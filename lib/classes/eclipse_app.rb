@@ -76,8 +76,8 @@ private
   end
 
   def self.post_payload(payload)
-    # net = Net::HTTP.new(@key.host, 80)
-    net = Net::HTTP.new(@key.host, 3000)
+    net = Net::HTTP.new(@key.host, 80)
+    # net = Net::HTTP.new(@key.host, 3000)
     request = Net::HTTP::Post.new("/api/v1/jobs.json")
     request.set_form_data( payload )
     net.read_timeout = net.open_timeout = 10
