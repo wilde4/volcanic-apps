@@ -19,7 +19,7 @@ class EclipseApp
     @job_data = get_xml
     jobs = @job_data.xpath("//item")
     
-    jobs[0..5].each do |job|
+    jobs.each do |job|
       @job_payload = Hash.new
       @job_payload["job[api_key]"] = @key.api_key
 
