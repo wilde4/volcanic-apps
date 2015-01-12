@@ -158,9 +158,9 @@ class InventoryController < ApplicationController
       response = credit_charged ? set_job_paid(params, days, hot) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
 
     when 'Schedule as Job of the Week'
-      response = set_job_paid(params, 30, false)
+      response = set_job_paid(params, 30, true)
       if JSON.parse(response)["response"]["status"] == "success"
-        days_active = params[:data][:period].to_i
+        days_active = params[:data][:period].present? ? params[:data][:period].to_i : 7
         job = FeaturedJob.find_by(job_id: params[:data][:job_id])
 
         job.feature_start = FeaturedJob.next_available_date(@key.app_dataset_id)
