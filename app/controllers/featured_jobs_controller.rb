@@ -67,6 +67,15 @@ class FeaturedJobsController < ApplicationController
     end
   end
 
+  def destroy_job
+    @job = FeaturedJob.find_by(job_id: params[:job][:id])
+    if @job.destroy
+      render json: { success: true, status: 'Job Deleted successfully.' }
+    else
+      render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
+    end
+  end
+
   def featured
     @featured = FeaturedJob.where("? BETWEEN feature_start AND feature_end", DateTime.now).first
     if @featured && params[:length].present?

@@ -80,6 +80,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'featured_jobs#activate_app'
     post "deactivate_app"   => 'featured_jobs#deactivate_app'
     post "save_job"         => 'featured_jobs#save_job'
+    post "destroy_job"      => 'featured_jobs#destroy_job'
     post "set_featured"     => 'featured_jobs#set_featured'
     get "featured"          => 'featured_jobs#featured'
     get 'index'             => 'featured_jobs#index', as: :featured_jobs_index

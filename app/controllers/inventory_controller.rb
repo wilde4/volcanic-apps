@@ -158,8 +158,17 @@ class InventoryController < ApplicationController
       response = credit_charged ? set_job_paid(params, days, hot) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
 
     when 'Schedule as Job of the Week'
-      response = set_job_paid(params, 30, true)
-      if JSON.parse(response)["response"]["status"] == "success"
+      # response = set_job_paid(params, 30, true)
+      if params[:data][:payment_id].present?
+        # HAVE JUST PAID THROUGH STRIPE
+        response = create_and_charge_credit(params, 1, inventory_item.credit_type)
+      else
+        # NEED TO DEDUCT A RELEVANT CREDIT
+        response = charge_credit(params, -1, inventory_item.credit_type)
+      end
+      credit_charged = JSON.parse(response)["response"]["status"] == "success"
+      response = credit_charged ? set_job_paid(params, 30, true) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
+      if credit_charged
         days_active = params[:data][:period].present? ? params[:data][:period].to_i : 7
         job = FeaturedJob.find_by(job_id: params[:data][:job_id])
 
