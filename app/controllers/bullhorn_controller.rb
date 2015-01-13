@@ -17,9 +17,10 @@ class BullhornController < ApplicationController
         email: params[:user][:email],
         user_data: params[:user],
         user_profile: params[:user_profile],
+        linkedin_profile: params[:linkedin_profile],
         registration_answers: params[:registration_answer_hash]
       )
-        logger.info "--- @user.registration_answers = #{@user.registration_answers.inspect}"
+        logger.info "--- params = #{params.inspect}"
         post_user_to_bullhorn(@user, params)
         render json: { success: true, user_id: @user.id }
       else
@@ -31,6 +32,7 @@ class BullhornController < ApplicationController
       @user.email = params[:user][:email]
       @user.user_data = params[:user]
       @user.user_profile = params[:user_profile]
+      @user.linkedin_profile = params[:linkedin_profile]
       @user.registration_answers = params[:registration_answer_hash]
 
       if @user.save
@@ -91,26 +93,21 @@ class BullhornController < ApplicationController
       file_response = client.put_candidate_file(@user.bullhorn_uid, file_attributes.to_json)
       logger.info "--- file_response = #{file_response.inspect}"
 
+      # PARSE FILE
+      candidate_data = parse_cv(client, params, content_type, cv, ct)
+
+      # ADD TO CANDIDATE DESCRIPTION
+      if candidate_data.present? && candidate_data['description'].present?
+        attributes = {}
+        attributes['description'] = candidate_data['description']
+        response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+      end
+
       if file_response['fileId'].present?
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
-
-      # ADD TO CANDIDATE DESCRIPTION
-      require 'tempfile'
-      file = Tempfile.new(params[:user_profile][:upload_name])
-      file.binmode
-      file.write(cv)
-      file.rewind
-      parse_attributes = {
-        'file' => file,
-        'ct' => ct
-      }
-      candidate_response = client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
-      # MULTIPART FORM ISSUES HERE
-      logger.info "--- candidate_response = #{candidate_response.inspect}"
-      render json: { success: true, user_id: @user.id }
     end
   end
 
@@ -132,6 +129,11 @@ class BullhornController < ApplicationController
       'email' => user.email,
       'source' => 'Company Website'
     }
+
+    if user.linkedin_profile.present?
+      attributes['description'] = linkedin_description(user)
+    end
+
     attributes['companyName'] = user.registration_answers[settings['companyName']] if user.registration_answers[settings['companyName']].present?
     attributes['desiredLocations'] = user.registration_answers[settings['desiredLocations']] if user.registration_answers[settings['desiredLocations']].present?
     attributes['educationDegree'] = user.registration_answers[settings['educationDegree']] if user.registration_answers[settings['educationDegree']].present?
@@ -175,6 +177,79 @@ class BullhornController < ApplicationController
       response = client.create_candidate(attributes.to_json)
       @user.update(bullhorn_uid: response['changedEntityId'])
     end
+  end
+
+  def parse_cv(client, params, content_type, cv, ct)
+    # TRY UP TO 10 TIMES AS PER SUPPORT:
+    # http://supportforums.bullhorn.com/viewtopic.php?t=15011
+    10.times do
+      require 'tempfile'
+      file = Tempfile.new(params[:user_profile][:upload_name])
+      file.binmode
+      file.write(cv)
+      file.rewind
+      parse_attributes = {
+        'file' => file.path,
+        'ct' => ct
+      }
+      candidate_response = client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
+      logger.info "--- candidate_response = #{candidate_response.inspect}"
+      if candidate_response['candidate'].present?
+        # STOP LOOP AND RETURN
+        return candidate_response['candidate']
+      end
+    end
+  end
+
+  def linkedin_description(user)
+    string = '<h1>Curriculum Vitae</h1>' +
+      "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
+    
+    if user.linkedin_profile['education_history'].size > 0
+      string = string + '<h3>EDUCATION</h3>'
+      user.linkedin_profile['education_history'].each do |education|
+        string = string + '<p>'
+        string = string + education['school_name'] + '<br />' unless education['school_name'].blank?
+
+        field_of_study = education['field_of_study'].present? ? 'Field of Study: ' + education['field_of_study'] + '<br />' : "Field of Study: N/A<br />"
+        start_date = education['start_date'].present? ? 'Start Date: ' + education['start_date'] + '<br />' : "Start Date: N/A<br />"
+        end_date = education['end_date'].present? ? 'End Date: ' + education['end_date'] + '<br />' : "End Date: N/A<br />"
+        degree = education['degree'].present? ? 'Degree: ' + education['degree'] + '<br />' : "Degree: N/A<br />"
+        activities = education['activities'].present? ? 'Activities: ' + education['activities'] + '<br />' : "Activities: N/A<br />"
+        notes = education['notes'].present? ? 'Notes: ' + education['notes'] + '<br />' : "Notes: N/A<br />"
+
+        string = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
+      end
+    end
+
+    if user.linkedin_profile['positions'].size > 0
+      string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+      user.linkedin_profile['positions'].each do |position|
+        string = string + '<p>'
+
+        company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />" 
+        title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
+        start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
+        end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
+        summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
+        company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
+
+        string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+      end
+    end
+
+    if user.linkedin_profile['skills'].size > 0
+      string = string + '<h3>SKILLS</h3>'
+      user.linkedin_profile['skills'].each do |skill|
+        string = string + '<p>'
+        skill_name = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />" 
+        proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
+        years = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
+
+        string = string + skill_name + proficiency + years + '</p>'
+      end
+    end
+    return string
   end
 
   def get_country_id(country_name)
