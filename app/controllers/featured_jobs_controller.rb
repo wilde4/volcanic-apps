@@ -68,7 +68,8 @@ class FeaturedJobsController < ApplicationController
   end
 
   def featured
-    @featured = FeaturedJob.where("? BETWEEN feature_start AND feature_end", DateTime.now).first
+    @featured = FeaturedJob.where(dataset_id: params[:dataset_id])
+    @featured = @featured.where("? BETWEEN feature_start AND feature_end", DateTime.now).first
     if @featured && params[:length].present?
       len = params[:length].to_i
       @featured.extra['job_description'] = @featured.extra['job_description'].truncate(len)
