@@ -97,19 +97,20 @@ class BullhornController < ApplicationController
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
 
-      # # ADD TO CANDIDATE DESCRIPTION
-      # require 'tempfile'
-      # file = Tempfile.new(params[:user_profile][:upload_name])
-      # file.binmode
-      # file.write(cv)
-      # file.rewind
-      # parse_attributes = {
-      #   'file' => file
-      # }
-      # candidate_response = client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
-      # # MULTIPART FORM ISSUES HERE
-      # logger.info "--- candidate_response = #{candidate_response.inspect}"
-      # render json: { success: true, user_id: @user.id }
+      # ADD TO CANDIDATE DESCRIPTION
+      require 'tempfile'
+      file = Tempfile.new(params[:user_profile][:upload_name])
+      file.binmode
+      file.write(cv)
+      file.rewind
+      parse_attributes = {
+        'file' => file,
+        'ct' => ct
+      }
+      candidate_response = client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
+      # MULTIPART FORM ISSUES HERE
+      logger.info "--- candidate_response = #{candidate_response.inspect}"
+      render json: { success: true, user_id: @user.id }
     end
   end
 
