@@ -1,0 +1,41 @@
+- @jobs.data.each do |j|
+  %p
+    %b= j.title
+    %br
+    Owner:
+    = j.owner
+    %br
+    Reference:
+    = j.externalID
+    %br
+    Location:
+    / = j.address.address1
+    / = j.address.address2
+    / = j.address.city
+    / = j.address.countryID
+    / = j.address.state
+    / = j.address.zip
+    - j.address.each do |a|
+      / = a
+    = j.address.map{ |a| a[0] == 'countryID' ? BullhornJobImport.get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
+    %br
+    Created:
+    = Time.at(j.dateAdded / 1000).to_datetime.to_s(:long)
+    %br
+    Job Type:
+    = j.employmentType
+    %br
+    Disciplines:
+    - j.businessSectors.data.each do |d|
+      = d
+    %br
+    Salary Free:
+    = j.benefits
+    %br
+    Salary:
+    = j.salary
+    %br
+    Start Date:
+    = Time.at(j.startDate / 1000).to_datetime.to_s(:short)
+    %br
+    = j.description.html_safe

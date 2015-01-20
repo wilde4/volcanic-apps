@@ -5,9 +5,25 @@ class BullhornController < ApplicationController
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
+  before_action :set_key, only: [:index]
 
   def index
     # SOMETHING
+    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
+    logger.info "--- settings = #{settings.inspect}"
+    client = Bullhorn::Rest::Client.new(
+      username: settings['username'],
+      password: settings['password'],
+      client_id: settings['client_id'],
+      client_secret: settings['client_secret']
+    )
+    @jobs = client.query_job_orders(where: "id IS NOT NULL")
+    @jobs.data.each do |job|
+      logger.info "--- JOB DETAILS:"
+      logger.info "--- job.title = #{job.title}"
+      logger.info "--- job.keys = #{job.keys}"
+    end
+    logger.info "--- jobs = #{@jobs.data.size}"
   end
 
   def save_user
@@ -109,6 +125,18 @@ class BullhornController < ApplicationController
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
     end
+  end
+
+  def jobs
+    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
+    client = Bullhorn::Rest::Client.new(
+      username: settings['username'],
+      password: settings['password'],
+      client_id: settings['client_id'],
+      client_secret: settings['client_secret']
+    )
+    jobs = client.job_orders
+    logger.info "--- jobs = #{jobs.inspect}"
   end
 
   private
