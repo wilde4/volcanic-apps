@@ -21,11 +21,14 @@ module Clockwork
     SendReferralEmail.send_funds_email(18)
   end
 
+  # JOB IMPORTS
   every(1.hour, 'poll_talentrover_feed.job') do
     TalentRoverApp.poll_jobs_feed
   end
-
   every(1.hour, 'poll_eclipse_feed.job', at: '**:30') do
     EclipseApp.poll_jobs_feed
+  end
+  every(1.hour, 'poll_bullhorn.job', at: '**:45') do
+    BullhornJobImport.import_jobs
   end
 end
