@@ -52,8 +52,8 @@ class BullhornJobImport
 
       @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
 
-      @job_payload['job[job_reference]'] = job.externalID
-      # address = ["#{job.address.address1[1]}", "#{job.address.address2[1]}", "#{job.address.city[1]}", "#{job.address.state[1]}", "#{job.address.zip[1]}", "#{get_country(job.address.countryID[1])}"].reject!{ |a| a.blank? }.join(', ')
+      # @job_payload['job[job_reference]'] = job.externalID
+      @job_payload['job[job_reference]'] = job.id
       address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
       @job_payload['job[job_location]'] = address
       @job_payload['job[job_type]'] = job.employmentType
