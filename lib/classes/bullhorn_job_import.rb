@@ -1,4 +1,5 @@
 # BullhornJobImport.import_jobs
+# BullhornJobImport.delete_jobs
 class BullhornJobImport
   def self.import_jobs
     puts '- BEGIN import_jobs'
@@ -19,7 +20,29 @@ class BullhornJobImport
       parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
     end
 
-    puts '- END poll_jobs_feed'
+    puts '- END import_jobs'
+  end
+
+  def self.delete_jobs
+    puts '- BEGIN delete_jobs'
+
+    # Find who has registered to use TR:
+    registered_hosts = Key.where(app_name: 'bullhorn')
+
+    registered_hosts.each do |reg_host|
+      puts "Polling for: #{reg_host.host}"
+      @key = reg_host
+      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
+      client = Bullhorn::Rest::Client.new(
+        username: settings['username'],
+        password: settings['password'],
+        client_id: settings['client_id'],
+        client_secret: settings['client_secret']
+      )
+      parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+    end
+
+    puts '- END delete_jobs'
   end
 
   def self.parse_jobs(client)
@@ -27,59 +50,79 @@ class BullhornJobImport
     # jobs = @job_data.xpath("//item")
     
     @job_data.each do |job|
-      @job_payload = Hash.new
-      @job_payload["job[api_key]"] = @key.api_key
+      unless job.isDeleted
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
 
-      puts "--- job.title = #{job.title}"
-      @job_payload['job[job_title]'] = job.title
-      # CORPORATE USER?
-      puts "--- job.owner = #{job.owner}"
-      c_user = client.corporate_user(job.owner.id)
-      # app_email = job.xpath('author').text.strip.split.first.strip
-      @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
-      @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
+        puts "--- job.title = #{job.title}"
+        @job_payload['job[job_title]'] = job.title
+        # CORPORATE USER?
+        puts "--- job.owner = #{job.owner}"
+        c_user = client.corporate_user(job.owner.id)
+        # app_email = job.xpath('author').text.strip.split.first.strip
+        @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
+        @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
 
-      puts "--- job.businessSectors = #{job.businessSectors}"
-      disciplines = []
-      job.businessSectors.data.each do |bs|
-        puts "--- bs[:id] = #{bs[:id]}"
-        b_sector = client.business_sector(bs[:id])
-        puts "--- b_sector = #{b_sector.inspect}"
-        disciplines << b_sector.data.name.strip
-      end
-      discipline_list = disciplines.join(', ')
-      @job_payload['job[discipline]'] = discipline_list
-
-      @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
-
-      # @job_payload['job[job_reference]'] = job.externalID
-      @job_payload['job[job_reference]'] = job.id
-      address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
-      @job_payload['job[job_location]'] = address
-      @job_payload['job[job_type]'] = job.employmentType
-      @job_payload['job[salary_free]'] = job.benefits
-      salary_val = job.salary > 0 ? job.salary : nil
-      @job_payload['job[salary_low]'] = @job_payload['job[salary_high]'] = salary_val
-      @job_payload['job[job_description]'] = job.description
-
-      puts "--- job.isOpen = #{job.isOpen}"
-      if job.isOpen
-        puts '--- JOB IS OPEN'
-        # Expiry = date + 365 days
-        begin
-          date = Date.parse(@job_payload['job[created_at]'])
-          @job_payload['job[expiry_date]'] = (date + 365.days).to_s
-        rescue Exception => e
-          puts "[WARN] #{e}"
-          @job_payload['job[expiry_date]'] = (Date.today + 365.days).to_s
+        puts "--- job.businessSectors = #{job.businessSectors}"
+        disciplines = []
+        job.businessSectors.data.each do |bs|
+          puts "--- bs[:id] = #{bs[:id]}"
+          b_sector = client.business_sector(bs[:id])
+          puts "--- b_sector = #{b_sector.inspect}"
+          disciplines << b_sector.data.name.strip
         end
-      else
-        puts '--- JOB IS CLOSED'
-        @job_payload['job[expiry_date]'] = Date.today.to_s
-      end
+        discipline_list = disciplines.join(', ')
+        @job_payload['job[discipline]'] = discipline_list.strip
 
-      puts "--- @job_payload = #{@job_payload.inspect}"
-      post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
+        @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
+
+        # @job_payload['job[job_reference]'] = job.externalID
+        @job_payload['job[job_reference]'] = job.id
+        address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
+        @job_payload['job[job_location]'] = address
+        @job_payload['job[job_type]'] = job.employmentType
+        @job_payload['job[salary_free]'] = job.benefits
+        salary_val = job.salary > 0 ? job.salary : nil
+        @job_payload['job[salary_low]'] = @job_payload['job[salary_high]'] = salary_val
+        @job_payload['job[job_description]'] = job.description
+
+        puts "--- job.isOpen = #{job.isOpen}"
+        if job.isOpen
+          puts '--- JOB IS OPEN'
+          # Expiry = date + 365 days
+          begin
+            date = Date.parse(@job_payload['job[created_at]'])
+            @job_payload['job[expiry_date]'] = (date + 365.days).to_s
+          rescue Exception => e
+            puts "[WARN] #{e}"
+            @job_payload['job[expiry_date]'] = (Date.today + 365.days).to_s
+          end
+        else
+          puts '--- JOB IS CLOSED'
+          @job_payload['job[expiry_date]'] = Date.today.to_s
+        end
+
+        puts "--- @job_payload = #{@job_payload.inspect}"
+        post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
+      else
+        puts "--- #{job.title} has been Deleted"
+      end
+    end
+  end
+
+  def self.parse_jobs_for_delete(client)
+    @job_data = query_job_orders(client)
+    # jobs = @job_data.xpath("//item")
+    
+    @job_data.each do |job|
+      if job.isDeleted
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
+        @job_payload['job[job_reference]'] = job.id
+
+        puts "--- @job_payload = #{@job_payload.inspect}"
+        post_payload_for_delete(@job_payload)
+      end
     end
   end
 
@@ -96,7 +139,7 @@ class BullhornJobImport
     #   client_id: settings['client_id'],
     #   client_secret: settings['client_secret']
     # )
-    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen')
+    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted')
     jobs.data
   end
 
@@ -113,6 +156,18 @@ class BullhornJobImport
       # end
 
       response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
+
+      puts "#{response.code} - #{response.read_body}"
+      return response.code.to_i == 200
+    rescue Exception => e
+      puts "[FAIL] http.request failed to post payload: #{e}"
+    end
+  end
+
+  def self.post_payload_for_delete(payload)
+
+    begin
+      response = HTTParty.post("http://#{@key.host}/api/v1/jobs/delete.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200

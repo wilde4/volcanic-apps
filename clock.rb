@@ -30,5 +30,6 @@ module Clockwork
   end
   every(1.hour, 'poll_bullhorn.job', at: '**:45') do
     BullhornJobImport.import_jobs
+    BullhornJobImport.delete_jobs
   end
 end
