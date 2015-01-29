@@ -99,7 +99,7 @@ class BullhornJobImport
           end
         else
           puts '--- JOB IS CLOSED'
-          @job_payload['job[expiry_date]'] = Date.today.to_s
+          @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
         end
 
         puts "--- @job_payload = #{@job_payload.inspect}"
