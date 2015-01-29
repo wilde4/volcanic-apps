@@ -78,8 +78,10 @@ class BullhornJobImport
 
         # @job_payload['job[job_reference]'] = job.externalID
         @job_payload['job[job_reference]'] = job.id
-        address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
-        @job_payload['job[job_location]'] = address
+        # address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
+        city = job.address.city
+        country = get_country(job.address.countryID.to_s)
+        @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
         @job_payload['job[job_type]'] = job.employmentType
         @job_payload['job[salary_free]'] = job.benefits
         salary_val = job.salary > 0 ? job.salary : nil
