@@ -64,13 +64,14 @@ protected
   def set_key
     if params[:data].present?
       app_dataset_id = params[:data][:dataset_id]
+    elsif params[:dataset_id].present?
+      app_dataset_id = params[:dataset_id]
     elsif params[:like].present?
       app_dataset_id = params[:like][:dataset_id]
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
-    elsif params[:dataset_id].present?
-      app_dataset_id = params[:dataset_id]
     end
+    logger.info "--- params[:dataset_id] = #{params[:dataset_id]}"
 
     @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])
     render nothing: true, status: 401 and return if @key.blank?

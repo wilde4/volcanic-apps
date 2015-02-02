@@ -5,7 +5,7 @@ class BullhornController < ApplicationController
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index]
+  before_action :set_key, only: [:index, :job_application]
 
   def index
     # SOMETHING
@@ -124,6 +124,39 @@ class BullhornController < ApplicationController
       else
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
+    end
+  end
+
+  def job_application
+    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
+    client = Bullhorn::Rest::Client.new(
+      username: settings['username'],
+      password: settings['password'],
+      client_id: settings['client_id'],
+      client_secret: settings['client_secret']
+    )
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+    job_reference = params[:job][:job_reference]
+    candidate = {
+      'id' => @user.bullhorn_uid
+    }
+    job_order = {
+      'id' => job_reference
+    }
+
+    attributes = {
+      'candidate' => candidate,
+      'isDeleted' => 'false',
+      'jobOrder' => job_order,
+      'status' => 'New Lead'
+    }
+
+    response = client.create_job_submission(attributes.to_json)
+    logger.info "--- response = #{response.inspect}"
+    if response.changedEntityId.present?
+      render json: { success: true, job_submission_id: response.changedEntityId }
+    else
+      render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
     end
   end
 

@@ -124,6 +124,7 @@ Apps::Application.routes.draw do
     get 'jobs'              => 'bullhorn#jobs'
     post 'save_user'        => 'bullhorn#save_user'
     post 'upload_cv'        => 'bullhorn#upload_cv'
+    post 'job_application'  => 'bullhorn#job_application'
     post 'activate_app'     => 'bullhorn#activate_app'
     post 'deactivate_app'   => 'bullhorn#deactivate_app'
     post 'update_settings'  => 'bullhorn#update_settings'
