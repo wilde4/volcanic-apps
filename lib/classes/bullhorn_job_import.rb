@@ -63,12 +63,12 @@ class BullhornJobImport
         @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
         @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
 
-        puts "--- job.businessSectors = #{job.businessSectors}"
+        # puts "--- job.businessSectors = #{job.businessSectors}"
         disciplines = []
         job.businessSectors.data.each do |bs|
-          puts "--- bs[:id] = #{bs[:id]}"
+          # puts "--- bs[:id] = #{bs[:id]}"
           b_sector = client.business_sector(bs[:id])
-          puts "--- b_sector = #{b_sector.inspect}"
+          # puts "--- b_sector = #{b_sector.inspect}"
           disciplines << b_sector.data.name.strip
         end
         discipline_list = disciplines.join(', ')
@@ -83,9 +83,23 @@ class BullhornJobImport
         country = get_country(job.address.countryID.to_s)
         @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
         @job_payload['job[job_type]'] = job.employmentType
-        @job_payload['job[salary_free]'] = job.benefits
+
+        # NEED TO USE job.customFloat1 FOR MAX SALARY
+        # NEED TO USE job.customText3 FOR SALARY FREE
+        puts "--- job.customText3 = #{job.customText3}"
+        puts "--- job.customFloat1 = #{job.customFloat1}"
+        @job_payload['job[salary_free]'] = job.customText3
         salary_val = job.salary > 0 ? job.salary : nil
-        @job_payload['job[salary_low]'] = @job_payload['job[salary_high]'] = salary_val
+        @job_payload['job[salary_low]'] = salary_val
+        if job.customFloat1.present? && job.customFloat1 != '0.0'
+          @job_payload['job[salary_high]'] = job.customFloat1
+        else
+          @job_payload['job[salary_high]'] = salary_val
+        end
+        salary_per = 'hour' if job.salaryUnit == 'Per Hour'
+        salary_per = 'day' if job.salaryUnit == 'Per Day'
+        @job_payload['job[salary_per]'] = salary_per
+
         @job_payload['job[job_description]'] = job.description
 
         puts "--- job.isOpen = #{job.isOpen}"
@@ -141,7 +155,7 @@ class BullhornJobImport
     #   client_id: settings['client_id'],
     #   client_secret: settings['client_secret']
     # )
-    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted')
+    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit')
     jobs.data
   end
 
