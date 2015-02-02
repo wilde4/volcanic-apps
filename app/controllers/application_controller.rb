@@ -71,7 +71,6 @@ protected
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
     end
-    logger.info "--- params[:dataset_id] = #{params[:dataset_id]}"
 
     @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])
     render nothing: true, status: 401 and return if @key.blank?
