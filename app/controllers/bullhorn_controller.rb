@@ -38,6 +38,7 @@ class BullhornController < ApplicationController
       )
         logger.info "--- params = #{params.inspect}"
         post_user_to_bullhorn(@user, params)
+        upload_cv_to_bullhorn(@user, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -53,6 +54,7 @@ class BullhornController < ApplicationController
 
       if @user.save
         post_user_to_bullhorn(@user, params)
+        upload_cv_to_bullhorn(@user, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -238,6 +240,72 @@ class BullhornController < ApplicationController
       response = client.create_candidate(attributes.to_json)
       @user.update(bullhorn_uid: response['changedEntityId'])
     end
+  end
+
+  def upload_cv_to_bullhorn(user, params)
+    @user = user
+    logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
+    if params[:user_profile][:upload_path].present?
+      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+      cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+      logger.info "--- cv_url = #{cv_url}"
+      settings = AppSetting.find_by(dataset_id: params[:dataset_id]).settings
+      client = Bullhorn::Rest::Client.new(
+        username: settings['username'],
+        password: settings['password'],
+        client_id: settings['client_id'],
+        client_secret: settings['client_secret']
+      )
+
+      extract_file_attributes(cv_url, params)
+
+      file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
+      logger.info "--- file_response = #{file_response.inspect}"
+
+      # PARSE FILE
+      candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
+
+      # ADD TO CANDIDATE DESCRIPTION
+      if candidate_data.present? && candidate_data['description'].present?
+        attributes = {}
+        attributes['description'] = candidate_data['description']
+        response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+      end
+    end
+  end
+
+  def extract_file_attributes(cv_url, params)
+    require 'open-uri'
+    require 'base64'
+    @cv = open(cv_url).read
+    # UPOAD FILE
+    base64_cv = Base64.encode64(@cv)
+    @content_type = params[:user_profile][:upload_name].split('.').last
+    # text, html, pdf, doc, docx, rtf, or odt.
+    case @content_type
+    when 'doc'
+      @ct = 'application/msword'
+    when 'docx'
+      @ct = 'application/vnd.openxmlformatsofficedocument.wordprocessingml.document'
+    when 'txt'
+      @ct = 'text/plain'
+    when 'html'
+      @ct = 'text/html'
+    when 'pdf'
+      @ct = 'application/pdf'
+    when 'rtf'
+      @ct = 'application/rtf'
+    when 'odt'
+      @ct = 'application/vnd.oasis.opendocument.text'
+    end
+    @file_attributes = {
+      'externalID' => 'CV',
+      'fileType' => 'SAMPLE',
+      'name' => params[:user_profile][:upload_name],
+      'fileContent' => base64_cv,
+      'contentType' => @ct,
+      'type' => 'CV'
+    }
   end
 
   def parse_cv(client, params, content_type, cv, ct)
