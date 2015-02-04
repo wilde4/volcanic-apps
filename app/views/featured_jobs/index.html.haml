@@ -1,20 +1,82 @@
-.table-responsive
-  %table.table
-    %thead
-      %tr
-        %th Job
-        %th Owner
-        %th Start Date
-        %th End Date
-    %tbody
-      - @jobs_of_the_moment.each do |job|
-        %tr
-          %td= link_to job.job_title, "/jobs/#{job.extra['cached_slug']}"
-          %td
-            - if job.extra['user_profile'].present?
-              = link_to "#{job.extra['user_profile']['first_name']} #{job.extra['user_profile']['last_name']}", "/admin/users/#{job.user_id}"
-              (#{job.extra['user']['email']})
-            - else
-              Not Known
-          %td= job.feature_start if job.feature_start
-          %td= job.feature_end if job.feature_end
+.row#job-controls
+  .col-xs-3
+    %h4 Job Info
+    #job-title
+    #job-owner
+  .col-xs-8.col-xs-offset-1
+    .row
+      .date-input
+        %label Start Date
+        = date_field_tag "start_date"
+
+      .date-input
+        %label End Date
+        = date_field_tag "end_date"
+
+      = link_to "Save", "#", id: "btn-save", class: 'btn btn-default'
+
+    .row
+      = link_to "Extend for 1 week", "#", id: "btn-extend-week", class: 'btn btn-default'
+      = link_to "Extend for 1 month", "#", id: "btn-extend-month", class: 'btn btn-default'
+
+= render "previously_featured", jobs: @jobs_of_the_moment
+
+:css
+  .date-input { display: inline-block; }
+  .row { padding-bottom: 15px; }
+
+:javascript
+  $(document).on("ready page:load", function() {
+
+    $("input[type='radio']").on("click", function() {
+      var row = $(this).parents("tr");
+      var jTitleCell = $(row).find("td")[1];
+      var jOwnerCell = $(row).find("td")[2];
+      var jStartDate = $(row).find("td")[3];
+      var jEndDate = $(row).find("td")[4];
+
+      $("#job-title").text($(jTitleCell).find("a").text());
+      $("#job-owner").text($(jOwnerCell).find("a").text());
+      $("#start_date").val($(jStartDate).text());
+      $("#end_date").val($(jEndDate).text());
+    })
+
+    var newDate = function(endDate, extendPeriod) {
+      var date;
+      if(extendPeriod == "WEEK") {
+        date = moment(endDate).add(1, 'weeks');
+      } else if(extendPeriod == "MONTH") {
+        date = moment(endDate).add(1, 'months');
+      }
+      return date.format("YYYY-MM-DD");
+    };
+
+    $("#btn-extend-week").on("click", function(e) {
+      e.preventDefault();
+      var newEndDate = newDate($("#end_date").val(), "WEEK")
+      $("#end_date").val(newEndDate);
+    })
+
+    $("#btn-extend-month").on("click", function(e) {
+      e.preventDefault();
+      var newEndDate = newDate($("#end_date").val(), "MONTH")
+      $("#end_date").val(newEndDate);
+    })
+
+    $("#btn-save").on("click", function() {
+      var id = $("input:checked").parents("tr").attr("data-id");
+      $.ajax({
+        url: "http://#{app_server_host}/featured_jobs/update_featured",
+        data: {
+          "id" : id,
+          "start_date" : $("#start_date").val(),
+          "end_date" : $("#end_date").val()
+        },
+        type: "POST",
+        dataType: "json"
+      }).success(function(data) {
+        window.location.reload();
+      });
+
+    })
+  })

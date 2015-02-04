@@ -1,0 +1,22 @@
+.table-responsive
+  %table.table
+    %thead
+      %tr
+        %th
+        %th Job
+        %th Owner
+        %th Start Date
+        %th End Date
+    %tbody
+      - jobs.each do |job|
+        %tr{data: { id: job.id }}
+          %td= radio_button_tag "selected_job", ""
+          %td= link_to job.job_title, "/jobs/#{job.extra['cached_slug']}"
+          %td
+            - if job.extra['user_profile'].present?
+              = link_to "#{job.extra['user_profile']['first_name']} #{job.extra['user_profile']['last_name']}", "/admin/users/#{job.user_id}"
+              (#{job.extra['user']['email']})
+            - else
+              Not Known
+          %td= job.feature_start if job.feature_start
+          %td= job.feature_end if job.feature_end

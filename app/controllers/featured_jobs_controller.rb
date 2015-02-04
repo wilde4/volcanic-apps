@@ -119,5 +119,16 @@ class FeaturedJobsController < ApplicationController
       end
     end
   end
-  
+
+  def update_featured
+    @featured = FeaturedJob.find(params[:id])
+
+    @featured.feature_start = params[:start_date]
+    @featured.feature_end = params[:end_date]
+
+    respond_to do |format|
+      format.js { render json: { success: @featured.save } }
+    end
+  end
+
 end

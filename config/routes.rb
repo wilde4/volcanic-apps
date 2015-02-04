@@ -77,6 +77,7 @@ Apps::Application.routes.draw do
   end
 
   scope :featured_jobs do
+    post "update_featured"  => 'featured_jobs#update_featured'
     post "activate_app"     => 'featured_jobs#activate_app'
     post "deactivate_app"   => 'featured_jobs#deactivate_app'
     post "save_job"         => 'featured_jobs#save_job'

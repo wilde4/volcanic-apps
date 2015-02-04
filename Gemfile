@@ -40,7 +40,7 @@ gem 'hashie'
 
 group :development do
   gem 'sqlite3'
-  gem 'byebug'
+  gem 'pry-byebug'
   gem 'bootstrap-sass'
 end
 

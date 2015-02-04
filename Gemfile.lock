@@ -40,12 +40,14 @@ GEM
     bootstrap-sass (3.2.0.1)
       sass (~> 3.2)
     builder (3.1.4)
-    byebug (3.2.0)
+    byebug (3.5.1)
       columnize (~> 0.8)
       debugger-linecache (~> 1.2)
+      slop (~> 3.6)
     clockwork (0.7.7)
       activesupport
       tzinfo
+    coderay (1.1.0)
     coffee-rails (4.0.1)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0, < 5.0)
@@ -53,7 +55,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.7.0)
-    columnize (0.8.9)
+    columnize (0.9.0)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     daemons (1.1.9)
@@ -104,6 +106,7 @@ GEM
     mandrill-api (1.0.51)
       excon (>= 0.16.0, < 1.0)
       json (>= 1.7.7, < 2.0)
+    method_source (0.8.2)
     mime-types (1.25.1)
     minitest (4.7.5)
     multi_json (1.10.1)
@@ -120,6 +123,13 @@ GEM
       multi_xml (~> 0.5)
       rack (~> 1.2)
     polyglot (0.3.4)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    pry-byebug (3.0.0)
+      byebug (~> 3.4)
+      pry (~> 0.10)
     rack (1.5.2)
     rack-test (0.6.2)
       rack (>= 1.0)
@@ -146,6 +156,7 @@ GEM
       sprockets (~> 2.8, <= 2.11.0)
       sprockets-rails (~> 2.0)
     simple_oauth (0.2.0)
+    slop (3.6.0)
     sprockets (2.11.0)
       hike (~> 1.2)
       multi_json (~> 1.0)
@@ -195,7 +206,6 @@ PLATFORMS
 DEPENDENCIES
   bootstrap-sass
   bullhorn-rest!
-  byebug
   clockwork
   coffee-rails (~> 4.0.0)
   daemons
@@ -215,6 +225,7 @@ DEPENDENCIES
   mysql2
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
+  pry-byebug
   rails (= 4.0.1)
   sass-rails (~> 4.0.0)
   sqlite3
