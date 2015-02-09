@@ -67,9 +67,12 @@ private
       @job_payload['job[salary_free]'] = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_Salary').text.strip
       salary_val = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_Salary').text.strip.tr('£,', '')
       @job_payload['job[salary_low]'] = @job_payload['job[salary_high]'] = salary_val
-      @job_payload['job[job_description]'] = '<p>' +
-        page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_JobDescription').children.to_s +
-        '</p>'
+      extracted_desc = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_JobDescription').children.to_s
+      @job_payload['job[job_description]'] = '<p>' + extracted_desc + '</p>'
+      # EXTRACT CONSULTANT EMAIL ADDRESS
+      c_email = extracted_desc.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+/)
+      puts "--- c_email = #{c_email}"
+      @job_payload['job[contact_email]'] = c_email if c_email.present?
     rescue Exception => e
       puts "--- Failed to open page_url = #{e.inspect}"
       @job_payload = {}
