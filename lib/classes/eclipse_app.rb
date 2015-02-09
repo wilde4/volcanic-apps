@@ -1,4 +1,4 @@
-
+# EclipseApp.poll_jobs_feed
 class EclipseApp
   def self.poll_jobs_feed
     puts '- BEGIN poll_jobs_feed'
@@ -35,10 +35,12 @@ private
   def self.austin_andrews_payload(job)
     # GET WHAT WE CAN FROM XML
     # puts "--- job.xpath('author') = #{job.xpath("author").inspect}"
+    disciplines = []
     @job_payload['job[job_title]'] = job.xpath('title').text.strip
     app_email = job.xpath('author').text.strip.split.first.strip
     @job_payload['job[application_email]'] = app_email
-    @job_payload['job[discipline]'] = job.xpath('category').text.strip
+    # @job_payload['job[discipline]'] = job.xpath('category').text.strip
+    disciplines << job.xpath('category').text.strip
     @job_payload['job[created_at]'] = job.xpath('pubDate').text.strip
 
     # SCRAPE WEB PAGE
@@ -46,7 +48,20 @@ private
     puts "--- page_url = #{page_url}"
     begin
       page = Nokogiri::HTML(open(page_url))
-      @job_payload['job[job_reference]'] = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_RefNo').text.strip
+      ref = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_RefNo').text.strip
+      @job_payload['job[job_reference]'] = ref
+      # IDENTIFY SUPER DISCIPLINE
+      ref_acronym = ref.split('-').first
+      case ref_acronym
+      when 'SCD'
+        disciplines << 'Strategy & Corporate Development'
+      when 'PAC'
+        disciplines << 'People & Change'
+      when 'CGV'
+        disciplines << 'Corporate Governance'
+      when 'IPE'
+        disciplines << 'Investment Banking & Private Equity'
+      end
       @job_payload['job[job_location]'] = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_Location').text.strip
       @job_payload['job[job_type]'] = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_LengthofContract').text.strip
       @job_payload['job[salary_free]'] = page.css('#ctl00_ctl00_ctl00_ctl00_cphRoot_cphSite_cphLC_cphC_lblVacancy_Salary').text.strip
@@ -59,6 +74,8 @@ private
       puts "--- Failed to open page_url = #{e.inspect}"
       @job_payload = {}
     end
+
+    @job_payload['job[discipline]'] = disciplines.join(', ')
 
     # Expiry = date + 60 days
     begin
@@ -76,16 +93,17 @@ private
   end
 
   def self.post_payload(payload)
-    net = Net::HTTP.new(@key.host, 80)
-    # net = Net::HTTP.new(@key.host, 3000)
-    request = Net::HTTP::Post.new("/api/v1/jobs.json")
-    request.set_form_data( payload )
-    net.read_timeout = net.open_timeout = 10
+    # net = Net::HTTP.new(@key.host, 80)
+    # # net = Net::HTTP.new(@key.host, 3000)
+    # request = Net::HTTP::Post.new("/api/v1/jobs.json")
+    # request.set_form_data( payload )
+    # net.read_timeout = net.open_timeout = 10
 
     begin
-      response = net.start do |http|
-        http.request(request)
-      end
+      response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
+      # response = net.start do |http|
+      #   http.request(request)
+      # end
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
