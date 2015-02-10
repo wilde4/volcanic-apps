@@ -5,10 +5,10 @@ class FeaturedJobsController < ApplicationController
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
 
-  before_filter :set_key, only: [:save_job, :set_featured]
+  before_filter :set_key, only: [:index, :save_job, :set_featured]
 
   def index
-    @jobs_of_the_moment = FeaturedJob.where.not(feature_start: nil).order('feature_end DESC')
+    @jobs_of_the_moment = FeaturedJob.by_dataset(@key.app_dataset_id).where.not(feature_start: nil).order('feature_end DESC')
 
     respond_to do |format|
       format.html
