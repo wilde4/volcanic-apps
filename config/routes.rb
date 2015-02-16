@@ -114,6 +114,24 @@ Apps::Application.routes.draw do
     get "index"             => 'indeed#index'
   end
 
+  scope :broadbean do
+    post "activate_app"     => 'broadbean#activate_app'
+    post "deactivate_app"   => 'broadbean#deactivate_app'
+    get "index"             => 'broadbean#index'
+  end
+
+  scope :logic_melon do
+    post "activate_app"     => 'logic_melon#activate_app'
+    post "deactivate_app"   => 'logic_melon#deactivate_app'
+    get "index"             => 'logic_melon#index'
+  end
+
+  scope :idibu do
+    post "activate_app"     => 'idibu#activate_app'
+    post "deactivate_app"   => 'idibu#deactivate_app'
+    get "index"             => 'idibu#index'
+  end
+
   scope :zapier do
     get 'index'             => 'zapier#index'
     post "activate_app"     => 'zapier#activate_app'
