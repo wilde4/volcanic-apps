@@ -4,8 +4,13 @@ class TalentRoverController < ApplicationController
   respond_to :json
 
   # Controller requires cross-domain POST XHRs
-  after_filter :setup_access_control_origin
-  before_filter :set_key, only: [:parse_jobs]
+  # after_filter :setup_access_control_origin
+
+  before_filter :set_key, only: [:index]
+
+  def index
+    @host = @key.host
+  end
 
 #   def parse_jobs
 #     @job_data = get_xml

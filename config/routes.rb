@@ -132,6 +132,18 @@ Apps::Application.routes.draw do
     get "index"             => 'idibu#index'
   end
 
+  scope :talent_rover do
+    post "activate_app"     => 'talent_rover#activate_app'
+    post "deactivate_app"   => 'talent_rover#deactivate_app'
+    get "index"             => 'talent_rover#index'
+  end
+
+  scope :recruitive do
+    post "activate_app"     => 'recruitive#activate_app'
+    post "deactivate_app"   => 'recruitive#deactivate_app'
+    get "index"             => 'recruitive#index'
+  end
+
   scope :zapier do
     get 'index'             => 'zapier#index'
     post "activate_app"     => 'zapier#activate_app'
