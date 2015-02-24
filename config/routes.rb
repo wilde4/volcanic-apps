@@ -159,6 +159,7 @@ Apps::Application.routes.draw do
     post 'activate_app'     => 'bullhorn#activate_app'
     post 'deactivate_app'   => 'bullhorn#deactivate_app'
     post 'update_settings'  => 'bullhorn#update_settings'
+    post 'new_search'       => 'bullhorn#new_search'
   end
 
 
