@@ -195,7 +195,10 @@ class BullhornController < ApplicationController
     }
 
     # contruct comment based on received search params
-    comment = note_comment_factory(params[:search])
+    search = params[:search]
+    job_type = params[:job_type].present? ? params[:job_type] : "N/A"
+    disciplines = params[:disciplines].size > 0 ? params[:disciplines].map{|d| d[:name] if d[:name].present?}.join(", ") : "N/A"
+    comment = "Keyword: #{search[:query]}</br> Location: #{search[:location]}</br> Job type: #{job_type}</br> Discipline(s): #{disciplines}"
 
     # create note entity
     attributes = {
