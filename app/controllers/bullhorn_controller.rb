@@ -628,35 +628,6 @@ class BullhornController < ApplicationController
       end
     end
 
-
-    def note_comment_factory(search_params)
-      search = search_params
-
-
-      puts "search params #{search}"
-      # format disciplines
-      disciplines = search[:disciplines].join(", ") if search[:disciplines].present?
-
-      comment =  if search[:job_type].present? && search[:disciplines].present? && search[:location].present?
-        "Searched for job type #{search[:job_type]} matching #{search[:query]} within #{disciplines} near #{search[:location]}"
-      elsif search[:job_type].present? && search[:disciplines].present? && !search[:location].present?
-        "Searched for job type #{search[:job_type]} matching #{search[:query]} within #{disciplines}"
-      elsif search[:job_type].present? && !search[:disciplines].present? && !search[:location].present?
-        "Searched for job type #{search[:job_type]} matching #{search[:query]}"
-      elsif !search[:job_type].present? && search[:disciplines].present? && search[:location].present?
-        "Searched for #{search[:query]} within #{disciplines} near #{search[:location]}"
-      elsif !search[:job_type].present? && search[:disciplines].present? && !search[:location].present?
-        "Searched for #{search[:query]} within #{disciplines}"
-      elsif !search[:job_type].present? && !search[:disciplines].present? && search[:location].present?
-        "Searched for #{search[:query]} near #{search[:location]}"
-      else
-        "Searched for #{params[:search][:query]}"
-      end
-
-      return comment
-    end
-
-
     def create_note_entity(client, note_id, user)
       # create note entity attributes object
       attributes = {
@@ -675,7 +646,6 @@ class BullhornController < ApplicationController
         render json: { success: false, status: "Note Entity was not created in Bullhorn." }
       end
     end
-
 
 
 end
