@@ -51,7 +51,7 @@ Apps::Application.routes.draw do
   scope :evergrad_gaming do
     post "action_complete"        => 'evergrad_gaming#action_complete', as: :eg_action_complete
     get "available_achievements" => 'evergrad_gaming#available_achievements', as: :eg_available
-    get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement    
+    get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement
     get "tiered_achievement"     => 'evergrad_gaming#tiered_achievement', as: :eg_achievement_tiered
   end
 
@@ -167,7 +167,7 @@ Apps::Application.routes.draw do
     post 'deactivate_app'   => 'yu_talent#deactivate_app'
     post 'update_settings'  => 'yu_talent#update_settings'
     get  'index'            => 'yu_talent#index'
-    post 'post_user'        => 'yu_talent#post_user'
+    post 'save_user'        => 'yu_talent#save_user'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
