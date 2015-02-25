@@ -1,9 +1,13 @@
+require 'open-uri'
+require 'base64'
+
 class YuTalent::UserService < BaseService
 
   def initialize(user, params)
     raise StandardError, "No user found!" if user.nil?
     raise StandardError, "No params found!" if params.nil?
     @user = user
+    @params = params
     @client = YuTalent::ClientService.new(params)
   end
 
@@ -50,7 +54,7 @@ class YuTalent::UserService < BaseService
       attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
       attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
       attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
-      # attributes[:data][:cv] =
+      attributes[:data][:cv] = base64_cv(@user.user_profile[:upload_path]) if @user.user_profile[:upload_path].present?
       attributes[:data][:avatar] = @user.user_profile[:li_pictureUrl] if @user.user_profile[:li_pictureUrl].present?
       return attributes
     end
@@ -62,6 +66,15 @@ class YuTalent::UserService < BaseService
       else
         "#{@user.user_profile[:first_name]}" || "#{@user.user_profile[:last_name]}"
       end
+    end
+
+
+    def base64_cv(cv_upload_path)
+      key = Key.where(app_dataset_id: @params[:dataset_id]).first
+      cv_url = 'http://' + key.host + cv_upload_path
+      cv = open(cv_url).read
+      base64_cv = Base64.encode64(cv)
+      return base64_cv
     end
 
 
