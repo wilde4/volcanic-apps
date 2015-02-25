@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150113163221) do
+ActiveRecord::Schema.define(version: 20150225111927) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -161,6 +161,18 @@ ActiveRecord::Schema.define(version: 20150113163221) do
     t.string   "mobile_number"
     t.text     "message"
     t.string   "sender"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "yu_talent_users", force: true do |t|
+    t.integer  "user_id"
+    t.string   "email"
+    t.text     "user_data"
+    t.text     "user_profile"
+    t.text     "registration_answers"
+    t.text     "linkedin_profile"
+    t.integer  "yu_talent_uid"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
