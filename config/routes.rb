@@ -162,6 +162,13 @@ Apps::Application.routes.draw do
     post 'new_search'       => 'bullhorn#new_search'
   end
 
+  scope :yu_talent do
+    post 'activate_app'     => 'yu_talent#activate_app'
+    post 'deactivate_app'   => 'yu_talent#deactivate_app'
+    post 'update_settings'  => 'yu_talent#update_settings'
+    get  'index'            => 'yu_talent#index'
+    post 'post_user'        => 'yu_talent#post_user'
+  end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
