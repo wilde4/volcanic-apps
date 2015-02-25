@@ -7,18 +7,19 @@ class YuTalent::ClientService < BaseService
   end
 
 
-  def update_candidate(yu_talent_id, attributes.to_json)
+  def create_candidate(attributes.to_json)
+    # make api call to create new user record
   end
 
 
-  def create_candidate(attributes.to_json)
+  def update_candidate(yu_talent_id, attributes.to_json)
+    # make api call to update existing user data
   end
 
 
   def check_duplicates(user_email)
-    # api call to check if record exists
     email_query = "email:\"#{URI::encode(user_email)}\""
-    # check yu talent using email query
+    # make api call to check if record exists
   end
 
 
