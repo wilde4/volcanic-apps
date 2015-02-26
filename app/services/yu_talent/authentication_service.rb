@@ -29,7 +29,7 @@ class YuTalent::AuthenticationService < BaseService
         refresh = refresh_token
         token = refresh.parsed_response['access_token'] if refresh.code == 200
         access_token = OAuth2::AccessToken.from_hash(client, { access_token: token})
-      rescue =>4334eewe
+      rescue => e
         puts e.inspect
       end
     end
