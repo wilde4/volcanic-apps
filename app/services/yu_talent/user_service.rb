@@ -47,8 +47,8 @@ class YuTalent::UserService < BaseService
       # attributes[:data][:company_website] =
       attributes[:data][:email] = @user.email
       attributes[:data][:location] = @user.registration_answers[settings[:desiredLocations]] if @user.registration_answers[settings[:desiredLocations]].present?
-      attributes[:data][:history] = linkedin_description if @user.linkedin_profile.present?
-      attributes[:data][:education] = @user.registration_answers[settings[:educationDegree]] if @user.registration_answers[settings[:educationDegree]].present?
+      attributes[:data][:history] = linkedin_work_history if @user.linkedin_profile.present?
+      attributes[:data][:education] = linkedin_education_history if @user.linkedin_profile.present?
       attributes[:data][:facebook] = @user.user_profile[:facebook_url] if @user.user_profile[:facebook_url].present?
       attributes[:data][:linkedin] = @user.user_profile[:li_publicProfileUrl] if @user.user_profile[:li_publicProfileUrl].present?
       attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
@@ -98,10 +98,26 @@ class YuTalent::UserService < BaseService
     end
 
 
-    def linkedin_description
-      string = '<h1>Curriculum Vitae</h1>' +
-        "<h2>#{@user.user_profile['first_name']} #{@user.user_profile['last_name']}</h2>"
+    def linkedin_work_history
+      if @user.linkedin_profile['positions'].size > 0
+        string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+        @user.linkedin_profile['positions'].each do |position|
+          string = string + '<p>'
 
+          company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
+          title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
+          start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
+          end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
+          summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
+          company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
+
+          string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+        end
+      end
+    end
+
+
+    def linkedin_education_history
       if @user.linkedin_profile['education_history'].size > 0
         string = string + '<h3>EDUCATION</h3>'
         @user.linkedin_profile['education_history'].each do |education|
@@ -118,37 +134,7 @@ class YuTalent::UserService < BaseService
           string = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
         end
       end
-
-      if @user.linkedin_profile['positions'].size > 0
-        string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
-        @user.linkedin_profile['positions'].each do |position|
-          string = string + '<p>'
-
-          company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
-          title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
-          start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
-          end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
-          summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
-          company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
-
-          string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
-        end
-      end
-
-      if @user.linkedin_profile['skills'].size > 0
-        string = string + '<h3>SKILLS</h3>'
-        @user.linkedin_profile['skills'].each do |skill|
-          string = string + '<p>'
-          skill_name = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
-          proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
-          years = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
-
-          string = string + skill_name + proficiency + years + '</p>'
-        end
-      end
-      return string
     end
-
 
 
 end
