@@ -54,8 +54,8 @@ class YuTalent::UserService < BaseService
       attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
       attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
       attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
-      attributes[:data][:cv] = base64_cv(@user.user_profile[:upload_path]) if @user.user_profile[:upload_path].present?
-      attributes[:data][:avatar] = @user.user_profile[:li_pictureUrl] if @user.user_profile[:li_pictureUrl].present?
+      attributes[:data][:cv] = base64_cv if @user.user_profile[:upload_path].present?
+      attributes[:data][:avatar] = base64_avatar if @user.user_profile[:li_pictureUrl].present?
       return attributes
     end
 
@@ -69,12 +69,21 @@ class YuTalent::UserService < BaseService
     end
 
 
-    def base64_cv(cv_upload_path)
+    def base64_cv
       key = Key.where(app_dataset_id: @params[:dataset_id]).first
-      cv_url = 'http://' + key.host + cv_upload_path
+      cv_url = 'http://' + key.host + @user.user_profile[:upload_path]
       cv = open(cv_url).read
       base64_cv = Base64.encode64(cv)
       return base64_cv
+    end
+
+
+    def base64_avatar
+      key = Key.where(app_dataset_id: @params[:dataset_id]).first
+      avatar_url = 'http://' + key.host + @user.user_profile[:li_pictureUrl]
+      avatar = open(avatar_url).read
+      base64_avatar = Base64.encode64(avatar)
+      return base64_avatar
     end
 
 
