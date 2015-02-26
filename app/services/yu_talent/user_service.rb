@@ -8,7 +8,7 @@ class YuTalent::UserService < BaseService
     raise StandardError, "No params found!" if params.nil?
     @user = user
     @params = params
-    @client = YuTalent::ClientService.new(params)
+    @client = YuTalent::AuthenticationService.new
   end
 
 
@@ -92,7 +92,7 @@ class YuTalent::UserService < BaseService
         yu_talent_id = @user.yu_talent_uid
       else
         # check if user/candidate
-        existing_candidate = @client.check_duplicates(@user.email)
+        existing_candidate = @client.check_candidate_duplicates(@user.email)
         logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
         if existing_candidate.record_count.to_i > 0
           logger.info '--- CANDIDATE RECORD FOUND'
