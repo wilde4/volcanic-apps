@@ -9,6 +9,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 gem 'haml'
+gem 'simple_form'
 
 #API gems
 gem 'gibbon'
