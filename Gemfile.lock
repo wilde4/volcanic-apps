@@ -225,6 +225,7 @@ DEPENDENCIES
   mysql2
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
+  oauth2
   pry-byebug
   rails (= 4.0.1)
   sass-rails (~> 4.0.0)
