@@ -8,7 +8,7 @@ class YuTalent::UserService < BaseService
     raise StandardError, "No params found!" if params.nil?
     @user = user
     @params = params
-    @client = YuTalent::AuthenticationService.new
+    @client = YuTalent::AuthenticationService.new(params)
   end
 
 
