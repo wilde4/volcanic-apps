@@ -1,0 +1,13 @@
+
+= simple_form_for :settings, input_html: { "data-remote" => true, "data-url" => @host, "data-type" => :json} do |f|
+  .row
+    .col-md-6
+      = f.input :client_id
+  .row
+    .col-md-6
+      = f.input :client_secret
+  .row
+    .col-md-6
+      = f.hidden_field :dataset_id, value: @dataset_id
+  %br
+  = f.button  :submit, "Save", class: "btn btn-info"
