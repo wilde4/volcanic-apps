@@ -1,6 +1,10 @@
 = simple_form_for :data, url: @host,  remote: true do  |f|
   .row
     .col-md-6
+      #flash_messages
+
+  .row
+    .col-md-6
       = f.input :client_id, input_html: { value:  (@settings.present? ? @settings.client_id : '') }
   .row
     .col-md-6

@@ -20,9 +20,9 @@ class YuTalentController < ApplicationController
         client_id: params[:data][:client_id],
         client_secret: params[:data][:client_secret]
       )
-        render :index, flash[:notice] => "Settings Saved Successfully"
+        flash[:notice] = "Settings Saved Successfully"
       else
-        render :index, flash[:alert] => "Settings not saved"
+        flash[:alert] = "Settings not saved"
       end
     else
       @settings = YuTalentSetting.new
@@ -31,9 +31,9 @@ class YuTalentController < ApplicationController
       @settings[:client_secret] = params[:data][:client_secret]
 
       if @settings.save
-        render :index, notice: "Settings Saved Successfully"
+        flash[:notice] = "Settings Saved Successfully"
       else
-        render :index, alert: "Settings not saved"
+        flash[:alert] = "Settings not saved"
       end
     end
   end
