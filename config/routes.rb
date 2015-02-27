@@ -163,11 +163,12 @@ Apps::Application.routes.draw do
   end
 
   scope :yu_talent do
-    post 'activate_app'     => 'yu_talent#activate_app'
-    post 'deactivate_app'   => 'yu_talent#deactivate_app'
-    post 'update_settings'  => 'yu_talent#update_settings'
-    get  'index'            => 'yu_talent#index'
-    post 'save_user'        => 'yu_talent#save_user'
+    post "activate_app"     => 'yu_talent#activate_app'
+    post "deactivate_app"   => 'yu_talent#deactivate_app'
+    post "update_settings"  => 'yu_talent#update_settings'
+    get  "index"            => 'yu_talent#index'
+    post "save_user"        => 'yu_talent#save_user'
+    post "update_yu_talent_settings"  => 'yu_talent#update_yu_talent_settings', as: :yu_talent_settings_update
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
