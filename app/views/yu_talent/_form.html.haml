@@ -1,9 +1,6 @@
 = simple_form_for :data, url: @host,  remote: true do  |f|
   .row
     .col-md-6
-      = render :partial => 'shared/flashes', :locals => { :flash => flash }
-  .row
-    .col-md-6
       = f.input :client_id, input_html: { value:  (@settings.present? ? @settings.client_id : '') }
   .row
     .col-md-6
@@ -12,4 +9,4 @@
     .col-md-6
       = f.hidden_field :dataset_id, value: @dataset_id
   %br
-  = f.button  :submit, "Save", class: "btn btn-info"
+  = f.button  :submit, (@settings.present? ? "Update" : "Save"), class: "btn btn-info"
