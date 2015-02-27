@@ -1,11 +1,13 @@
-
-= simple_form_for :settings, input_html: { "data-remote" => true, "data-url" => @host, "data-type" => :json} do |f|
+= simple_form_for :data, url: @host,  remote: true do  |f|
   .row
     .col-md-6
-      = f.input :client_id
+      = render :partial => 'shared/flashes', :locals => { :flash => flash }
   .row
     .col-md-6
-      = f.input :client_secret
+      = f.input :client_id, input_html: { value:  (@settings.present? ? @settings.client_id : '') }
+  .row
+    .col-md-6
+      = f.input :client_secret, input_html: { value: (@settings.present? ? @settings.client_secret : '') }
   .row
     .col-md-6
       = f.hidden_field :dataset_id, value: @dataset_id
