@@ -85,4 +85,11 @@ class YuTalentController < ApplicationController
     end
   end
 
+  # GET
+  def callback
+    # Extract code from params
+    # Save code to yutalent_settings table with dataset_id
+    # Render callback.html.haml with congrats message
+  end
+
 end
