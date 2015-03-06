@@ -5,35 +5,36 @@ class YuTalentController < ApplicationController
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index, :update_yu_talent_settings]
 
+
   def index
-    @host = app_server_host + "/yu_talent/update_yu_talent_settings"
+    @host = @key.host
+    @app_id = params[:data][:id]
     @dataset_id = @key.app_dataset_id
-    @settings = YuTalentSetting.find_by(dataset_id: @dataset_id)
+    @auth_url = YuTalent::AuthenticationService.auth_url(@dataset_id, @app_id, @host)
+    @settings = YuTalentAppSetting.find_by(dataset_id: params[:data][:dataset_id])
   end
 
 
-  def update_yu_talent_settings
-    @settings = YuTalentSetting.find_by(dataset_id: params[:data][:dataset_id])
+  def callback
+    @settings = YuTalentAppSetting.find_by(dataset_id: params[:data][:dataset_id])
     if @settings.present?
-      if @settings.update(
-        dataset_id: params[:data][:dataset_id],
-        client_id: params[:data][:client_id],
-        client_secret: params[:data][:client_secret]
-      )
-        flash[:notice] = "Settings Saved Successfully"
+      if @settings.update(dataset_id: params[:data][:dataset_id], refresh_token: params[:data][:code])
+        flash[:notice] = "App successfully authorised."
+        render :index
       else
-        flash[:alert] = "Settings not saved"
+        flash[:alert] = "App could not be authorised."
       end
     else
-      @settings = YuTalentSetting.new
+      @settings = YuTalentAppSetting.new
       @settings[:dataset_id] = params[:data][:dataset_id]
-      @settings[:client_id] = params[:data][:client_id]
-      @settings[:client_secret] = params[:data][:client_secret]
+      @settings[:refresh_token] = params[:data][:code]
 
       if @settings.save
-        flash[:notice] = "Settings Saved Successfully"
+        flash[:notice] = "App successfully authorised."
+        render :index
       else
-        flash[:alert] = "Settings not saved"
+        flash[:alert] = "App could not be authorised."
+        render :index
       end
     end
   end
@@ -76,20 +77,5 @@ class YuTalentController < ApplicationController
     end
   end
 
-
-  def app_server_host
-    if Rails.env.development?
-      "http://localhost:3001"
-    elsif Rails.env.production?
-      "apps.volcanic.co"
-    end
-  end
-
-  # GET
-  def callback
-    # Extract code from params
-    # Save code to yutalent_settings table with dataset_id
-    # Render callback.html.haml with congrats message
-  end
 
 end
