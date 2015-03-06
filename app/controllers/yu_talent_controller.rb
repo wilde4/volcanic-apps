@@ -21,6 +21,7 @@ class YuTalentController < ApplicationController
         render :index
       else
         flash[:alert] = "App could not be authorised."
+        render :index
       end
     else
       @settings = YuTalentAppSetting.new
