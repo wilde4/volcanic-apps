@@ -13,6 +13,8 @@ class YuTalent::AuthenticationService < BaseService
     callback_url = "http://#{host}:3000/admin/apps/#{app_id}/callback"
     app_settings = AppSetting.find_by(dataset_id: dataset_id).try(:settings)
     begin
+      @host = format_url(host)
+      callback_url = "#{@host}/admin/apps/#{app_id}/callback"
       client = OAuth2::Client.new(
       '5454-9715A4F54-3984B43EE-8B6AF6793-24FC3',
       'F6SIROFJVYECTZUNEQNDKK4M47QQURK1PEBIWGSH',
@@ -29,6 +31,14 @@ class YuTalent::AuthenticationService < BaseService
     rescue => e
       puts e.inspect
     end
+  end
+
+
+  def self.format_url(url)
+    url = URI.parse(url)
+    return url if url.scheme
+    return "http://#{url}:3000" if Rails.env.development?
+    "http://#{url}"
   end
 
 end
