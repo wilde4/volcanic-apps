@@ -1,3 +1,5 @@
+require 'uri'
+
 class YuTalent::AuthenticationService < BaseService
 
 
@@ -8,7 +10,7 @@ class YuTalent::AuthenticationService < BaseService
 
 
   def self.auth_url(dataset_id, app_id, host)
-    callback_url = "#{host}/admin/apps/#{app_id}/callback"
+    callback_url = "http://#{host}:3000/admin/apps/#{app_id}/callback"
     app_settings = AppSetting.find_by(dataset_id: dataset_id).try(:settings)
     begin
       client = OAuth2::Client.new(
@@ -22,7 +24,8 @@ class YuTalent::AuthenticationService < BaseService
       #   { authorize_url: CREDENTIALS[:auth_url], token_url: CREDENTIALS[:access_token_url] }
       # )
       auth_url = client.auth_code.authorize_url({ redirect_uri: callback_url, access_type: 'offline' })
-      return auth_url
+      @auth_url = URI.decode(auth_url)
+      return @auth_url
     rescue => e
       puts e.inspect
     end
