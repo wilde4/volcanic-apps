@@ -3,7 +3,7 @@ class YuTalentController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :update_yu_talent_settings]
+  before_action :set_key, only: [:index, :save_user]
 
   def index
     @host = @key.host
@@ -40,6 +40,7 @@ class YuTalentController < ApplicationController
 
 
   def save_user
+    @dataset_id = @key.app_dataset_id
     @user = YuTalentUser.find_by(user_id: params[:user][:id])
     if @user.present?
       # update YuTalent user record
@@ -50,7 +51,7 @@ class YuTalentController < ApplicationController
         linkedin_profile: params[:linkedin_profile],
         registration_answers: params[:registration_answer_hash]
       )
-        YuTalent::UserService.new(@user, params).post_user
+        YuTalent::UserService.new(@dataset_id, @user, params).post_user
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -67,7 +68,7 @@ class YuTalentController < ApplicationController
 
       # persist user data
       if @user.save
-        YuTalent::UserService.new(@user, params).post_user
+        YuTalent::UserService.new(@dataset_id, @user, params).post_user
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }

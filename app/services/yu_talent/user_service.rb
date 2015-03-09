@@ -3,32 +3,39 @@ require 'base64'
 
 class YuTalent::UserService < BaseService
 
-  def initialize(user, params)
+  URL = "https://www.yutalent.co.uk/c/oauth/v1?method="
+
+  def initialize(dataset_id, user, params)
     raise StandardError, "No user found!" if user.nil?
     raise StandardError, "No params found!" if params.nil?
+    @dataset_id = dataset_id
     @user = user
     @params = params
-    @client = YuTalent::AuthenticationService.new(params)
   end
 
 
   def post_user
-    # create contact object
-    contact = map_contact_attributes
+    # begin
+      @refresh_token = YuTalentAppSetting.find_by(dataset_id: @dataset_id).try(:refresh_token)
+      Rails.logger.info "--- refresh_token ----- : #{@refresh_token}"
+      @contact = map_contact_attributes # create contact object
+      @access_token = YuTalent::AuthenticationService.get_access_token(@refresh_token)
 
-    # GET YuTalent ID
-    yu_talent_id = get_yu_talent_id
+      Rails.logger.info "--- access_token ----- : #{@access_token}"
 
-    # CREATE user/candidate
-    if yu_talent_id.present?
-      logger.info "--- UPDATING #{yu_talent_id}: #{attributes.inspect} ..."
-      response = @client.update_candidate(yu_talent_id, attributes.to_json)
-      logger.info "--- response = #{response.inspect}"
-    else
-      logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
-      response = @client.create_candidate(attributes.to_json)
-      @user.update(bullhorn_uid: response['changedEntityId'])
-    end
+      yt_user_id = get_yu_talent_id(@access_token) # GET YuTalent ID
+
+      if yt_user_id.present?
+        Rails.logger.info "--- UPDATING #{yt_user_id}: #{attributes.inspect} ..."
+        # responce = HTTParty.post("contacts/add&access_token=7437643937328", body: @contact.to_json), headers: {"Authorization" => "Token token=\"#{@client}\""})
+        response = HTTParty.post(URL + "contacts/add", body: @contact.to_json, headers: {"Authorization" => "Token token=\"#{@access_token}\""})
+      else
+        Rails.logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
+        @user.update(yu_talent_uid: response['changedEntityId'])
+      end
+    # rescue => e
+    #   puts e.inspect
+    # end
   end
 
 
@@ -36,6 +43,8 @@ class YuTalent::UserService < BaseService
 
 
     def map_contact_attributes
+
+      puts "== params == #{@user.inspect}"
       attributes = Hash.new
       attributes[:status_id] = 1
       attributes[:project_id] = 123
@@ -43,19 +52,19 @@ class YuTalent::UserService < BaseService
       attributes[:data] = Hash.new
       attributes[:data][:name] = candidate_name
       # attributes[:data][:background_info] =
-      attributes[:data][:company_name] = @user.registration_answers[settings[:companyName]] if @user.registration_answers[settings[:companyName]].present?
+      # attributes[:data][:company_name] = @user.registration_answers[settings[:companyName]] if @user.registration_answers[settings[:companyName]].present?
       # attributes[:data][:company_website] =
       attributes[:data][:email] = @user.email
-      attributes[:data][:location] = @user.registration_answers[settings[:desiredLocations]] if @user.registration_answers[settings[:desiredLocations]].present?
-      attributes[:data][:history] = linkedin_work_history if @user.linkedin_profile.present?
-      attributes[:data][:education] = linkedin_education_history if @user.linkedin_profile.present?
-      attributes[:data][:facebook] = @user.user_profile[:facebook_url] if @user.user_profile[:facebook_url].present?
-      attributes[:data][:linkedin] = @user.user_profile[:li_publicProfileUrl] if @user.user_profile[:li_publicProfileUrl].present?
-      attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
-      attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
-      attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
-      attributes[:data][:cv] = base64_cv if @user.user_profile[:upload_path].present?
-      attributes[:data][:avatar] = base64_avatar if @user.user_profile[:li_pictureUrl].present?
+      # attributes[:data][:location] = @user.registration_answers[settings[:desiredLocations]] if @user.registration_answers[settings[:desiredLocations]].present?
+      # attributes[:data][:history] = linkedin_work_history if @user.linkedin_profile.present?
+      # attributes[:data][:education] = linkedin_education_history if @user.linkedin_profile.present?
+      # attributes[:data][:facebook] = @user.user_profile[:facebook_url] if @user.user_profile[:facebook_url].present?
+      # attributes[:data][:linkedin] = @user.user_profile[:li_publicProfileUrl] if @user.user_profile[:li_publicProfileUrl].present?
+      # attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
+      # attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
+      # attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
+      # attributes[:data][:cv] = base64_cv if @user.user_profile[:upload_path].present?
+      # attributes[:data][:avatar] = base64_avatar if @user.user_profile[:li_pictureUrl].present?
       return attributes
     end
 
@@ -87,20 +96,19 @@ class YuTalent::UserService < BaseService
     end
 
 
-    def get_yu_talent_id
+    def get_yu_talent_id(access_token)
       if @user.yu_talent_uid.present?
         yu_talent_id = @user.yu_talent_uid
       else
-        # check if user/candidate
-        existing_candidate = @client.check_candidate_duplicates(@user.email)
-        logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
-        if existing_candidate.record_count.to_i > 0
+        response = HTTParty.post(URL + "contacts/check-duplicates", body: { 'email' => @user.email }, headers: {"Authorization" => "Token token=\"#{access_token}\""})
+        Rails.logger.info "--- response = #{response.inspect}"
+        if response.record_count.to_i > 0
           logger.info '--- CANDIDATE RECORD FOUND'
-          last_candidate = existing_candidate.data.last
+          last_candidate = response.data.last
           yu_talent_id = last_candidate.id
           @user.update(yu_talent_uid: yu_talent_id)
         else
-          logger.info '--- CANDIDATE RECORD NOT FOUND'
+          Rails.logger.info '--- CANDIDATE RECORD NOT FOUND'
           yu_talent_id = nil
         end
       end
