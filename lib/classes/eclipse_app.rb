@@ -83,10 +83,10 @@ private
     # Expiry = date + 60 days
     begin
       date = Date.parse(@job_payload["job[created_at]"])
-      @job_payload["job[expiry_date]"] = date + 60.days
+      @job_payload["job[expiry_date]"] = date + 365.days
     rescue Exception => e
       puts "[WARN] #{e}"
-      @job_payload["job[expiry_date]"] = Date.today + 60.days
+      @job_payload["job[expiry_date]"] = Date.today + 365.days
     end
   end
 
