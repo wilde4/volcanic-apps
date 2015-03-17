@@ -166,7 +166,9 @@ Apps::Application.routes.draw do
     get  'import'           => 'eventbrite#import'
     post 'activate_app'     => 'eventbrite#activate_app'
     post 'deactivate_app'   => 'eventbrite#deactivate_app'
-    post 'update_settings'  => 'eventbrite#update_eventbrite_settings'
+    post 'update_settings'  => 'eventbrite#update_settings'
+    post "update_eventbrite_settings"  => 'eventbrite#update_eventbrite_settings', as: :eventbrite_settings_update
+
   end
 
 
