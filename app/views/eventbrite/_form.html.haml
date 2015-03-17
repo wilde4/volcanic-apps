@@ -1,0 +1,16 @@
+= simple_form_for :data, url: @host,  remote: true do  |f|
+  .row
+    .col-md-6
+      #flash_messages
+
+  .row
+    .col-md-6
+      = f.input :app_key, input_html: { value:  (@settings.present? ? @settings.app_key : '') }
+  .row
+    .col-md-6
+      = f.input :user_key, input_html: { value: (@settings.present? ? @settings.user_key : '') }
+  .row
+    .col-md-6
+      = f.hidden_field :dataset_id, value: @dataset_id
+  %br
+  = f.button  :submit, (@settings.present? ? "Update" : "Save"), class: "btn btn-info"
