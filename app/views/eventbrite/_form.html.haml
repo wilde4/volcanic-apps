@@ -5,10 +5,8 @@
 
   .row
     .col-md-6
-      = f.input :app_key, input_html: { value:  (@settings.present? ? @settings.app_key : '') }
-  .row
-    .col-md-6
-      = f.input :user_key, input_html: { value: (@settings.present? ? @settings.user_key : '') }
+      = f.input :access_token, input_html: { value:  (@settings.present? ? @settings.access_token : '') }
+
   .row
     .col-md-6
       = f.hidden_field :dataset_id, value: @dataset_id

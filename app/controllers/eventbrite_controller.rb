@@ -11,8 +11,6 @@ class EventbriteController < ApplicationController
     @dataset_id = @key.app_dataset_id
     @host = app_server_host + "/eventbrite/update_eventbrite_settings"
     @settings = EventbriteSetting.find_by(dataset_id: @dataset_id)
-
-    puts "hit index  ===== #{params}"
   end
 
 
@@ -21,8 +19,7 @@ class EventbriteController < ApplicationController
     if @settings.present?
       if @settings.update(
         dataset_id: params[:data][:dataset_id],
-        app_key: params[:data][:app_key],
-        user_key: params[:data][:user_key]
+        access_token: params[:data][:access_token]
       )
         flash[:notice] = "Settings Saved Successfully"
       else
@@ -31,8 +28,7 @@ class EventbriteController < ApplicationController
     else
       @settings = EventbriteSetting.new
       @settings[:dataset_id] = params[:data][:dataset_id]
-      @settings[:app_key] = params[:data][:app_key]
-      @settings[:user_key] = params[:data][:user_key]
+      @settings[:access_token] = params[:data][:access_token]
 
       if @settings.save
         flash[:notice] = "Settings Saved Successfully"
