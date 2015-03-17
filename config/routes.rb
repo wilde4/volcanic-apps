@@ -3,7 +3,6 @@ Apps::Application.routes.draw do
 
   get 'send_sms', :to => "text_local#send_sms", :as => :send_sms
   post 'send_sms', :to => "text_local#send_sms", :as => :post_sms
-  get 'related-events', :to => "event_brite#related_events", :as => :related_events
   get 'skype', :to => "skype#consultant", :as => :skype
   get 'export-list', :to => "mail_chimp#export_list", :as => :export_list
   get 'related-videos', :to => "youtube#related_videos", :as => :related_videos
@@ -51,7 +50,7 @@ Apps::Application.routes.draw do
   scope :evergrad_gaming do
     post "action_complete"        => 'evergrad_gaming#action_complete', as: :eg_action_complete
     get "available_achievements" => 'evergrad_gaming#available_achievements', as: :eg_available
-    get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement    
+    get "achievement"            => 'evergrad_gaming#achievement', as: :eg_achievement
     get "tiered_achievement"     => 'evergrad_gaming#tiered_achievement', as: :eg_achievement_tiered
   end
 
@@ -159,6 +158,15 @@ Apps::Application.routes.draw do
     post 'activate_app'     => 'bullhorn#activate_app'
     post 'deactivate_app'   => 'bullhorn#deactivate_app'
     post 'update_settings'  => 'bullhorn#update_settings'
+  end
+
+  scope :eventbrite do
+    get  'index'            => 'eventbrite#index'
+    get  'search'           => 'eventbrite#search'
+    get  'import'           => 'eventbrite#import'
+    post 'activate_app'     => 'eventbrite#activate_app'
+    post 'deactivate_app'   => 'eventbrite#deactivate_app'
+    post 'update_settings'  => 'eventbrite#update_eventbrite_settings'
   end
 
 
