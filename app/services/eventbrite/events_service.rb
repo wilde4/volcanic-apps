@@ -16,7 +16,7 @@ class Eventbrite::EventsService < BaseService
     def search(dataset_id, query)
       begin
         @client = Eventbrite::AuthenticationService.client(dataset_id)
-        response = @client.event_search(query)
+        response = @client.event_search({ keywords: query })
         events = events_json_mapper(response)
         return events
       rescue => e
