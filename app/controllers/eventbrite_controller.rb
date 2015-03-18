@@ -40,14 +40,24 @@ class EventbriteController < ApplicationController
 
 
   def search
-    query = params[:query]
-    results = Eventbrite::EventsService.new(@dataset_id).search(query) if query
+    query, dataset_id = params[:query], params[:dataset_id]
+    @results = Eventbrite::EventsService.search(dataset_id, query) if query and dataset_id
+    if @results
+      render json: @results, status: 200
+    else
+      render json: @results.errors, status: :unprocessable_entity
+    end
   end
 
 
   def import
-    event_id = params[:event_id]
-    results = Eventbrite::EventsService.new(@dataset_id).import_event(event_id) if event_id
+    event_id, dataset_id = params[:event_id], params[:dataset_id]
+    @event = Eventbrite::EventsService.import_event(dataset_id, event_id) if event_id and dataset_id
+    if @event
+      render json: @event, status: 200
+    else
+      render json: { message: "Could not find event!" , status: :unprocessable_entity }
+    end
   end
 
 
