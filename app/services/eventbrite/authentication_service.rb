@@ -6,8 +6,8 @@ class Eventbrite::AuthenticationService < BaseService
 
     def client(dataset_id)
       begin
-        settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-        client = EventbriteClient.new({ access_token: settings[:access_token] })
+        @settings = EventbriteSetting.find_by(dataset_id: dataset_id)
+        client = EventbriteClient.new({ access_token: @settings.access_token })
         return client
       rescue => e
         puts e.inspect
