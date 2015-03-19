@@ -61,6 +61,15 @@ class EventbriteController < ApplicationController
   end
 
 
+  def check_access
+    @dataset_id = params[:dataset_id]
+    @status = Eventbrite::AuthenticationService.check_access(@dataset_id)
+    render json: { access_status: @status, status: 200 }
+    rescue e
+      render json: { message: "Could not check status!" , status: :unprocessable_entity }
+  end
+
+
   private
 
     def set_dataset_id

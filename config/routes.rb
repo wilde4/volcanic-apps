@@ -162,6 +162,7 @@ Apps::Application.routes.draw do
 
   scope :eventbrite do
     get  'index'            => 'eventbrite#index'
+    get  'check_access'     => 'eventbrite#check_access'
     get  'search'           => 'eventbrite#search'
     get  'import'           => 'eventbrite#import'
     post 'activate_app'     => 'eventbrite#activate_app'

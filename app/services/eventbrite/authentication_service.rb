@@ -4,6 +4,7 @@ class Eventbrite::AuthenticationService < BaseService
 
   class << self
 
+
     def client(dataset_id)
       begin
         @settings = EventbriteSetting.find_by(dataset_id: dataset_id)
@@ -13,6 +14,21 @@ class Eventbrite::AuthenticationService < BaseService
         puts e.inspect
       end
     end
+
+
+    def check_access(dataset_id)
+      begin
+        @settings = EventbriteSetting.find_by(dataset_id: dataset_id)
+        if @settings.present?
+          @settings.access_token.present? ? true : false
+        else
+          return false
+        end
+      rescue => e
+        puts e.inspect
+      end
+    end
+
 
   end
 
