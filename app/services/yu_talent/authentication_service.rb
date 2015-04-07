@@ -45,29 +45,13 @@ class YuTalent::AuthenticationService < BaseService
     end
 
 
-    def get_access_token(refresh_token)
+    def get_access_token(dataset_id)
       begin
-        options = {
-          body: {
-            client_id: ENV["YU_TALENT_CLIENT_ID"],
-            client_secret: ENV["YU_TALENT_CLIENT_SECRET"],
-            refresh_token: refresh_token,
-            grant_type: 'refresh_token'
-          },
-          headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }
-        }
-        refresh = HTTParty.post('https://yutalent.co.uk/c/oauth/access_token', options)
-
-        Rails.logger.info "--- Auth access_token_response ----- : #{refresh}"
-
-
-        if refresh.code == 200
-          @token = refresh.parsed_response['access_token']
-          @access_token = OAuth2::AccessToken.from_hash client, { access_token: @token }
-        else
-          puts "Whoops, couldn't retrieve access token with stored refresh token."
-          @access_token = nil
-        end
+        @authorization_code = YuTalentAppSetting.find_by(dataset_id: dataset_id).try(:authorization_code)
+        @host = Key.find_by(app_dataset_id: dataset_id).try(:host)
+        @callback_url = format_url(@host)
+        @token = client.auth_code.get_token(@authorization_code, redirect_uri: @callback_url)
+        return @token
       rescue => e
         puts e.inspect
       end
