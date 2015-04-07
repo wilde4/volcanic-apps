@@ -20,6 +20,7 @@ class YuTalent::UserService < BaseService
       Rails.logger.info "--- refresh_token ----- : #{@refresh_token}"
       @contact = map_contact_attributes # create contact object
       @access_token = YuTalent::AuthenticationService.get_access_token(@refresh_token)
+      @contact =  map_contact_attributes
 
       Rails.logger.info "--- access_token ----- : #{@access_token}"
 
