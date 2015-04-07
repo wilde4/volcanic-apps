@@ -97,15 +97,15 @@ class YuTalent::UserService < BaseService
     end
 
 
-    def get_yu_talent_id(access_token)
+    def check_duplicates
       if @user.yu_talent_uid.present?
         yu_talent_id = @user.yu_talent_uid
       else
-        response = HTTParty.post(URL + "contacts/check-duplicates", body: { 'email' => @user.email }, headers: {"Authorization" => "Token token=\"#{access_token}\""})
+        response = @access_token.post(URL + "contacts/check-duplicates", body: { 'email' => @user.email })
         Rails.logger.info "--- response = #{response.inspect}"
         if response.record_count.to_i > 0
           logger.info '--- CANDIDATE RECORD FOUND'
-          last_candidate = response.data.last
+          last_candidate = response.body.last
           yu_talent_id = last_candidate.id
           @user.update(yu_talent_uid: yu_talent_id)
         else
