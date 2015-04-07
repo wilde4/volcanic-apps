@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150306112031) do
+ActiveRecord::Schema.define(version: 20150407123518) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -39,6 +39,13 @@ ActiveRecord::Schema.define(version: 20150306112031) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "linkedin_profile"
+  end
+
+  create_table "eventbrite_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "access_token"
   end
 
   create_table "featured_jobs", force: true do |t|
@@ -169,7 +176,7 @@ ActiveRecord::Schema.define(version: 20150306112031) do
     t.integer  "dataset_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "refresh_token"
+    t.string   "authorization_code"
   end
 
   create_table "yu_talent_users", force: true do |t|
