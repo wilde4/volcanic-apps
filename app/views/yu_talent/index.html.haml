@@ -16,7 +16,7 @@
 
       #flash_messages
 
-      - if @settings.present? && @settings.refresh_token.present?
+      - if @settings.present? && @settings.authorization_code.present?
         %h4
           Your App is Authorised.
       - else
@@ -29,7 +29,7 @@
   %hr.featurette-divider
   %br
 
-  - if !@settings.present? || !@settings.refresh_token.present?
+  - if !@settings.present? || !@settings.authorization_code.present?
     .row
       %h3.text-center How to authorize your YuTalent app
 

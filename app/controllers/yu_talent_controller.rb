@@ -16,7 +16,7 @@ class YuTalentController < ApplicationController
   def callback
     @settings = YuTalentAppSetting.find_by(dataset_id: params[:data][:dataset_id])
     if @settings.present?
-      if @settings.update(dataset_id: params[:data][:dataset_id], refresh_token: params[:data][:code])
+      if @settings.update(dataset_id: params[:data][:dataset_id], authorization_code: params[:data][:code])
         flash[:notice] = "App successfully authorised."
         render :index
       else
@@ -26,7 +26,7 @@ class YuTalentController < ApplicationController
     else
       @settings = YuTalentAppSetting.new
       @settings[:dataset_id] = params[:data][:dataset_id]
-      @settings[:refresh_token] = params[:data][:code]
+      @settings[:authorization_code] = params[:data][:code]
 
       if @settings.save
         flash[:notice] = "App successfully authorised."
