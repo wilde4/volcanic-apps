@@ -13,7 +13,7 @@ class YuTalent::AuthenticationService < BaseService
     def client
       begin
         client = OAuth2::Client.new(
-          ENV["YU_TALENT_CLIENT_ID"],
+          ENV["YU_TALENT_CLIENT_ID"].try(:downcase),
           ENV["YU_TALENT_CLIENT_SECRET"],
           { authorize_url: CREDENTIALS[:auth_url], token_url: CREDENTIALS[:access_token_url] }
         )
