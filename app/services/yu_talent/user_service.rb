@@ -1,10 +1,11 @@
+require 'uri'
 require 'open-uri'
 require 'base64'
 require 'oauth2'
 
 class YuTalent::UserService < BaseService
 
-  URL = "https://www.yutalent.co.uk/c/oauth/v1?method="
+  API_ENDPOINT = URI.decode("https://www.yutalent.co.uk/c/oauth/v1?method=")
 
   def initialize(user)
     @user, @dataset_id = user, user.user_data['dataset_id']
@@ -17,7 +18,7 @@ class YuTalent::UserService < BaseService
       @yutalent_id = check_duplicates
       return if @yutalent_id.present?
       @contact =  map_contact_attributes
-      @response = @access_token.post(URL + "contacts/add", body: @contact)
+      @response = @access_token.post(API_ENDPOINT + "contacts/add", body: @contact)
       Rails.logger.info "--- response ----- : #{@response}"
 
       @yutalent_id = @response.body['id']
@@ -43,7 +44,7 @@ class YuTalent::UserService < BaseService
       if @user.yu_talent_uid.present?
         yutalent_id = @user.yu_talent_uid
       else
-        response = @access_token.post(URL + "contacts/check-duplicates", body: { 'email' => @user.email })
+        response = @access_token.post(API_ENDPOINT + "contacts/check-duplicates", body: { 'email' => @user.email })
         Rails.logger.info "--- check duplicates response = #{response.body.inspect}"
         if response.record_count.to_i > 0
           Rails.logger.info '--- DUPLICATE CANDIDATE RECORD FOUND'
@@ -86,13 +87,13 @@ class YuTalent::UserService < BaseService
 
 
     def contact_categories
-      categories = @access_token.get(URL + 'contacts/categories')
+      categories = @access_token.get(API_ENDPOINT + 'contacts/categories')
       return categories
     end
 
 
     def projects_list
-      list = @access_token.get(URL + 'projects/list')
+      list = @access_token.get(API_ENDPOINT + 'projects/list')
       return list
     end
 
@@ -128,7 +129,7 @@ class YuTalent::UserService < BaseService
       if @user.yu_talent_uid.present?
         yu_talent_id = @user.yu_talent_uid
       else
-        @response = @access_token.post(URL + "contacts/check-duplicates", body: { 'email' => @user.email })
+        @response = @access_token.post(API_ENDPOINT + "contacts/check-duplicates", body: { 'email' => @user.email })
         Rails.logger.info "--- response = #{response.inspect}"
         if @response.record_count.to_i > 0
           Rails.logger.info '--- CANDIDATE RECORD FOUND'
