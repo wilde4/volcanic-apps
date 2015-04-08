@@ -3,7 +3,7 @@ class YuTalentController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :save_user]
+  before_action :set_key, only: [:index, :callback, :save_user]
 
   def index
     @host = @key.host
@@ -14,28 +14,31 @@ class YuTalentController < ApplicationController
 
 
   def callback
-    @settings = YuTalentAppSetting.find_by(dataset_id: params[:data][:dataset_id])
-    if @settings.present?
-      if @settings.update(dataset_id: params[:data][:dataset_id], authorization_code: params[:data][:code])
-        flash[:notice] = "App successfully authorised."
-        render :index
-      else
-        flash[:alert] = "App could not be authorised."
-        render :index
-      end
-    else
-      @settings = YuTalentAppSetting.new
-      @settings[:dataset_id] = params[:data][:dataset_id]
-      @settings[:authorization_code] = params[:data][:code]
+    @attributes = Hash.new
+    @attributes[:dataset_id]         = params[:data][:dataset_id]
+    @attributes[:authorization_code] = params[:data][:code]
+    @attributes[:access_token]       = YuTalent::AuthenticationService.get_access_token(
+                                        params[:data][:id], @key.host, params[:data][:code]).try(:to_json)
 
-      if @settings.save
-        flash[:notice] = "App successfully authorised."
-        render :index
+    unless !@attributes[:access_token].present?
+      @settings = YuTalentAppSetting.find_by(dataset_id: @attributes[:dataset_id])
+      if @settings.present?
+        if @settings.update(@attributes)
+          flash[:notice] = "App successfully authorised."
+        else
+          flash[:alert] = "App could not be authorised."
+        end
       else
-        flash[:alert] = "App could not be authorised."
-        render :index
+        @settings = YuTalentAppSetting.new(@attributes)
+        if @settings.save
+          flash[:notice] = "App successfully authorised."
+        else
+          flash[:alert] = "App could not be authorised."
+        end
       end
     end
+
+    render :index
   end
 
 
