@@ -43,40 +43,30 @@ class YuTalentController < ApplicationController
 
 
   def save_user
-    @dataset_id = @key.app_dataset_id
+    @user_attributes = Hash.new
+    @user_attributes[:email]                = params[:user][:email]
+    @user_attributes[:user_data]            = params[:user]
+    @user_attributes[:user_profile]         = params[:user_profile]
+    @user_attributes[:linkedin_profile]     = params[:linkedin_profile]
+    @user_attributes[:registration_answers] = params[:registration_answer_hash]
+
     @user = YuTalentUser.find_by(user_id: params[:user][:id])
+
     if @user.present?
-      # update YuTalent user record
-      if @user.update(
-        email: params[:user][:email],
-        user_data: params[:user],
-        user_profile: params[:user_profile],
-        linkedin_profile: params[:linkedin_profile],
-        registration_answers: params[:registration_answer_hash]
-      )
-        YuTalent::UserService.new(@dataset_id, @user, params).post_user
+      if @user.update(@user_attributes)
+        YuTalent::UserService.new(@user).update_user
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
     else
-      # create new YuTalent user record
-      @user = YuTalentUser.new
-      @user.user_id = params[:user][:id]
-      @user.email = params[:user][:email]
-      @user.user_data = params[:user]
-      @user.user_profile = params[:user_profile]
-      @user.linkedin_profile = params[:linkedin_profile]
-      @user.registration_answers = params[:registration_answer_hash]
-
-      # persist user data
+      @user = YuTalentUser.new(@user_attributes)
       if @user.save
-        YuTalent::UserService.new(@dataset_id, @user, params).post_user
+        YuTalent::UserService.new(@user).post_user
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
-
     end
   end
 
