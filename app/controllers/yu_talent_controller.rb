@@ -54,7 +54,7 @@ class YuTalentController < ApplicationController
 
     if @user.present?
       if @user.update(@user_attributes)
-        YuTalent::UserService.new(@user).update_user
+        YuTalent::UserService.new(@user).post_user
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
