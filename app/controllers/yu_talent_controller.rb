@@ -14,26 +14,28 @@ class YuTalentController < ApplicationController
 
 
   def callback
-    @attributes = Hash.new
-    @attributes[:dataset_id]         = params[:data][:dataset_id]
-    @attributes[:authorization_code] = params[:data][:code]
-    @attributes[:access_token]       = YuTalent::AuthenticationService.get_access_token(
-                                        params[:data][:id], @key.host, params[:data][:code]).try(:to_json)
+    @attributes                       = Hash.new
+    @attributes[:dataset_id]          = params[:data][:dataset_id]
+    @attributes[:authorization_code]  = params[:data][:code]
+    @attributes[:access_token]        = YuTalent::AuthenticationService.get_access_token(
+                                          params[:data][:id],
+                                          @key.host,
+                                          params[:data][:code])
 
     unless !@attributes[:access_token].present?
       @settings = YuTalentAppSetting.find_by(dataset_id: @attributes[:dataset_id])
       if @settings.present?
         if @settings.update(@attributes)
-          flash[:notice] = "App successfully authorised."
+          flash[:notice]  = "App successfully authorised."
         else
-          flash[:alert] = "App could not be authorised."
+          flash[:alert]   = "App could not be authorised."
         end
       else
         @settings = YuTalentAppSetting.new(@attributes)
         if @settings.save
-          flash[:notice] = "App successfully authorised."
+          flash[:notice]  = "App successfully authorised."
         else
-          flash[:alert] = "App could not be authorised."
+          flash[:alert]   = "App could not be authorised."
         end
       end
     end
@@ -55,16 +57,16 @@ class YuTalentController < ApplicationController
 
     if @user.present?
       if @user.update(@user_attributes)
-        YuTalent::UserService.new(@user).post_user
-        render json: { success: true, user_id: @user.id }
+        YuTalent::UserService.new(@user).update_user
+        render json: { success: true,  user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
     else
       @user = YuTalentUser.new(@user_attributes)
       if @user.save
-        YuTalent::UserService.new(@user).post_user
-        render json: { success: true, user_id: @user.id }
+        YuTalent::UserService.new(@user).save_user
+        render json: { success: true,  user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
