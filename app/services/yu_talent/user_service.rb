@@ -107,7 +107,8 @@ class YuTalent::UserService < BaseService
 
 
     def map_contact_attributes
-      @attributes, @attributes[:data]   = Hash.new
+      @attributes                       = Hash.new
+      @attributes[:data]                = Hash.new
       @attributes[:data][:name]         = candidate_name
       @attributes[:data][:email]        = @user.email
       @attributes[:data][:background_info] = linkedin_background_info if @user.linkedin_profile.present?
@@ -140,9 +141,9 @@ class YuTalent::UserService < BaseService
 
 
     def base64_encoder(path)
-      @host = Key.find_by(app_dataset_id: @dataset_id).try(:host)
-      @url = URI.decode('http://' + @host + path)
-      @resource = open(@url).read
+      @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
+      @url              = URI.decode('http://' + @host + path)
+      @resource         = open(@url).read
       @encoded_resource = Base64.encode64(@resource)
       return @encoded_resource
     end
