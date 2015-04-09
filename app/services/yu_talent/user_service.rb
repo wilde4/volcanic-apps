@@ -157,20 +157,21 @@ class YuTalent::UserService < BaseService
 
 
     def linkedin_work_history
-       !@user.linkedin_profile['positions'].present?
-      if @user.linkedin_profile['positions'].size > 0
-        string              = string + '<h3>PREVIOUS EXPERIENCE</h3>'
-        @user.linkedin_profile['positions'].each do |position|
-          string            = string + '<p>'
-          company_name      = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
-          title             = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
-          start_date        = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
-          end_date          = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
-          summary           = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
-          company_industry  = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
-          string            = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+      unless !@user.linkedin_profile['positions'].present?
+        if @user.linkedin_profile['positions'].size > 0
+          string              = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+          @user.linkedin_profile['positions'].each do |position|
+            string            = string + '<p>'
+            company_name      = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
+            title             = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
+            start_date        = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
+            end_date          = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
+            summary           = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
+            company_industry  = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
+            string            = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+          end
+          return string
         end
-        return string
       end
     end
 
