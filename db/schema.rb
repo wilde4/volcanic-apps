@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150408084931) do
+ActiveRecord::Schema.define(version: 20150409110132) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -190,6 +190,9 @@ ActiveRecord::Schema.define(version: 20150408084931) do
     t.integer  "yu_talent_uid"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "project_id"
+    t.string   "status_id"
+    t.integer  "type_id"
   end
 
 end
