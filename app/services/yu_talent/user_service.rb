@@ -5,7 +5,7 @@ require 'oauth2'
 
 class YuTalent::UserService < BaseService
 
-  API_ENDPOINT = URI.decode("https://www.yutalent.co.uk/c/oauth/v1?method=")
+  API_ENDPOINT = "https://www.yutalent.co.uk/c/oauth/v1?method="
 
   def initialize(user)
     @user, @dataset_id = user, user.user_data['dataset_id']
@@ -18,14 +18,13 @@ class YuTalent::UserService < BaseService
       @yutalent_id = check_duplicates
       return if @yutalent_id.present?
       @contact =  map_contact_attributes
-      @response = @access_token.post(API_ENDPOINT + "contacts/add", body: @contact)
-      Rails.logger.info "--- response ----- : #{@response}"
-
-      @yutalent_id = @response.body['id']
+      @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/add"), body: @contact)
+      @response_body = JSON.parse(@response.body)
+      @yutalent_id = @response_body['id']
       @user.update(yu_talent_uid: @yutalent_id) if @yutalent_id.present?
-    # rescue => e
-    #   Rails.logger.info "--- post_user exception ----- : #{e.message}"
-    # end
+    rescue => e
+      Rails.logger.info "--- post_user exception ----- : #{e.message}"
+    end
   end
 
 
@@ -41,59 +40,63 @@ class YuTalent::UserService < BaseService
 
 
     def check_duplicates
-      if @user.yu_talent_uid.present?
-        yutalent_id = @user.yu_talent_uid
-      else
-        response = @access_token.post(API_ENDPOINT + "contacts/check-duplicates", body: { 'email' => @user.email })
-        Rails.logger.info "--- check duplicates response = #{response.body.inspect}"
-        if response.record_count.to_i > 0
-          Rails.logger.info '--- DUPLICATE CANDIDATE RECORD FOUND'
-          last_candidate = response.body.last
-          yutalent_id = last_candidate.id
+      begin
+        if @user.yu_talent_uid.present?
+          yutalent_id = @user.yu_talent_uid
         else
-          Rails.logger.info '--- NO DUPLICATE CANDIDATE RECORD FOUND'
-          yutalent_id = nil
+          @response = @access_token.get(URI.decode(API_ENDPOINT + "contacts/check-duplicates"), body: { 'email' => @user.email })
+          @duplicate_contacts = JSON.parse(@response.body)
+          if @duplicate_contacts.count > 0
+            Rails.logger.info '--- DUPLICATE CANDIDATE RECORD FOUND'
+            last_candidate = @response.body.last
+            yutalent_id = last_candidate.id
+          else
+            Rails.logger.info '--- NO DUPLICATE CANDIDATE RECORD FOUND'
+            yutalent_id = nil
+          end
         end
+      rescue => e
+        Rails.logger.info "--- check_duplicates exception ----- : #{e.message}"
       end
     end
 
 
     def map_contact_attributes
-      attributes = Hash.new
-      attributes[:status_id] = 1
-      attributes[:project_id] = 123
-      attributes[:type] = 45
-      attributes[:data] = Hash.new
-      attributes[:data][:name]  = candidate_name
-      attributes[:data][:email] = @user.email
-      # attributes[:data][:background_info] =
-      # attributes[:data][:company_name] = @user.registration_answers[settings[:companyName]] if @user.registration_answers[settings[:companyName]].present?
-      # attributes[:data][:company_website] =
-      # attributes[:data][:location] = @user.registration_answers[settings[:desiredLocations]] if @user.registration_answers[settings[:desiredLocations]].present?
-      # attributes[:data][:history] = linkedin_work_history if @user.linkedin_profile.present?
-      # attributes[:data][:education] = linkedin_education_history if @user.linkedin_profile.present?
-      # attributes[:data][:facebook] = @user.user_profile[:facebook_url] if @user.user_profile[:facebook_url].present?
-      # attributes[:data][:linkedin] = @user.user_profile[:li_publicProfileUrl] if @user.user_profile[:li_publicProfileUrl].present?
-      # attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
-      # attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
-      # attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
-      # attributes[:data][:cv] = base64_cv if @user.user_profile[:upload_path].present?
-      # attributes[:data][:avatar] = base64_avatar if @user.user_profile[:li_pictureUrl].present?
+      @attributes = Hash.new
+      @attributes[:status_id] = 1
+      @attributes[:project_id] = 123
+      @attributes[:type] = 45
+      @attributes[:data] = Hash.new
+      @attributes[:data][:name]  = candidate_name
+      @attributes[:data][:email] = @user.email
+      # @attributes[:data][:background_info] =
+      # @attributes[:data][:company_name] = @user.registration_answers[settings[:companyName]] if @user.registration_answers[settings[:companyName]].present?
+      # @attributes[:data][:company_website] =
+      # @attributes[:data][:location] = @user.registration_answers[settings[:desiredLocations]] if @user.registration_answers[settings[:desiredLocations]].present?
+      # @attributes[:data][:history] = linkedin_work_history if @user.linkedin_profile.present?
+      # @attributes[:data][:education] = linkedin_education_history if @user.linkedin_profile.present?
+      # @attributes[:data][:facebook] = @user.user_profile[:facebook_url] if @user.user_profile[:facebook_url].present?
+      # @attributes[:data][:linkedin] = @user.user_profile[:li_publicProfileUrl] if @user.user_profile[:li_publicProfileUrl].present?
+      # @attributes[:data][:phone] = @user.registration_answers[settings[:phone]] if @user.registration_answers[settings[:phone]].present?
+      # @attributes[:data][:phone_mobile] = @user.registration_answers[settings[:mobile]] if @user.registration_answers[settings[:mobile]].present?
+      # @attributes[:data][:position] = @user.registration_answers[settings[:occupation]] if @user.registration_answers[settings[:occupation]].present?
+      # @attributes[:data][:cv] = base64_cv if @user.user_profile[:upload_path].present?
+      # @attributes[:data][:avatar] = base64_avatar if @user.user_profile[:li_pictureUrl].present?
 
-      puts "== map_contact_attributes == #{attributes.inspect}"
+      Rails.logger.info "== map_contact_attributes == #{@attributes.inspect}"
 
-      return attributes
+      return @attributes
     end
 
 
     def contact_categories
-      categories = @access_token.get(API_ENDPOINT + 'contacts/categories')
+      categories = @access_token.get(URI.decode(API_ENDPOINT + 'contacts/categories'))
       return categories
     end
 
 
     def projects_list
-      list = @access_token.get(API_ENDPOINT + 'projects/list')
+      list = @access_token.get(URI.decode(API_ENDPOINT + 'projects/list'))
       return list
     end
 
@@ -122,25 +125,6 @@ class YuTalent::UserService < BaseService
       avatar = open(avatar_url).read
       base64_avatar = Base64.encode64(avatar)
       return base64_avatar
-    end
-
-
-    def check_duplicates
-      if @user.yu_talent_uid.present?
-        yu_talent_id = @user.yu_talent_uid
-      else
-        @response = @access_token.post(API_ENDPOINT + "contacts/check-duplicates", body: { 'email' => @user.email })
-        Rails.logger.info "--- response = #{response.inspect}"
-        if @response.record_count.to_i > 0
-          Rails.logger.info '--- CANDIDATE RECORD FOUND'
-          last_candidate = @response.body.last
-          yu_talent_id = last_candidate.id
-          @user.update(yu_talent_uid: yu_talent_id)
-        else
-          Rails.logger.info '--- CANDIDATE RECORD NOT FOUND'
-          yu_talent_id = nil
-        end
-      end
     end
 
 
