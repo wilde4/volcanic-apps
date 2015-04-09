@@ -211,26 +211,4 @@ class YuTalent::UserService < BaseService
       end
     end
 
-
-    def linkedin_background_info
-      string      = '<h1>Curriculum Vitae</h1>' +
-        "<h2>#{@user.user_profile['first_name']} #{@user.user_profile['last_name']}</h2>"
-
-      linkedin_education_history
-      linkedin_work_history
-
-      if @user.linkedin_profile['skills'].size > 0
-        string        = string + '<h3>SKILLS</h3>'
-        @user.linkedin_profile['skills'].each do |skill|
-          string      = string + '<p>'
-          skill_name  = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
-          proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
-          years       = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
-          string      = string + skill_name + proficiency + years + '</p>'
-        end
-      end
-      return string
-    end
-
-
 end
