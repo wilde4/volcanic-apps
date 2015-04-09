@@ -19,7 +19,7 @@ class YuTalent::AuthenticationService < BaseService
         )
         return @client
       rescue => e
-        puts e.inspect
+        Rails.logger.info "--- yu:talent client exception ----- : #{e.message}"
       end
     end
 
@@ -31,7 +31,7 @@ class YuTalent::AuthenticationService < BaseService
         @auth_url = URI.decode(auth_url)
         return @auth_url
       rescue => e
-        puts e.inspect
+        Rails.logger.info "--- yu:talent auth_url exception ----- : #{e.message}"
       end
     end
 
@@ -42,7 +42,7 @@ class YuTalent::AuthenticationService < BaseService
         @token = client.auth_code.get_token(authorization_code, redirect_uri: @callback_url)
         @token
       rescue => e
-        puts e.inspect
+        Rails.logger.info "--- yu:talent get_access_token exception ----- : #{e.message}"
       end
     end
 

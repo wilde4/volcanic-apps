@@ -23,9 +23,9 @@ class YuTalent::UserService < BaseService
 
       @yutalent_id = @response.body['id']
       @user.update(yu_talent_uid: @yutalent_id) if @yutalent_id.present?
-    rescue => e
-      puts e.inspect
-    end
+    # rescue => e
+    #   Rails.logger.info "--- post_user exception ----- : #{e.message}"
+    # end
   end
 
 
