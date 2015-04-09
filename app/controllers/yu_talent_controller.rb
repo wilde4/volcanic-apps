@@ -44,6 +44,7 @@ class YuTalentController < ApplicationController
 
   def save_user
     @user_attributes = Hash.new
+    @user_attributes[:user_id]              = params[:user][:id]
     @user_attributes[:email]                = params[:user][:email]
     @user_attributes[:user_data]            = params[:user]
     @user_attributes[:user_profile]         = params[:user_profile]
