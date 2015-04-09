@@ -40,7 +40,7 @@ class YuTalent::AuthenticationService < BaseService
       begin
         @callback_url = callback_url(app_id, host)
         @token = client.auth_code.get_token(authorization_code, redirect_uri: @callback_url)
-        @token
+        @token.try(:to_json)
       rescue => e
         Rails.logger.info "--- yu:talent get_access_token exception ----- : #{e.message}"
       end
