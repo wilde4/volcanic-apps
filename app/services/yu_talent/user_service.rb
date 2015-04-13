@@ -133,9 +133,9 @@ class YuTalent::UserService < BaseService
       @first_name = @user.user_profile['first_name']
       @last_name  = @user.user_profile['last_name']
       if @first_name.present? && @last_name.present?
-        "#{@last_name} #{@last_name}"
+        "#{@first_name} #{@last_name}"
       else
-        "#{@last_name}" || "#{@last_name}"
+        "#{@first_name}" || "#{@last_name}"
       end
     end
 
