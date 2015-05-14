@@ -231,12 +231,14 @@ class BullhornController < ApplicationController
 
     def post_user_to_bullhorn(user, params)
       settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
+      logger.info "--- settings = #{settings.inspect}"
       client = Bullhorn::Rest::Client.new(
         username: settings['username'],
         password: settings['password'],
         client_id: settings['client_id'],
         client_secret: settings['client_secret']
       )
+      logger.info "--- client = #{client.inspect}"
       attributes = {
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
@@ -270,18 +272,19 @@ class BullhornController < ApplicationController
       if user.bullhorn_uid.present?
         bullhorn_id = user.bullhorn_uid
       else
-        email_query = "email:\"#{URI::encode(user.email)}\""
-        existing_candidate = client.search_candidates(query: email_query, sort: 'id')
-        logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
-        if existing_candidate.record_count.to_i > 0
-          logger.info '--- CANDIDATE RECORD FOUND'
-          last_candidate = existing_candidate.data.last
-          bullhorn_id = last_candidate.id
-          @user.update(bullhorn_uid: bullhorn_id)
-        else
-          logger.info '--- CANDIDATE RECORD NOT FOUND'
-          bullhorn_id = nil
-        end
+        # email_query = "email:\"#{URI::encode(user.email)}\""
+        # existing_candidate = client.search_candidates(query: email_query, sort: 'id')
+        # logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
+        # if existing_candidate.record_count.to_i > 0
+        #   logger.info '--- CANDIDATE RECORD FOUND'
+        #   last_candidate = existing_candidate.data.last
+        #   bullhorn_id = last_candidate.id
+        #   @user.update(bullhorn_uid: bullhorn_id)
+        # else
+        #   logger.info '--- CANDIDATE RECORD NOT FOUND'
+        #   bullhorn_id = nil
+        # end
+        bullhorn_id = nil
       end
       # CREATE CANDIDATE
       if bullhorn_id.present?
