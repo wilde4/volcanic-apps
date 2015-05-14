@@ -9,6 +9,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 gem 'haml'
+gem 'simple_form'
 
 #API gems
 gem 'gibbon'
@@ -16,6 +17,7 @@ gem 'flickraw'
 gem 'youtube_it'
 gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
+gem 'oauth2'
 
 gem 'gibberish' # For referral payment data
 gem 'figaro'
