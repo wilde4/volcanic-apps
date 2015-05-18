@@ -41,13 +41,6 @@ ActiveRecord::Schema.define(version: 20150409110132) do
     t.text     "linkedin_profile"
   end
 
-  create_table "eventbrite_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string   "access_token"
-  end
-
   create_table "featured_jobs", force: true do |t|
     t.integer "job_id"
     t.integer "user_id"
