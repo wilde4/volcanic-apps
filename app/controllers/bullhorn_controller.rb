@@ -67,8 +67,7 @@ class BullhornController < ApplicationController
       @user = BullhornUser.find_by(user_id: params[:user][:id])
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-      # cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
-      cv_url = params[:user_profile][:upload_path]
+      cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
       logger.info "--- cv_url = #{cv_url}"
       require 'open-uri'
       require 'base64'
