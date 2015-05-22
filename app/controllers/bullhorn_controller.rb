@@ -394,23 +394,6 @@ class BullhornController < ApplicationController
       string = '<h1>Curriculum Vitae</h1>' +
         "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
 
-      if user.linkedin_profile['education_history'].size > 0
-        string = string + '<h3>EDUCATION</h3>'
-        user.linkedin_profile['education_history'].each do |education|
-          string = string + '<p>'
-          string = string + education['school_name'] + '<br />' unless education['school_name'].blank?
-
-          field_of_study = education['field_of_study'].present? ? 'Field of Study: ' + education['field_of_study'] + '<br />' : "Field of Study: N/A<br />"
-          start_date = education['start_date'].present? ? 'Start Date: ' + education['start_date'] + '<br />' : "Start Date: N/A<br />"
-          end_date = education['end_date'].present? ? 'End Date: ' + education['end_date'] + '<br />' : "End Date: N/A<br />"
-          degree = education['degree'].present? ? 'Degree: ' + education['degree'] + '<br />' : "Degree: N/A<br />"
-          activities = education['activities'].present? ? 'Activities: ' + education['activities'] + '<br />' : "Activities: N/A<br />"
-          notes = education['notes'].present? ? 'Notes: ' + education['notes'] + '<br />' : "Notes: N/A<br />"
-
-          string = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
-        end
-      end
-
       if user.linkedin_profile['positions'].size > 0
         string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
         user.linkedin_profile['positions'].each do |position|
@@ -427,17 +410,35 @@ class BullhornController < ApplicationController
         end
       end
 
-      if user.linkedin_profile['skills'].size > 0
-        string = string + '<h3>SKILLS</h3>'
-        user.linkedin_profile['skills'].each do |skill|
-          string = string + '<p>'
-          skill_name = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
-          proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
-          years = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
+      # LINKEDIN DONT PROVIDE EDUCATION OR SKILLS ANYMORE
+      # if user.linkedin_profile['education_history'].size > 0
+      #   string = string + '<h3>EDUCATION</h3>'
+      #   user.linkedin_profile['education_history'].each do |education|
+      #     string = string + '<p>'
+      #     string = string + education['school_name'] + '<br />' unless education['school_name'].blank?
 
-          string = string + skill_name + proficiency + years + '</p>'
-        end
-      end
+      #     field_of_study = education['field_of_study'].present? ? 'Field of Study: ' + education['field_of_study'] + '<br />' : "Field of Study: N/A<br />"
+      #     start_date = education['start_date'].present? ? 'Start Date: ' + education['start_date'] + '<br />' : "Start Date: N/A<br />"
+      #     end_date = education['end_date'].present? ? 'End Date: ' + education['end_date'] + '<br />' : "End Date: N/A<br />"
+      #     degree = education['degree'].present? ? 'Degree: ' + education['degree'] + '<br />' : "Degree: N/A<br />"
+      #     activities = education['activities'].present? ? 'Activities: ' + education['activities'] + '<br />' : "Activities: N/A<br />"
+      #     notes = education['notes'].present? ? 'Notes: ' + education['notes'] + '<br />' : "Notes: N/A<br />"
+
+      #     string = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
+      #   end
+      # end
+
+      # if user.linkedin_profile['skills'].size > 0
+      #   string = string + '<h3>SKILLS</h3>'
+      #   user.linkedin_profile['skills'].each do |skill|
+      #     string = string + '<p>'
+      #     skill_name = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
+      #     proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
+      #     years = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
+
+      #     string = string + skill_name + proficiency + years + '</p>'
+      #   end
+      # end
       return string
     end
 
