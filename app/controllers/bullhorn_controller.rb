@@ -247,7 +247,7 @@ class BullhornController < ApplicationController
         'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
         'status' => 'New Lead',
         'email' => user.email,
-        'source' => 'Company Website'
+        'source' => settings['bullhorn_source'].present? ? settings['bullhorn_source'] : 'Company Website'
       }
 
       if user.linkedin_profile.present?
