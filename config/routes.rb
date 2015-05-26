@@ -94,6 +94,12 @@ Apps::Application.routes.draw do
     post "parse_jobs"       => 'talent_rover#parse_jobs'
   end
 
+  scope :leisure_jobs do
+    post "update_settings"  => 'leisure_jobs#update_settings'
+    post "activate_app"     => 'leisure_jobs#activate_app'
+    post "deactivate_app"   => 'leisure_jobs#deactivate_app'
+  end
+
   scope :eclipse do
     post 'update_settings'  => 'eclipse#update_settings'
     post 'activate_app'     => 'eclipse#activate_app'

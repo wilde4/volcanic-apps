@@ -40,6 +40,8 @@ gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 
 # gem 'bullhorn-rest', :path => "../gems/bullhorn-rest", branch: 'create_candidates'
 gem 'hashie'
 
+gem 'htmlentities', '~> 4.3.2'
+
 group :development do
   gem 'sqlite3'
   gem 'pry-byebug'

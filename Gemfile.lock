@@ -86,6 +86,7 @@ GEM
     hike (1.2.3)
     honeybadger (1.16.2)
       json
+    htmlentities (4.3.2)
     httparty (0.13.1)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
@@ -221,6 +222,7 @@ DEPENDENCIES
   haml
   hashie
   honeybadger
+  htmlentities (~> 4.3.2)
   httparty
   jbuilder (~> 1.2)
   jquery-rails
