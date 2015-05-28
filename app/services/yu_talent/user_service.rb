@@ -50,9 +50,11 @@ class YuTalent::UserService < BaseService
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
       @contact_attributes[:type]        = type_id(@user_type)
+      puts "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/edit"), body: @contact_attributes)
       @response_body = JSON.parse(@response.body)
+      puts "--- @response_body = #{@response_body.inspect}"
       # update user details
     rescue => e
       Rails.logger.info "--- yu:talent update_user exception ----- : #{e.message}"
