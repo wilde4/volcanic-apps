@@ -3,7 +3,7 @@ class TalentRoverApp
     puts '- BEGIN poll_jobs_feed'
 
     # Find who has registered to use TR:
-    registered_hosts = Key.where(app_name: 'talent_rover')
+    registered_hosts = Key.where(id: 95)#app_name: 'talent_rover')
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
@@ -17,7 +17,10 @@ class TalentRoverApp
   def self.parse_jobs
     @job_data = get_xml
     jobs = @job_data.xpath("//job")
-    
+
+    # Has a Posting Language been defined?
+    posting_language = get_posting_language.downcase
+
     jobs.each do |job|
       job_payload = Hash.new
       job_payload["job[job_type]"] = "unspecified"
@@ -28,6 +31,19 @@ class TalentRoverApp
         child = job.xpath("#{k}")
         puts child.text.strip if child.text.present? and v == 'discipline'
         job_payload["job[#{v}]"] = child.text.strip if child.text.present?
+      end
+
+      # Replace job_payload[description + title] if language present:
+      job_post_langs = job.xpath("postinglanguage").text
+      job_post_langs = job_post_langs.downcase.split(';') if job_post_langs.present?
+
+      if posting_language.present? 
+        if job_post_langs.include?(posting_language)
+          job_payload["job[job_title]"] = job.xpath("#{posting_language}title").text
+          job_payload["job[job_description]"] = job.xpath("#{posting_language}clientdesc").text
+        else
+          next
+        end
       end
 
       lang_nodes = job.xpath("languages")
@@ -58,8 +74,13 @@ private
     doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
   end
 
+  def self.get_posting_language
+    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
+    settings.settings["Posting Language"] || ""
+  end
+
   def self.post_payload(payload)
-    net = Net::HTTP.new(@key.host, 80)
+    net = Net::HTTP.new(@key.host, 3000)
     request = Net::HTTP::Post.new("/api/v1/jobs.json")
     request.set_form_data( payload )
     net.read_timeout = net.open_timeout = 10
