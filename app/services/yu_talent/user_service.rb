@@ -148,7 +148,11 @@ class YuTalent::UserService < BaseService
       @attributes[:data][:phone]        = @user.registration_answers[@settings.phone] if @settings.phone.present? && @user.registration_answers[@settings.phone].present?
       @attributes[:data][:phone_mobile] = @user.registration_answers[@settings.phone_mobile] if @settings.phone_mobile.present? && @user.registration_answers[@settings.phone_mobile].present?
       @attributes[:data][:position]     = @user.registration_answers[@settings.position] if @settings.position.present? && @user.registration_answers[@settings.position].present?
-      @attributes[:data][:cv]           = base64_encoder(@user.user_profile['upload_path']) if @new_cv && @user.user_profile['upload_path'].present?
+      if @new_cv && @user.user_profile['upload_path'].present? && @user.user_profile['upload_name'].present?
+        @attributes[:data][:cv]           = Hash.new
+        @attributes[:data][:cv][:content] = base64_encoder(@user.user_profile['upload_path'])
+        @attributes[:data][:cv][:name]    = @user.user_profile['upload_name']
+      end
       @attributes[:data][:avatar]       = base64_encoder(@user.user_profile['li_pictureUrl']) if @user.user_profile['li_pictureUrl'].present?
       return @attributes
     end
