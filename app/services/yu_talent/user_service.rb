@@ -50,11 +50,11 @@ class YuTalent::UserService < BaseService
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
       @contact_attributes[:type]        = type_id(@user_type)
-      puts "--- @contact_attributes = #{@contact_attributes.inspect}"
+      Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/edit"), body: @contact_attributes)
       @response_body = JSON.parse(@response.body)
-      puts "--- @response_body = #{@response_body.inspect}"
+      Rails.logger.info "--- @response_body = #{@response_body.inspect}"
       # update user details
     rescue => e
       Rails.logger.info "--- yu:talent update_user exception ----- : #{e.message}"
@@ -127,7 +127,6 @@ class YuTalent::UserService < BaseService
 
 
     def map_contact_attributes
-      puts "--- @new_cv in map_contact_attributes = #{@new_cv}"
       @attributes                       = Hash.new
       @attributes[:data]                = Hash.new
       @attributes[:data][:name]         = candidate_name
@@ -174,8 +173,12 @@ class YuTalent::UserService < BaseService
 
     def base64_encoder(path)
       # @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
-      # @url              = URI.decode('http://' + @host + path)
-      @url              = URI.decode(path)
+      if Rails.env.development?
+        # @url              = URI.decode('http://' + @host + path)
+        @url = URI.decode('https://dti2gc0g5oj0i.cloudfront.net' + path)
+      else
+        @url            = URI.decode(path)
+      end
       @resource         = open(@url).read
       @encoded_resource = Base64.encode64(@resource)
       return @encoded_resource

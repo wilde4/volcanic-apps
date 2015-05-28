@@ -60,10 +60,7 @@ class YuTalentController < ApplicationController
       if @user.update(@user_attributes)
         @user.reload
         new_upload_path = @user.user_profile["upload_path"]
-        puts "--- original_upload_path = #{original_upload_path}"
-        puts "--- new_upload_path = #{new_upload_path}"
         @new_cv = (original_upload_path != new_upload_path)
-        puts "--- @new_cv = #{@new_cv}"
         YuTalent::UserService.new(@user).update_user(@new_cv)
         render json: { success: true,  user_id: @user.id }
       else
