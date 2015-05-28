@@ -41,6 +41,24 @@ class YuTalent::UserService < BaseService
     end
   end
 
+  def update_user(new_cv)
+    @new_cv = new_cv
+    begin
+      # map contact attributes
+      @contact_attributes               = map_contact_attributes
+      @contact_attributes[:contact_id]  = @user.yu_talent_uid
+      @contact_attributes[:project_id]  = project_id
+      @contact_attributes[:status_id]   = status_id('new')
+      @contact_attributes[:type]        = type_id(@user_type)
+      # post contact attributes
+      @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/edit"), body: @contact_attributes)
+      @response_body = JSON.parse(@response.body)
+      # update user details
+    rescue => e
+      Rails.logger.info "--- yu:talent update_user exception ----- : #{e.message}"
+    end
+  end
+
 
   private
 
@@ -107,22 +125,30 @@ class YuTalent::UserService < BaseService
 
 
     def map_contact_attributes
+      puts "--- @new_cv in map_contact_attributes = #{@new_cv}"
       @attributes                       = Hash.new
       @attributes[:data]                = Hash.new
       @attributes[:data][:name]         = candidate_name
       @attributes[:data][:email]        = @user.email
-      @attributes[:data][:background_info] = linkedin_background_info if @user.linkedin_profile.present?
+      if @settings.background_info.present?
+        bg_info = @user.registration_answers[@settings.background_info] rescue nil
+      elsif @user.linkedin_profile.present?
+        bg_info = linkedin_background_info
+      else
+        bg_info = nil
+      end
+      @attributes[:data][:background_info] = bg_info
       # @attributes[:data][:company_website] =
-      @attributes[:data][:company_name] = @user.registration_answers['companyName'] if @user.registration_answers['companyName'].present?
-      @attributes[:data][:location]     = @user.registration_answers['desiredLocations'] if @user.registration_answers['desiredLocations'].present?
+      @attributes[:data][:company_name] = @user.registration_answers[@settings.company_name] if @settings.company_name.present? && @user.registration_answers[@settings.company_name].present?
+      @attributes[:data][:location]     = @user.registration_answers[@settings.location] if @settings.location.present? && @user.registration_answers[@settings.location].present?
       @attributes[:data][:history]      = linkedin_work_history if @user.linkedin_profile.present?
-      @attributes[:data][:education]    = linkedin_education_history if @user.linkedin_profile.present?
+      # @attributes[:data][:education]    = linkedin_education_history if @user.linkedin_profile.present?
       @attributes[:data][:facebook]     = @user.user_profile['facebook_url'] if @user.user_profile['facebook_url'].present?
       @attributes[:data][:linkedin]     = @user.user_profile['li_publicProfileUrl'] if @user.user_profile['li_publicProfileUrl'].present?
-      @attributes[:data][:phone]        = @user.registration_answers['telephone-number'] if @user.registration_answers['telephone-number'].present?
-      @attributes[:data][:phone_mobile] = @user.registration_answers['mobile-telephone-number'] if @user.registration_answers['mobile-telephone-number'].present?
-      @attributes[:data][:position]     = @user.registration_answers['occupation'] if @user.registration_answers['occupation'].present?
-      @attributes[:data][:cv]           = base64_encoder(@user.user_profile['upload_path']) if @user.user_profile['upload_path'].present?
+      @attributes[:data][:phone]        = @user.registration_answers[@settings.phone] if @settings.phone.present? && @user.registration_answers[@settings.phone].present?
+      @attributes[:data][:phone_mobile] = @user.registration_answers[@settings.phone_mobile] if @settings.phone_mobile.present? && @user.registration_answers[@settings.phone_mobile].present?
+      @attributes[:data][:position]     = @user.registration_answers[@settings.position] if @settings.position.present? && @user.registration_answers[@settings.position].present?
+      @attributes[:data][:cv]           = base64_encoder(@user.user_profile['upload_path']) if @new_cv && @user.user_profile['upload_path'].present?
       @attributes[:data][:avatar]       = base64_encoder(@user.user_profile['li_pictureUrl']) if @user.user_profile['li_pictureUrl'].present?
       return @attributes
     end
@@ -141,8 +167,9 @@ class YuTalent::UserService < BaseService
 
 
     def base64_encoder(path)
-      @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
-      @url              = URI.decode('http://' + @host + path)
+      # @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
+      # @url              = URI.decode('http://' + @host + path)
+      @url              = URI.decode(path)
       @resource         = open(@url).read
       @encoded_resource = Base64.encode64(@resource)
       return @encoded_resource
@@ -150,8 +177,8 @@ class YuTalent::UserService < BaseService
 
 
     def linkedin_background_info
-      linkedin_education_history
-      linkedin_skills
+      # linkedin_education_history
+      # linkedin_skills
       linkedin_work_history
     end
 
@@ -176,41 +203,41 @@ class YuTalent::UserService < BaseService
     end
 
 
-    def linkedin_education_history
-      unless !@user.linkedin_profile['education_history'].present?
-        if @user.linkedin_profile['education_history'].size > 0
-          string            = string + '<h3>EDUCATION</h3>'
-          @user.linkedin_profile['education_history'].each do |education|
-            string          = string + '<p>'
-            string          = string + education['school_name'] + '<br />' unless education['school_name'].blank?
-            field_of_study  = education['field_of_study'].present? ? 'Field of Study: ' + education['field_of_study'] + '<br />' : "Field of Study: N/A<br />"
-            start_date      = education['start_date'].present? ? 'Start Date: ' + education['start_date'] + '<br />' : "Start Date: N/A<br />"
-            end_date        = education['end_date'].present? ? 'End Date: ' + education['end_date'] + '<br />' : "End Date: N/A<br />"
-            degree          = education['degree'].present? ? 'Degree: ' + education['degree'] + '<br />' : "Degree: N/A<br />"
-            activities      = education['activities'].present? ? 'Activities: ' + education['activities'] + '<br />' : "Activities: N/A<br />"
-            notes           = education['notes'].present? ? 'Notes: ' + education['notes'] + '<br />' : "Notes: N/A<br />"
-            string          = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
-          end
-          return string
-        end
-      end
-    end
+    # def linkedin_education_history
+    #   unless !@user.linkedin_profile['education_history'].present?
+    #     if @user.linkedin_profile['education_history'].size > 0
+    #       string            = string + '<h3>EDUCATION</h3>'
+    #       @user.linkedin_profile['education_history'].each do |education|
+    #         string          = string + '<p>'
+    #         string          = string + education['school_name'] + '<br />' unless education['school_name'].blank?
+    #         field_of_study  = education['field_of_study'].present? ? 'Field of Study: ' + education['field_of_study'] + '<br />' : "Field of Study: N/A<br />"
+    #         start_date      = education['start_date'].present? ? 'Start Date: ' + education['start_date'] + '<br />' : "Start Date: N/A<br />"
+    #         end_date        = education['end_date'].present? ? 'End Date: ' + education['end_date'] + '<br />' : "End Date: N/A<br />"
+    #         degree          = education['degree'].present? ? 'Degree: ' + education['degree'] + '<br />' : "Degree: N/A<br />"
+    #         activities      = education['activities'].present? ? 'Activities: ' + education['activities'] + '<br />' : "Activities: N/A<br />"
+    #         notes           = education['notes'].present? ? 'Notes: ' + education['notes'] + '<br />' : "Notes: N/A<br />"
+    #         string          = string + field_of_study + start_date + end_date + degree + activities + notes + '</p>'
+    #       end
+    #       return string
+    #     end
+    #   end
+    # end
 
 
-    def linkedin_skills
-      unless !@user.linkedin_profile['skills'].present?
-        if @user.linkedin_profile['skills'].size > 0
-          string        = string + '<h3>SKILLS</h3>'
-          @user.linkedin_profile['skills'].each do |skill|
-            string      = string + '<p>'
-            skill_name  = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
-            proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
-            years       = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
-            string      = string + skill_name + proficiency + years + '</p>'
-          end
-          return string
-        end
-      end
-    end
+    # def linkedin_skills
+    #   unless !@user.linkedin_profile['skills'].present?
+    #     if @user.linkedin_profile['skills'].size > 0
+    #       string        = string + '<h3>SKILLS</h3>'
+    #       @user.linkedin_profile['skills'].each do |skill|
+    #         string      = string + '<p>'
+    #         skill_name  = skill['skill'].present? ? 'Skill: ' + skill['skill'] + '<br />' : "Skill: N/A<br />"
+    #         proficiency = skill['proficiency'].present? ? 'Proficiency: ' + skill['proficiency'] + '<br />' : "Proficiency: N/A<br />"
+    #         years       = skill['years'].present? ? 'Years: ' + skill['years'] + '<br />' : "Years: N/A<br />"
+    #         string      = string + skill_name + proficiency + years + '</p>'
+    #       end
+    #       return string
+    #     end
+    #   end
+    # end
 
 end

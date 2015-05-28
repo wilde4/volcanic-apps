@@ -19,6 +19,11 @@
       - if @settings.present? && @settings.authorization_code.present?
         %h4
           Your App is Authorised.
+        .row
+          .col-md-6
+            %p Add your field mappings below. Use the Registration Question reference strings for the relevant YuTalent field.
+            #settings_form
+              = render partial: 'settings_form'
       - else
         %p
           Please click the button below to authorize your YuTalent app.

@@ -174,6 +174,7 @@ Apps::Application.routes.draw do
     post "update_settings"  => 'yu_talent#update_settings'
     get  "index"            => 'yu_talent#index'
     post "save_user"        => 'yu_talent#save_user'
+    post "save_settings"    => 'yu_talent#save_settings'
     get  "callback"         => 'yu_talent#callback', as: :yu_talent_callback
   end
 

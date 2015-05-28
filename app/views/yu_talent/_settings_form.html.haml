@@ -1,0 +1,10 @@
+= simple_form_for @settings, url: 'http://localhost:3001/yu_talent/save_settings', method: :post, remote: true do |f|
+  = f.input :background_info
+  = f.input :company_name
+  = f.input :location
+  = f.input :education
+  = f.input :phone
+  = f.input :phone_mobile
+  = f.input :position
+  = f.input :dataset_id, as: :hidden
+  = f.submit 'Save Field Mappings'

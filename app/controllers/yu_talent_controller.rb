@@ -56,8 +56,15 @@ class YuTalentController < ApplicationController
     @user = YuTalentUser.find_by(user_id: params[:user][:id])
 
     if @user.present?
+      original_upload_path = @user.user_profile["upload_path"]
       if @user.update(@user_attributes)
-        YuTalent::UserService.new(@user).update_user
+        @user.reload
+        new_upload_path = @user.user_profile["upload_path"]
+        puts "--- original_upload_path = #{original_upload_path}"
+        puts "--- new_upload_path = #{new_upload_path}"
+        @new_cv = (original_upload_path != new_upload_path)
+        puts "--- @new_cv = #{@new_cv}"
+        YuTalent::UserService.new(@user).update_user(@new_cv)
         render json: { success: true,  user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -73,5 +80,12 @@ class YuTalentController < ApplicationController
     end
   end
 
-
+  def save_settings
+    @settings = YuTalentAppSetting.find_by(dataset_id: params[:yu_talent_app_setting][:dataset_id])
+    if @settings.update(params[:yu_talent_app_setting].permit!)
+      flash[:notice]  = "Settings successfully saved."
+    else
+      flash[:alert]   = "Settings could not be saved. Please try again."
+    end
+  end
 end
