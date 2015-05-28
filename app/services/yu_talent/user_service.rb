@@ -179,6 +179,9 @@ class YuTalent::UserService < BaseService
 
 
     def base64_encoder(path)
+      require 'uri'
+      require 'open-uri'
+      require 'base64'
       Rails.logger.info "--- STARTING BASE64 ENCODING OF CV"
       # @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
       if Rails.env.development?
