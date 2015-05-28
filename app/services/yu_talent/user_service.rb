@@ -45,17 +45,17 @@ class YuTalent::UserService < BaseService
     @new_cv = new_cv
     begin
       # map contact attributes
-      Rails.logger.info "--- ABOUT TO map_contact_attributes"
+      # Rails.logger.info "--- ABOUT TO map_contact_attributes"
       @contact_attributes               = map_contact_attributes
       @contact_attributes[:contact_id]  = @user.yu_talent_uid
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
       @contact_attributes[:type]        = type_id(@user_type)
-      Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
+      # Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/edit"), body: @contact_attributes)
       @response_body = JSON.parse(@response.body)
-      Rails.logger.info "--- @response_body = #{@response_body.inspect}"
+      # Rails.logger.info "--- @response_body = #{@response_body.inspect}"
       # update user details
     rescue => e
       Rails.logger.info "--- yu:talent update_user exception ----- : #{e.message}"
@@ -128,7 +128,7 @@ class YuTalent::UserService < BaseService
 
 
     def map_contact_attributes
-      Rails.logger.info "--- STARTING map_contact_attributes"
+      # Rails.logger.info "--- STARTING map_contact_attributes"
       @attributes                       = Hash.new
       @attributes[:data]                = Hash.new
       @attributes[:data][:name]         = candidate_name
@@ -151,17 +151,17 @@ class YuTalent::UserService < BaseService
       @attributes[:data][:phone]        = @user.registration_answers[@settings.phone] if @settings.phone.present? && @user.registration_answers[@settings.phone].present?
       @attributes[:data][:phone_mobile] = @user.registration_answers[@settings.phone_mobile] if @settings.phone_mobile.present? && @user.registration_answers[@settings.phone_mobile].present?
       @attributes[:data][:position]     = @user.registration_answers[@settings.position] if @settings.position.present? && @user.registration_answers[@settings.position].present?
-      Rails.logger.info "--- @attributes = #{@attributes.inspect}"
-      Rails.logger.info "--- CONSIDERING THE CREATION OF CV DATA"
+      # Rails.logger.info "--- @attributes = #{@attributes.inspect}"
+      # Rails.logger.info "--- CONSIDERING THE CREATION OF CV DATA"
       if @new_cv && @user.user_profile['upload_path'].present? && @user.user_profile['upload_name'].present?
-        Rails.logger.info "--- CONDITIONS MET TO CREATE CV DATA"
+        # Rails.logger.info "--- CONDITIONS MET TO CREATE CV DATA"
         @attributes[:data][:cv]           = Hash.new
         @attributes[:data][:cv][:content] = base64_encoder(@user.user_profile['upload_path'])
         @attributes[:data][:cv][:name]    = @user.user_profile['upload_name']
-        Rails.logger.info "--- CREATED CV DATA"
+        # Rails.logger.info "--- CREATED CV DATA"
       end
       @attributes[:data][:avatar]       = base64_encoder(@user.user_profile['li_pictureUrl']) if @user.user_profile['li_pictureUrl'].present?
-      Rails.logger.info "--- FINISHED map_contact_attributes: #{@attributes.inspect}"
+      # Rails.logger.info "--- FINISHED map_contact_attributes: #{@attributes.inspect}"
       return @attributes
     end
 
@@ -182,7 +182,7 @@ class YuTalent::UserService < BaseService
       require 'uri'
       require 'open-uri'
       require 'base64'
-      Rails.logger.info "--- STARTING BASE64 ENCODING OF CV"
+      # Rails.logger.info "--- STARTING BASE64 ENCODING OF CV"
       # @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
       if Rails.env.development?
         # @url              = URI.decode('http://' + @host + path)
@@ -190,11 +190,11 @@ class YuTalent::UserService < BaseService
       else
         @url            = URI.decode(path)
       end
-      Rails.logger.info "--- OPENING CV URL: #{@url}"
+      # Rails.logger.info "--- OPENING CV URL: #{@url}"
       @resource         = open(@url).read
-      Rails.logger.info "--- ABOUT TO BASE64 ENCODE OPENED CV FILE"
+      # Rails.logger.info "--- ABOUT TO BASE64 ENCODE OPENED CV FILE"
       @encoded_resource = Base64.encode64(@resource)
-      Rails.logger.info "--- FINISHED BASE64 ENCODING OF OPENED CV FILE"
+      # Rails.logger.info "--- FINISHED BASE64 ENCODING OF OPENED CV FILE"
       return @encoded_resource
     end
 
