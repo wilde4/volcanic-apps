@@ -175,6 +175,7 @@ Apps::Application.routes.draw do
     get  "index"            => 'yu_talent#index'
     post "save_user"        => 'yu_talent#save_user'
     post "save_settings"    => 'yu_talent#save_settings'
+    post 'upload_cv'        => 'yu_talent#upload_cv'
     get  "callback"         => 'yu_talent#callback', as: :yu_talent_callback
   end
 

@@ -17,16 +17,20 @@ class YuTalent::UserService < BaseService
 
   def save_user
     begin
-      @yutalent_id = check_duplicates
-      return if @yutalent_id.present?
+      # @yutalent_id = check_duplicates
+      # return if @yutalent_id.present?
       # map contact attributes
+      @new_cv = true
+      @new_avatar = true
       @contact_attributes               = map_contact_attributes
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
       @contact_attributes[:type]        = type_id(@user_type)
       # post contact attributes
+      # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/add"), body: @contact_attributes)
       @response_body = JSON.parse(@response.body)
+      # Rails.logger.info "--- @response_body: #{@response_body}"
       # update user details
       if @response_body['id'].present?
         @user.update(
@@ -41,8 +45,9 @@ class YuTalent::UserService < BaseService
     end
   end
 
-  def update_user(new_cv)
+  def update_user(new_cv, new_avatar)
     @new_cv = new_cv
+    @new_avatar = new_avatar
     begin
       # map contact attributes
       # Rails.logger.info "--- ABOUT TO map_contact_attributes"
@@ -62,6 +67,35 @@ class YuTalent::UserService < BaseService
     end
   end
 
+  def check_duplicates
+    Rails.logger.info "--- STARTING check_duplicates"
+    begin
+      if @user.yu_talent_uid.present?
+        yutalent_id = @user.yu_talent_uid
+      else
+        @dup_attributes = Hash.new
+        @dup_attributes[:email] = @user.email
+        # Rails.logger.info "--- @dup_attributes: #{@dup_attributes.inspect}"
+        @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/check-duplicates"), body: @dup_attributes)
+        # Rails.logger.info "--- @response: #{@response.inspect}"
+        @duplicate_contacts = JSON.parse(@response.body)
+        # Rails.logger.info "--- @duplicate_contacts: #{@duplicate_contacts.inspect}"
+        if @duplicate_contacts.count > 0
+          # Rails.logger.info '--- yu:talent DUPLICATE CANDIDATE RECORD FOUND'
+          @response_body  = JSON.parse(@response.body)
+          @last_candidate = @response_body.last
+          # Rails.logger.info "--- @last_candidate: #{@last_candidate.inspect}"
+          yutalent_id     = @last_candidate.id
+        else
+          yutalent_id = nil
+        end
+      end
+      return yutalent_id
+    rescue => e
+      Rails.logger.info "--- yu:talent check_duplicates exception ----- : #{e.message}"
+    end
+  end
+
 
   private
 
@@ -71,28 +105,6 @@ class YuTalent::UserService < BaseService
       @access_token_hash  = JSON.parse(@settings.try(:access_token))
       @access_token       = OAuth2::AccessToken.from_hash(@client, @access_token_hash)
       return @access_token
-    end
-
-
-    def check_duplicates
-      begin
-        if @user.yu_talent_uid.present?
-          yutalent_id = @user.yu_talent_uid
-        else
-          @response = @access_token.get(URI.decode(API_ENDPOINT + "contacts/check-duplicates"), body: { 'email' => @user.email })
-          @duplicate_contacts = JSON.parse(@response.body)
-          if @duplicate_contacts.count > 0
-            Rails.logger.info '--- yu:talent DUPLICATE CANDIDATE RECORD FOUND'
-            @response_body  = JSON.parse(@response.body)
-            @last_candidate = @response_body.last
-            yutalent_id     = @last_candidate.id
-          else
-            yutalent_id = nil
-          end
-        end
-      rescue => e
-        Rails.logger.info "--- yu:talent check_duplicates exception ----- : #{e.message}"
-      end
     end
 
 
@@ -152,7 +164,7 @@ class YuTalent::UserService < BaseService
       @attributes[:data][:phone_mobile] = @user.registration_answers[@settings.phone_mobile] if @settings.phone_mobile.present? && @user.registration_answers[@settings.phone_mobile].present?
       @attributes[:data][:position]     = @user.registration_answers[@settings.position] if @settings.position.present? && @user.registration_answers[@settings.position].present?
       # Rails.logger.info "--- @attributes = #{@attributes.inspect}"
-      # Rails.logger.info "--- CONSIDERING THE CREATION OF CV DATA"
+      # Rails.logger.info "--- CONSIDERING THE CREATION OF CV DATA. @new_cv: #{@new_cv}"
       if @new_cv && @user.user_profile['upload_path'].present? && @user.user_profile['upload_name'].present?
         # Rails.logger.info "--- CONDITIONS MET TO CREATE CV DATA"
         @attributes[:data][:cv]           = Hash.new
@@ -160,7 +172,7 @@ class YuTalent::UserService < BaseService
         @attributes[:data][:cv][:name]    = @user.user_profile['upload_name']
         # Rails.logger.info "--- CREATED CV DATA"
       end
-      @attributes[:data][:avatar]       = base64_encoder(@user.user_profile['li_pictureUrl']) if @user.user_profile['li_pictureUrl'].present?
+      @attributes[:data][:avatar]       = base64_encoder(@user.user_profile['li_pictureUrl']) if @new_avatar && @user.user_profile['li_pictureUrl'].present?
       # Rails.logger.info "--- FINISHED map_contact_attributes: #{@attributes.inspect}"
       return @attributes
     end
@@ -184,7 +196,7 @@ class YuTalent::UserService < BaseService
       require 'base64'
       # Rails.logger.info "--- STARTING BASE64 ENCODING OF CV"
       # @host             = Key.find_by(app_dataset_id: @dataset_id).try(:host)
-      if Rails.env.development?
+      if Rails.env.development? && path.start_with?("/s3/")
         # @url              = URI.decode('http://' + @host + path)
         @url = URI.decode('https://dti2gc0g5oj0i.cloudfront.net' + path)
       else
@@ -207,10 +219,13 @@ class YuTalent::UserService < BaseService
 
 
     def linkedin_work_history
+      # Rails.logger.info "--- STARTING linkedin_work_history"
       unless !@user.linkedin_profile['positions'].present?
+        # Rails.logger.info "--- POSITIONS #{@user.linkedin_profile['positions'].inspect}"
         if @user.linkedin_profile['positions'].size > 0
-          string              = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+          string              = '<h3>PREVIOUS EXPERIENCE</h3>'
           @user.linkedin_profile['positions'].each do |position|
+            # Rails.logger.info "--- POSITION: #{position.inspect}"
             string            = string + '<p>'
             company_name      = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
             title             = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
@@ -219,6 +234,7 @@ class YuTalent::UserService < BaseService
             summary           = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
             company_industry  = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
             string            = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+            # Rails.logger.info "--- string: #{string}"
           end
           return string
         end
