@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150528131335) do
+ActiveRecord::Schema.define(version: 20150529144431) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,6 +27,25 @@ ActiveRecord::Schema.define(version: 20150528131335) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "arithon_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "api_key"
+    t.string   "company_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "arithon_users", force: true do |t|
+    t.integer  "user_id"
+    t.string   "email"
+    t.text     "user_data"
+    t.text     "user_profile"
+    t.text     "registration_answers"
+    t.integer  "arithon_candidateid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "bullhorn_users", force: true do |t|
