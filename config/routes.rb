@@ -179,5 +179,14 @@ Apps::Application.routes.draw do
     get  "callback"         => 'yu_talent#callback', as: :yu_talent_callback
   end
 
+  scope :arithon do
+    post "activate_app"     => 'arithon#activate_app'
+    post "deactivate_app"   => 'arithon#deactivate_app'
+    get  "index"            => 'arithon#index'
+    post "save_user"        => 'arithon#save_user'
+    post "save_settings"    => 'arithon#save_settings'
+    post 'upload_cv'        => 'arithon#upload_cv'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

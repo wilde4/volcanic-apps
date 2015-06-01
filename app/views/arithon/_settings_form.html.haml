@@ -1,0 +1,6 @@
+- domain = Rails.env.development? ? 'http://localhost:3001' : 'https://apps.volcanic.co'
+= simple_form_for @settings, url: "#{domain}/arithon/save_settings", method: :post, remote: true do |f|
+  = f.input :api_key
+  = f.input :company_name
+  = f.input :dataset_id, as: :hidden, input_html: {value: @settings.dataset_id.present? ? @settings.dataset_id : params[:data][:dataset_id]}
+  = f.submit 'Save Settings'

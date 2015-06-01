@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(version: 20150529144431) do
     t.text     "user_data"
     t.text     "user_profile"
     t.text     "registration_answers"
+    t.text     "linkedin_profile"
     t.integer  "arithon_candidateid"
     t.datetime "created_at"
     t.datetime "updated_at"

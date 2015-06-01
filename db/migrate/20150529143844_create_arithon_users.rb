@@ -6,6 +6,7 @@ class CreateArithonUsers < ActiveRecord::Migration
       t.text :user_data
       t.text :user_profile
       t.text :registration_answers
+      t.text :linkedin_profile
       t.integer :arithon_candidateid
 
       t.timestamps
