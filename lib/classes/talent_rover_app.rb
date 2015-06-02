@@ -1,9 +1,10 @@
+# TalentRoverApp.poll_jobs_feed
 class TalentRoverApp
   def self.poll_jobs_feed
     puts '- BEGIN poll_jobs_feed'
 
     # Find who has registered to use TR:
-    registered_hosts = Key.where(id: 95)#app_name: 'talent_rover')
+    registered_hosts = Key.where(app_name: 'talent_rover')
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
@@ -80,15 +81,17 @@ private
   end
 
   def self.post_payload(payload)
-    net = Net::HTTP.new(@key.host, 3000)
-    request = Net::HTTP::Post.new("/api/v1/jobs.json")
-    request.set_form_data( payload )
-    net.read_timeout = net.open_timeout = 10
+    # net = Net::HTTP.new(@key.host)
+    # request = Net::HTTP::Post.new("/api/v1/jobs.json")
+    # request.set_form_data( payload )
+    # net.read_timeout = net.open_timeout = 10
 
     begin
-      response = net.start do |http|
-        http.request(request)
-      end
+      # response = net.start do |http|
+      #   http.request(request)
+      # end
+
+      response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
@@ -107,7 +110,7 @@ private
       jobtype: 'job_type',
       category: 'discipline',
       function: 'job_functions',
-      date: 'created_at'
+      lastmodifieddate: 'created_at'
     }
   end
 end
