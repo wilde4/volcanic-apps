@@ -25,9 +25,10 @@ class InventoryController < ApplicationController
     @inventory.dataset_id = @key.app_dataset_id
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
-
-    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}", {})
-    # logger.info "--- cr_response = #{cr_response.body.inspect}"
+    logger.info "--- start site api fetch"
+    logger.info "http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}"
+    site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}")
+    logger.info "--- site_response = #{site_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
@@ -126,6 +127,36 @@ class InventoryController < ApplicationController
     # logger.info "--- @inventory = #{@inventory.inspect}"
     respond_to do |format|
       format.json { render json: { success: true, item: @inventory || [] } }
+    end
+  end
+
+  # GET /inventories/best_options
+  # get best price and details for each action
+  # Params:
+  #    dataset_id: app dataset of site
+  def best_options
+    final_hash = {}
+
+    available_actions = Inventory.where(dataset_id: params[:dataset_id]).pluck(:object_action)
+
+    available_actions.each do |action|
+      item = Inventory.where(object_action: action).order(:price).first
+      final_hash[item.name] = item.attributes
+    end
+    
+    respond_to do |format|
+      format.json { render json: { success: true, items: final_hash } }
+    end
+  end
+
+  # GET /inventories/available_actions
+  # get available actions that have prices
+  # Params:
+  #    dataset_id: app dataset of site
+  def available_actions
+    actions = Inventory.where(dataset_id: params[:dataset_id]).order(:object_action).distinct(:object_Action).pluck(:object_action)
+    respond_to do |format|
+      format.json { render json: { success: true, actions: actions } }
     end
   end
 

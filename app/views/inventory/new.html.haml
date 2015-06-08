@@ -7,7 +7,7 @@
     $('form').submit(function() {
       var formData = $(this).serialize();
       $.ajax({
-        url: "https://#{app_server_host}/inventories/create_item.json",
+        url: "//#{app_server_host}/inventories/create_item.json",
         type: "POST",
         crossDomain: true,
         data: formData,

@@ -42,6 +42,8 @@ Apps::Application.routes.draw do
     get "new"               => 'inventory#new',            as: :inventory_new
     get "edit"              => 'inventory#edit',           as: :inventory_edit
     get "cheapest_price"    => 'inventory#cheapest_price', as: :inventory_cheapest_price
+    get "best_options"      => 'inventory#best_options',   as: :inventory_best_options
+    get "available_actions" => 'inventory#available_actions', as: :inventory_available_actions
     patch "create_item"     => 'inventory#update',         as: :inventory_update
     post "activate_app"     => 'inventory#activate_app',   as: :inventory_activate_app
     post "deactivate_app"   => 'inventory#deactivate_app', as: :inventory_deactivate_app
