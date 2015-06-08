@@ -32,7 +32,7 @@ class InventoryController < ApplicationController
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_types = response_json["user_types"].present? ? response_json["user_types"] : []
+    @user_roles = response_json["user_roles"].present? ? response_json["user_roles"] : []
   end
 
   def edit
@@ -45,7 +45,7 @@ class InventoryController < ApplicationController
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_types = response_json["user_types"].present? ? response_json["user_types"] : []
+    @user_roles = response_json["user_roles"].present? ? response_json["user_roles"] : []
     # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
@@ -121,7 +121,7 @@ class InventoryController < ApplicationController
   def cheapest_price
     @inventory = Inventory.by_object(params[:type])
     @inventory = @inventory.where(dataset_id: params[:dataset_id])
-    @inventory = @inventory.where(user_type: params[:user_type]) if params[:user_type].present?
+    @inventory = @inventory.where(user_rolee: params[:user_role]) if params[:user_role].present?
     @inventory = @inventory.select{|iv| iv.within_date}.sort_by{|i| i.price }.first
     
     # logger.info "--- @inventory = #{@inventory.inspect}"
@@ -154,7 +154,7 @@ class InventoryController < ApplicationController
   # Params:
   #    dataset_id: app dataset of site
   def available_actions
-    actions = Inventory.where(dataset_id: params[:dataset_id]).order(:object_action).distinct(:object_Action).pluck(:object_action)
+    actions = Inventory.where(dataset_id: params[:dataset_id]).order(:object_action).distinct(:object_action).pluck(:object_action)
     respond_to do |format|
       format.json { render json: { success: true, actions: actions } }
     end
@@ -331,7 +331,7 @@ private
 
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
-      :object_action, :dataset_id, :credit_type, :user_type)
+      :object_action, :dataset_id, :credit_type, :user_role)
   end
 
   def set_inventory_item

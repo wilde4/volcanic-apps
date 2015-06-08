@@ -15,8 +15,8 @@
       = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type), include_blank: true
 
     .field
-      = f.label :user_type
-      = f.select :user_type, options_for_select(@user_types, @inventory.user_type), include_blank: true
+      = f.label :user_role
+      = f.select :user_role, options_for_select(@user_roles, @inventory.user_role), include_blank: true
 
     .field
       = f.label :object_action
