@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150608150545) do
+ActiveRecord::Schema.define(version: 20150609093115) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -62,7 +62,8 @@ ActiveRecord::Schema.define(version: 20150608150545) do
     t.string   "object_action"
     t.integer  "dataset_id"
     t.string   "credit_type"
-    t.string   "user_role"
+    t.string   "user_group"
+    t.string   "currency",                              default: "GBP"
   end
 
   create_table "keys", force: true do |t|

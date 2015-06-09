@@ -25,14 +25,14 @@ class InventoryController < ApplicationController
     @inventory.dataset_id = @key.app_dataset_id
     # @inv_objs = Inventory.object_types(@inventory.dataset_id)
     @inv_objs = Inventory.object_actions
-    logger.info "--- start site api fetch"
-    logger.info "http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}"
+    # logger.info "--- start site api fetch"
+    # logger.info "http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}"
     site_response = HTTParty.get("http://#{@key.host}/api/v1/site.json?api_key=#{@key.api_key}")
-    logger.info "--- site_response = #{site_response.body.inspect}"
+    # logger.info "--- site_response = #{site_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
-    logger.info "--- response_json = #{response_json.inspect}"
+    # logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_roles = response_json["user_roles"].present? ? response_json["user_roles"] : []
+    @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
   end
 
   def edit
@@ -45,7 +45,7 @@ class InventoryController < ApplicationController
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_roles = response_json["user_roles"].present? ? response_json["user_roles"] : []
+    @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
     # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 

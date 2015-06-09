@@ -1,41 +1,47 @@
 = form_for(@inventory, url: '') do |f|
-  .form-inputs
+  .row
+    .col-md-4
+      .form-inputs
 
-    .errors
-    
-    = f.hidden_field :id, value: @inventory.id
-    = f.hidden_field :dataset_id, value: @inventory.dataset_id
+        .errors
+        
+        = f.hidden_field :id, value: @inventory.id
+        = f.hidden_field :dataset_id, value: @inventory.dataset_id
 
-    .field
-      = f.label :name
-      = f.text_field :name
+        .form-group
+          = f.label :name
+          = f.text_field :name, class: "form-control"
 
-    .field
-      = f.label :credit_type
-      = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type), include_blank: true
+        .form-group
+          = f.label :credit_type
+          = f.select :credit_type, options_for_select(@credit_types, @inventory.credit_type), {include_blank: true}, {class: "form-control"}
 
-    .field
-      = f.label :user_role
-      = f.select :user_role, options_for_select(@user_roles, @inventory.user_role), include_blank: true
+        .form-group
+          = f.label :user_group
+          = f.select :user_group, options_for_select(@user_groups, @inventory.user_group), {include_blank: true}, {class: "form-control"}
 
-    .field
-      = f.label :object_action
-      = f.select :object_action, options_for_select(@inv_objs, @inventory.object_action), include_blank: false
+        .form-group
+          = f.label :object_action
+          = f.select :object_action, options_for_select(@inv_objs, @inventory.object_action), {include_blank: false}, {class: "form-control"}
 
-    .field
-      = f.label :start_date
-      = f.date_field :start_date
+        .form-group
+          = f.label :start_date
+          = f.date_field :start_date, class: "form-control"
 
-    .field
-      = f.label :end_date
-      = f.date_field :end_date
+        .form-group
+          = f.label :end_date
+          = f.date_field :end_date, class: "form-control"
 
-    .field
-      = f.label :price
-      = f.number_field :price, step: :any
+        .form-group
+          = f.label :price
+          = f.number_field :price, step: :any, class: "form-control"
 
-  .form-actions
-    = f.submit "Submit Item"
+        .form-group
+          = f.label :currency
+          = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @inventory.currency), {include_blank: false}, {class: "form-control"}
+
+      .form-actions.form-group
+        = f.submit "Submit Item", class: "btn btn-default"
 
   :javascript
     $(function() {
