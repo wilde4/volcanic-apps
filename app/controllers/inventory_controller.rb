@@ -133,15 +133,25 @@ class InventoryController < ApplicationController
   # GET /inventories/best_options
   # get best price and details for each action
   # Params:
-  #    dataset_id: app dataset of site
+  #    dataset_id 
+  #       integer
+  #       app dataset of site
+  #    user_group
+  #       string
+  #       user group name, optional
+
   def best_options
     final_hash = {} #Hash.new{ |h,k| h[k] = [] } #new hash of empty arrays
 
     available_actions = Inventory.where(dataset_id: params[:dataset_id]).pluck(:object_action)
 
     available_actions.each do |action|
-      item = Inventory.where(object_action: action).order(:price).first
-      final_hash[item.credit_type] = item.attributes
+      if params[:user_group].present?
+        item = Inventory.where(object_action: action, user_group: params[:user_group]).order(:price).first
+      else
+        item = Inventory.where(object_action: action).order(:price).first
+      end
+      final_hash[item.credit_type] = item.attributes if item.present?
     end
     
     respond_to do |format|
