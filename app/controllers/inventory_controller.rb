@@ -135,13 +135,13 @@ class InventoryController < ApplicationController
   # Params:
   #    dataset_id: app dataset of site
   def best_options
-    final_hash = {}
+    final_hash = {} #Hash.new{ |h,k| h[k] = [] } #new hash of empty arrays
 
     available_actions = Inventory.where(dataset_id: params[:dataset_id]).pluck(:object_action)
 
     available_actions.each do |action|
       item = Inventory.where(object_action: action).order(:price).first
-      final_hash[item.name] = item.attributes
+      final_hash[item.credit_type] = item.attributes
     end
     
     respond_to do |format|
