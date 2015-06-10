@@ -209,6 +209,7 @@ class InventoryController < ApplicationController
       end
       credit_charged = JSON.parse(response)["response"]["status"] == "success"
       response = credit_charged ? set_job_paid(params, 30, true) : { success: false, errors: JSON.parse(response)["response"]["errors"] }
+      logger.info("---- response = #{response}")
       if credit_charged
         days_active = params[:data][:period].present? ? params[:data][:period].to_i : 7
         job = FeaturedJob.find_by(job_id: params[:data][:job_id])
@@ -298,6 +299,7 @@ private
       api_key: @key.api_key,
       credit_type: credit_type
     }
+    # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)
   end
 
@@ -310,6 +312,7 @@ private
       api_key: @key.api_key,
       credit_type: credit_type
     }
+    # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)
   end
 
