@@ -6,7 +6,7 @@ class MacildowieDaxtraController < ApplicationController
     @user = MacDaxtraUser.find_by(user_id: params[:user][:id])
     if @user.present?
       @user_profile = params[:user_profile]
-      if @user.update(email: params[:user][:email], user_type: params[:user][:user_type], user_profile: @user_profile, registration_answers: params[:registration_answer_hash])
+      if @user.update(email: params[:user][:email], user_group_name: params[:user][:user_group_name], user_profile: @user_profile, registration_answers: params[:registration_answer_hash])
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -15,7 +15,7 @@ class MacildowieDaxtraController < ApplicationController
       @user = MacDaxtraUser.new
       @user.user_id = params[:user][:id]
       @user.email = params[:user][:email]
-      @user.user_type = params[:user][:user_type]
+      @user.user_group_name = params[:user][:user_group_name]
       @user.user_profile = params[:user_profile]
       @user.registration_answers = params[:registration_answer_hash]
 
@@ -66,11 +66,11 @@ class MacildowieDaxtraController < ApplicationController
         "X-Aplitrak-Itris_discipline" => discipline_of_interest,
         "X-Aplitrak-Salary_form" => salary_choice
       }
-      if @user.user_type == 'candidate'
+      if @user.user_group_name == 'candidate'
         @subject = "#{job_type}/[NEW CANDIDATE]/NEWC/#{@name}/#{discipline_of_interest}"
         @headers["X-Aplitrak-Responding-Board"] = "NEWC"
         @headers["X-Aplitrak-Responding-Board-Name"] = "newcandidate"
-      elsif @user.user_type == 'dream_job'
+      elsif @user.user_group_name == 'dream_job'
         @subject = "#{job_type}/Dream Job/DJ/#{@name}/#{discipline_of_interest}"
         @headers["X-Aplitrak-Responding-Board"] = "DJ"
         @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
