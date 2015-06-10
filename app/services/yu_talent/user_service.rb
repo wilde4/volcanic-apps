@@ -9,7 +9,7 @@ class YuTalent::UserService < BaseService
 
   def initialize(user)
     @user         = user
-    @user_type    = @user.user_data['user_type']
+    @user_type    = @user.user_data['user_group_name']
     @dataset_id   = @user.user_data['dataset_id']
     @access_token = set_access_token
   end
