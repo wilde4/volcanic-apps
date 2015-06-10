@@ -9,7 +9,7 @@ class YuTalent::UserService < BaseService
 
   def initialize(user)
     @user         = user
-    @user_type    = @user.user_data['user_group_name']
+    @user_group_name    = @user.user_data['user_group_name']
     @dataset_id   = @user.user_data['dataset_id']
     @access_token = set_access_token
   end
@@ -25,7 +25,7 @@ class YuTalent::UserService < BaseService
       @contact_attributes               = map_contact_attributes
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
-      @contact_attributes[:type]        = type_id(@user_type)
+      @contact_attributes[:type]        = type_id(@user_group_name)
       # post contact attributes
       # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/add"), body: @contact_attributes)
@@ -55,7 +55,7 @@ class YuTalent::UserService < BaseService
       @contact_attributes[:contact_id]  = @user.yu_talent_uid
       @contact_attributes[:project_id]  = project_id
       @contact_attributes[:status_id]   = status_id('new')
-      @contact_attributes[:type]        = type_id(@user_type)
+      @contact_attributes[:type]        = type_id(@user_group_name)
       # Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
       @response = @access_token.post(URI.decode(API_ENDPOINT + "contacts/edit"), body: @contact_attributes)
