@@ -9,7 +9,11 @@ class YuTalent::UserService < BaseService
 
   def initialize(user)
     @user         = user
-    @user_group_name    = @user.user_data['user_group_name']
+    if @user.user_data['user_group_name'].present?
+      @user_group_name    = @user.user_data['user_group_name']
+    else
+      @user_group_name    = @user.user_data['user_type']
+    end
     @dataset_id   = @user.user_data['dataset_id']
     @access_token = set_access_token
   end

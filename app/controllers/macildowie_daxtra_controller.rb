@@ -6,7 +6,7 @@ class MacildowieDaxtraController < ApplicationController
     @user = MacDaxtraUser.find_by(user_id: params[:user][:id])
     if @user.present?
       @user_profile = params[:user_profile]
-      if @user.update(email: params[:user][:email], user_group_name: params[:user][:user_group_name], user_profile: @user_profile, registration_answers: params[:registration_answer_hash])
+      if @user.update(email: params[:user][:email], user_group_name: legacy_user_type, user_profile: @user_profile, registration_answers: params[:registration_answer_hash])
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -15,7 +15,13 @@ class MacildowieDaxtraController < ApplicationController
       @user = MacDaxtraUser.new
       @user.user_id = params[:user][:id]
       @user.email = params[:user][:email]
-      @user.user_group_name = params[:user][:user_group_name]
+
+      if params[:user][:user_group_name].present?
+        @user.user_group_name = params[:user][:user_group_name]
+      else
+        @user.user_group_name = params[:user][:user_type] #legacy support
+      end
+
       @user.user_profile = params[:user_profile]
       @user.registration_answers = params[:registration_answer_hash]
 
@@ -166,4 +172,11 @@ class MacildowieDaxtraController < ApplicationController
     end
   end
 
+  def legacy_user_type
+    if params[:user][:user_group_name].present?
+      return params[:user][:user_group_name]
+    else
+      return params[:user][:user_type]
+    end
+  end
 end

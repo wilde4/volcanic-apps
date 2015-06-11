@@ -32,7 +32,11 @@ class InventoryController < ApplicationController
     response_json = JSON.parse(site_response.body)
     # logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
+    if response_json["user_groups"].present? #legacy support
+      @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
+    else
+      @user_groups = response_json["user_types"].present? ? response_json["user_types"] : []
+    end
   end
 
   def edit
@@ -45,7 +49,12 @@ class InventoryController < ApplicationController
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
     @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
-    @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
+    
+    if response_json["user_groups"].present? #legacy support
+      @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
+    else
+      @user_groups = response_json["user_types"].present? ? response_json["user_types"] : []
+    end
     # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
@@ -121,7 +130,7 @@ class InventoryController < ApplicationController
   def cheapest_price
     @inventory = Inventory.by_object(params[:type])
     @inventory = @inventory.where(dataset_id: params[:dataset_id])
-    @inventory = @inventory.where(user_rolee: params[:user_role]) if params[:user_role].present?
+    @inventory = @inventory.where(user_role: params[:user_role]) if params[:user_role].present?
     @inventory = @inventory.select{|iv| iv.within_date}.sort_by{|i| i.price }.first
     
     # logger.info "--- @inventory = #{@inventory.inspect}"
@@ -148,6 +157,8 @@ class InventoryController < ApplicationController
     available_actions.each do |action|
       if params[:user_group].present?
         item = Inventory.where(object_action: action, user_group: params[:user_group]).order(:price).first
+      elsif params[:user_type].present?
+        item = Inventory.where(object_action: action, user_group: params[:user_type]).order(:price).first
       else
         item = Inventory.where(object_action: action).order(:price).first
       end
