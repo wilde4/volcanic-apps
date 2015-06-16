@@ -394,7 +394,7 @@ class BullhornController < ApplicationController
       string = '<h1>Curriculum Vitae</h1>' +
         "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
 
-      if user.linkedin_profile['positions'].size > 0
+      if user.linkedin_profile['positions'].present?
         string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
         user.linkedin_profile['positions'].each do |position|
           string = string + '<p>'
