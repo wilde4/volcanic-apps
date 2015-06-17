@@ -388,6 +388,7 @@ class BullhornController < ApplicationController
           return candidate_response['candidate']
         end
       end
+      false # return false if this has not returned a candidate_response after 10 tries
     end
 
     def linkedin_description(user)
