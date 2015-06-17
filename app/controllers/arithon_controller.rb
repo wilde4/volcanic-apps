@@ -1,0 +1,3 @@
+class ArithonController < ApplicationController
+  
+end
