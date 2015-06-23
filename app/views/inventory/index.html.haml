@@ -19,7 +19,7 @@
         %tr{class: "#{'success' if item.within_date}"}
           %td= item.name
           %td= item.object_action
-          %td= number_to_currency(item.price, unit: '£')
+          %td= number_to_currency(item.price, unit: currency_to_symbol(item.currency))
           %td= item.credit_type
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date

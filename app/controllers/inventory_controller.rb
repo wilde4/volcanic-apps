@@ -355,7 +355,7 @@ private
 
   def inventory_params
     params.require(:inventory).permit(:id, :name, :start_date, :end_date, :price,
-      :object_action, :dataset_id, :credit_type, :user_role)
+      :object_action, :dataset_id, :credit_type, :user_role, :currency, :user_group)
   end
 
   def set_inventory_item
