@@ -169,6 +169,12 @@ Apps::Application.routes.draw do
     post 'update_settings'  => 'bullhorn#update_settings'
     post 'new_search'       => 'bullhorn#new_search'
   end
+  
+  scope :job_adder do
+    post "activate_app"     => 'job_adder#activate_app'
+    post "deactivate_app"   => 'job_adder#deactivate_app'
+    get  "index"            => 'job_adder#index'
+  end
 
   scope :yu_talent do
     post "activate_app"     => 'yu_talent#activate_app'
