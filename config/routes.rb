@@ -174,6 +174,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'job_adder#activate_app'
     post "deactivate_app"   => 'job_adder#deactivate_app'
     get  "index"            => 'job_adder#index'
+    post "capture_jobs"     => 'job_adder#capture_jobs'
   end
 
   scope :yu_talent do
