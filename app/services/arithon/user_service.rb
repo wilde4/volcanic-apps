@@ -5,7 +5,7 @@ require 'oauth2'
 
 class Arithon::UserService < BaseService
 
-  API_ENDPOINT = "http://eu.arithon.com/ArithonAPI.php"
+  API_ENDPOINT = "http://eu-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php"
 
   def initialize(user, settings)
     @user         = user
