@@ -30,7 +30,7 @@ class JobAdderController < ApplicationController
             job_reference: job.attr('reference'), 
             job_description: build_description(job), 
             job_title: job.search('Title').text, 
-            job_type: "permanent", 
+            job_type: build_job_type(job.search('Classification[name="Work Type"]').text),
             application_email: job.search('EmailTo').text,
             application_url: job.search('Url').text,
             discipline: disciplines_ids_arr.join(",") 
@@ -64,6 +64,22 @@ class JobAdderController < ApplicationController
       description = description + "</ul>"
     end
     description
+  end
+
+  def build_job_type(work_type)
+    logger.info "=== #{work_type}"
+    case work_type
+    when "Permanent / Full Time"
+      "permanent"
+    when "Contract or Temp"
+      "contract"
+    when "Part-time"
+      "part-time"
+    when "Casual"
+      "part-time"
+    else
+      "permanent"
+    end
   end
   
   def find_disciplines(job_adder_categories)
