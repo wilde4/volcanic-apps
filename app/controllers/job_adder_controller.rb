@@ -14,8 +14,15 @@ class JobAdderController < ApplicationController
   end
 
   def capture_jobs
-    # @key = Key.where(app_name: 'job_adder').last
-    @xml = Nokogiri::XML(request.body)
+    # If we're getting posted a file check for the api key wihthin the file
+    if params["jobadder.xml"].present?
+      @xml = Nokogiri::XML(params["jobadder.xml"])
+      token = @xml.search('/Jobs/@source').text
+      restrict_access(token)
+      return unless @key
+    else
+      @xml = Nokogiri::XML(request.body)
+    end
     @xml.search('//Job').each do |job|
       disciplines_ids_arr = find_disciplines(job.search('Classification[name="Category"]')).concat(find_disciplines(job.search('Classification[name="Sub Category"]')))
       @options = {
@@ -100,11 +107,17 @@ class JobAdderController < ApplicationController
   end
 
   def check_api_access
+    return if params["jobadder.xml"].present? # Don't check for auth via headers if we're getting sent a file, API key ahould be in xml in file
     authenticate_or_request_with_http_token do |token, options|
       if Key.find_by(api_key: token)
         @key = Key.find_by(api_key: token)
       end
     end
+  end
+
+  def restrict_access(token)
+    @key = Key.find_by(api_key: token)
+    head :unauthorized unless @key
   end
 
 end
