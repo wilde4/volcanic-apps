@@ -49,7 +49,9 @@ class JobAdderController < ApplicationController
   private
   
   def build_salary_free(job)
-    "#{job.search('MinValue').text} to #{job.search('MaxValue').text} #{job.search('Salary').attr('period')} #{job.search('Text').text}"
+    if job.search('Salary').present?
+      "#{job.search('MinValue').text} to #{job.search('MaxValue').text} #{job.search('Salary').attr('period')} #{job.search('Text').text}" rescue nil
+    end
   end
   
   def build_description(job)
