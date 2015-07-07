@@ -38,7 +38,7 @@ private
     disciplines = []
     @job_payload['job[job_title]'] = job.xpath('title').text.strip
     app_email = job.xpath('author').text.strip.split.first.strip
-    @job_payload['job[application_email]'] = app_email
+    @job_payload['job[application_email]'] = c_email if c_email.present?
     # @job_payload['job[discipline]'] = job.xpath('category').text.strip
     disciplines << job.xpath('category').text.strip
     @job_payload['job[created_at]'] = job.xpath('pubDate').text.strip
