@@ -37,8 +37,6 @@ private
     # puts "--- job.xpath('author') = #{job.xpath("author").inspect}"
     disciplines = []
     @job_payload['job[job_title]'] = job.xpath('title').text.strip
-    app_email = job.xpath('author').text.strip.split.first.strip
-    @job_payload['job[application_email]'] = c_email if c_email.present?
     # @job_payload['job[discipline]'] = job.xpath('category').text.strip
     disciplines << job.xpath('category').text.strip
     @job_payload['job[created_at]'] = job.xpath('pubDate').text.strip
@@ -72,6 +70,7 @@ private
       # EXTRACT CONSULTANT EMAIL ADDRESS
       c_email = extracted_desc.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+/)
       puts "--- c_email = #{c_email}"
+      @job_payload['job[application_email]'] = c_email if c_email.present?
       @job_payload['job[contact_email]'] = c_email if c_email.present?
     rescue Exception => e
       puts "--- Failed to open page_url = #{e.inspect}"
