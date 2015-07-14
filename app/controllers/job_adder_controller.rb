@@ -17,7 +17,7 @@ class JobAdderController < ApplicationController
     # If we're getting posted a file check for the api key wihthin the file
     if params["jobadder.xml"].present?
       @xml = Nokogiri::XML(params["jobadder.xml"])
-      token = @xml.search('/Jobs/@source').text
+      token = @xml.search('/Jobs/@account').text
       restrict_access(token)
       return unless @key
     else
