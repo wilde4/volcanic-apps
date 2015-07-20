@@ -10,6 +10,52 @@ class BondAdapt::UserService < BaseService
     @dataset_id   = @user.user_data['dataset_id']
   end
 
+
+  def save_user
+    begin
+      Rails.logger.info "--- ABOUT TO INSERT"
+      @new_cv = true
+      @new_avatar = true
+      @contact_attributes               = map_contact_attributes
+      # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
+      @response = send_request("PushCandidate", @contact_attributes)
+      # Rails.logger.info "--- @response: #{@response.inspect}"
+      # update user details
+      if @response['code'] == 200
+        # API doesn't return ID of new record so we have to fetch it
+        @attrs = Hash.new
+        @attrs[:email] = @user.email
+        @attrs[:candidateName] = candidate_name
+        @response2 = send_request("CandidateDetails", @attrs)
+        if @response2['code'] == 200
+          Rails.logger.info "--- @response2: #{@response2.inspect}"
+          @user.update(
+            arithon_uid: @response2['records'][0]['candidateID']
+          )
+        end
+      end
+    rescue => e
+      Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
+    end
+  end
+
+  def update_user
+    begin
+      Rails.logger.info "--- ABOUT TO UPDATE"
+      # map contact attributes
+      Rails.logger.info "--- ABOUT TO map_contact_attributes"
+      @contact_attributes               = map_contact_attributes
+      @contact_attributes[:candidateID] = @user.arithon_uid
+      Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
+      # post contact attributes
+      @response = send_request("PushCandidate", @contact_attributes)
+      Rails.logger.info "--- @response = #{@response.inspect}"
+      # update user details
+    rescue => e
+      Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
+    end
+  end
+
   def check_duplicates
     Rails.logger.info "--- STARTING check_duplicates"
     begin
@@ -21,7 +67,8 @@ class BondAdapt::UserService < BaseService
         @dup_attributes = Hash.new
         @dup_attributes[:email] = @user.email
         # Rails.logger.info "--- @dup_attributes: #{@dup_attributes.inspect}"
-        @response = send_request("CandidateDetails", @dup_attributes)
+
+        @response = client.find_user(@user.email)
         # Rails.logger.info "--- @response: #{@response.inspect}"
         if @response["count"] > 0
           Rails.logger.info '--- bond_adapt DUPLICATE CANDIDATE RECORD FOUND'
