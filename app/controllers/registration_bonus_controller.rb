@@ -9,6 +9,11 @@ class RegistrationBonusController < ApplicationController
   end
 
   def new
-    
+    @reg_bonus = RegistrationBonus.new
+
+  end
+
+  def create
+
   end
 end

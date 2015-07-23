@@ -202,8 +202,9 @@ Apps::Application.routes.draw do
   scope :registration_bonus do
     post "activate_app"     => 'registration_bonus#activate_app'
     post "deactivate_app"   => 'registration_bonus#deactivate_app'
-    get 'index'             => 'registration_bonus#index'
-    get 'new'               => 'registration_bonus#new'
+    get 'index'             => 'registration_bonus#index'#, as: :registration_bonuses
+    get 'new'               => 'registration_bonus#new', as: :new_registration_bonus
+    post 'create'           => 'registration_bonus#create'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
