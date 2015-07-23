@@ -199,5 +199,12 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :registration_bonus do
+    post "activate_app"     => 'registration_bonus#activate_app'
+    post "deactivate_app"   => 'registration_bonus#deactivate_app'
+    get 'index'             => 'registration_bonus#index'
+    get 'new'               => 'registration_bonus#new'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
