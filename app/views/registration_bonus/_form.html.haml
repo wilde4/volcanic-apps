@@ -1,3 +1,23 @@
-= f.input :name
-= f.input :user_group_id
-= f.submit
+.row
+  .col-md-4
+    .errors
+
+    .form-group
+      = f.label :name
+      = f.text_field :name, class: "form-control"
+
+    .form-group
+      = f.label :user_group
+      = f.select :user_group, options_for_select(@user_groups, @reg_bonus.credit_type), {include_blank: true}, {class: "form-control"}
+
+    .form-group
+      = f.label :credit_type
+      = f.select :credit_type, options_for_select(@credit_types, @reg_bonus.credit_type), {include_blank: true}, {class: "form-control"}
+
+    .form-group
+      = f.label :quantity
+      = f.number_field :quantity, step: 1, min: 0, class: "form-control"
+
+    .form-group
+      = f.hidden_field :dataset_id
+      = f.submit "Create Bonus", class: "btn btn-primary"

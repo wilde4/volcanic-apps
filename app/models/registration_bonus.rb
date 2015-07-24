@@ -1,7 +1,6 @@
-class RegistrationBonus < ActiveRecord::Base
+class RegistrationBonus < ActiveRecord::Base  
 
-  has_many :inventory_registration_bonuses
-  has_many :inventories, through: :inventory_registration_bonuses
-
+  validates_presence_of :name
+  validates_presence_of :user_group
 
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150723150031) do
+ActiveRecord::Schema.define(version: 20150724120017) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -171,7 +171,10 @@ ActiveRecord::Schema.define(version: 20150723150031) do
 
   create_table "registration_bonuses", force: true do |t|
     t.string  "name"
-    t.integer "user_group_id"
+    t.string  "user_group"
+    t.integer "dataset_id"
+    t.integer "quantity",    default: 0
+    t.string  "credit_type"
   end
 
   create_table "roles", force: true do |t|

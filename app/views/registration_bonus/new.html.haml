@@ -1,2 +1,25 @@
-= simple_form_for @reg_bonus, url: "//#{app_server_host}/registration_bonus/create", method: :post, remote: true do |f|
+= form_for @reg_bonus, url: "" do |f|
   = render partial: "form", locals: {f: f}
+
+
+:javascript
+  $(function() {
+    $('form').submit(function() {
+      var formData = $(this).serialize();
+      $.ajax({
+        url: "//#{app_server_host}/registration_bonus/create.json",
+        type: "POST",
+        crossDomain: true,
+        data: formData,
+        dataType: 'json'
+      }).success(function(data) {
+        if(data.success) {
+          window.location = "";
+        } else {
+          $('.errors').html(data.status);
+        }
+        return false;
+      });
+      return false;
+    });
+  });
