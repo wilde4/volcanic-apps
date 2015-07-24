@@ -4,7 +4,7 @@ module ApplicationHelper
   def relative_link(path)
      # no id will be given on <path>
 
-    path.prepend("#{params[:data][:id]}/") unless path.starts_with?(params[:data][:id].to_s)
+    # path.prepend("#{params[:data][:id]}/") unless path.starts_with?(params[:data][:id].to_s)
     path
   end
 
