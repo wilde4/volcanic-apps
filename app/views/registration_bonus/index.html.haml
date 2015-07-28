@@ -1,3 +1,21 @@
 %h5 Registration Bonus
 
 = link_to 'Add Bonus', relative_link("new_registration_bonus")
+
+.table-responsive
+  %table.table
+    %thead
+      %tr
+        %th Name
+        %th User Group
+        %th Credit Type
+        %th Quantity
+        %th
+    %tbody
+      - @bonuses.each do |bonus|
+        %tr
+          %td= bonus.name
+          %td= bonus.user_group
+          %td= bonus.credit_type
+          %td= bonus.quantity
+          %td=link_to "Edit", relative_link("edit_registration_bonus?bonus_id=#{bonus.id}")

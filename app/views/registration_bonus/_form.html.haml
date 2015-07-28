@@ -8,7 +8,7 @@
 
     .form-group
       = f.label :user_group
-      = f.select :user_group, options_for_select(@user_groups, @reg_bonus.credit_type), {include_blank: true}, {class: "form-control"}
+      = f.select :user_group, options_for_select(@user_groups, @reg_bonus.user_group), {include_blank: true}, {class: "form-control"}
 
     .form-group
       = f.label :credit_type

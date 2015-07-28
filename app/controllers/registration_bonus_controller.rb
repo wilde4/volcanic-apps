@@ -2,13 +2,14 @@ class RegistrationBonusController < ApplicationController
   protect_from_forgery with: :null_session
   # respond_to :json
 
-  before_action :set_key, only: [:index, :new]
+  before_action :set_key, only: [:index, :new, :edit]
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
 
   def index
     @host = @key.host
+    @bonuses = RegistrationBonus.where(dataset_id: @key.app_dataset_id)
   end
 
   def new
@@ -32,6 +33,11 @@ class RegistrationBonusController < ApplicationController
         }}
       end
     end
+  end
+
+  def edit
+    setup_types_and_groups
+    @reg_bonus = RegistrationBonus.where(dataset_id: @key.app_dataset_id).find_by(id: params[:bonus_id])
   end
 
 
