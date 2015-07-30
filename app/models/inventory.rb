@@ -1,12 +1,14 @@
 class Inventory < ActiveRecord::Base
 
   validates :name, presence: true
-  validates :price, presence: true
-  validates :price, numericality: { greater_than_or_equal_to: 0 }
+  validates :price, presence: true, if: :is_not_free?
+  validates :price, numericality: { greater_than_or_equal_to: 0 }, if: :is_not_free?
   validates :object_action, presence: true
 
   scope :by_dataset, -> id { where(dataset_id: id) }
   scope :by_object, -> type { where(object_action: type) }
+
+  before_save :set_price_if_free
 
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
@@ -60,5 +62,14 @@ private
     "%d %B %Y"
   end
 
+  def is_not_free?
+    credit_type != "Free"
+  end
+
+  def set_price_if_free
+    if credit_type == "Free"
+      self.price = 0.0
+    end
+  end
 
 end
