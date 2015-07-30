@@ -28,6 +28,10 @@ class Inventory < ActiveRecord::Base
     ['Activate Job Listing for 7 days', 'Activate Job Listing for 30 days', 'Activate Featured Job Listing for 7 days', 'Activate Featured Job Listing for 30 days', 'Schedule as Job of the Week', 'Deduct a credit', 'Mark Liked Job as Paid']   
   end
 
+  def self.credit_types
+    ['Job Listing', 'Featured Job Listing', 'Job of the Week', 'Free']
+  end
+
   def self.object_types(dataset_id = nil)
     object_types = [
       { type: 'Credit' },

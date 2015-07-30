@@ -6,7 +6,7 @@ class InventoryController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
-  before_action :set_key, only: [:index, :edit, :new, :post_purchase]
+  before_action :set_key, only: [:index, :edit, :new, :post_purchase, :delete]
 
   # GET /inventories/index
   # Outputs all Inventory Items in the system
@@ -31,7 +31,10 @@ class InventoryController < ApplicationController
     # logger.info "--- site_response = #{site_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     # logger.info "--- response_json = #{response_json.inspect}"
-    @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    # @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    @credit_types = Inventory.credit_types
+    
+
     if response_json["user_groups"].present? #legacy support
       @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
     else
@@ -58,7 +61,7 @@ class InventoryController < ApplicationController
     # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
-   def update
+  def update
     @inventory = Inventory.find(params[:inventory][:id])
     respond_to do |format|
       if @inventory.update(inventory_params)
@@ -68,6 +71,24 @@ class InventoryController < ApplicationController
         format.html { render action: 'edit' }
         format.json { render json: {
           success: false, status: "Error: #{@inventory.errors.full_messages.join(', ')}"
+        }}
+      end
+    end
+  end
+
+  def delete
+    @inventory = Inventory.where(dataset_id: @key.app_dataset_id).find_by(id: params[:data][:inv_id])
+
+    respond_to do |format|
+      if @inventory && @inventory.delete
+        @items = Inventory.by_dataset(@key.app_dataset_id) || []
+        format.html { render action: 'index' }
+        format.json { render json: { success: true, item: @inventory }}
+      else
+        @items = Inventory.by_dataset(@key.app_dataset_id) || []
+        format.html { render action: 'index' }
+        format.json { render json: {
+          success: false, status: "Error: Could not delete item"
         }}
       end
     end
@@ -85,7 +106,7 @@ class InventoryController < ApplicationController
 
     respond_to do |format|
       if @inventory.save
-        @items = Inventory.all || []
+        @items = Inventory.by_dataset(@key.app_dataset_id) || []
         format.html { render action: 'index' }
         format.json { render json: { success: true, item: @inventory }}
       else

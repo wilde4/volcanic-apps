@@ -48,6 +48,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'inventory#activate_app',   as: :inventory_activate_app
     post "deactivate_app"   => 'inventory#deactivate_app', as: :inventory_deactivate_app
     post "post_purchase"    => 'inventory#post_purchase',  as: :inventory_post_purchase
+    get "delete"            => 'inventory#delete',         as: :inventory_delete
   end
 
   scope :evergrad_gaming do

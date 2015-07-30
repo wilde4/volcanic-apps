@@ -23,9 +23,17 @@
           %td= item.credit_type
           %td= item.human_start_date if item.start_date
           %td= item.human_end_date if item.end_date
-          %td
-            =link_to relative_link("edit_inventory?inv_id=#{item.id}") do
-              %i.fa.fa-pencil
+          %td{style: "min-width: 200px"}
+            .btn-group
+              =link_to "Edit", relative_link("edit_inventory?inv_id=#{item.id}"), class: "btn btn-default"
+              =link_to "Disable", relative_link("disable_inventory?inv_id=#{item.id}"), class: "btn btn-default"
+              =link_to "Delete", relative_link("delete_inventory?inv_id=#{item.id}"), class: "btn btn-danger"
+
+:css
+  .table tr td{
+    vertical-align: middle!important;
+  }
+          
 :javascript
   $(function() {
     var hidden = false;
