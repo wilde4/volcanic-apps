@@ -26,7 +26,6 @@
           %td{style: "min-width: 200px"}
             .btn-group
               =link_to "Edit", relative_link("edit_inventory?inv_id=#{item.id}"), class: "btn btn-default"
-              =link_to "Disable", relative_link("disable_inventory?inv_id=#{item.id}"), class: "btn btn-default"
               =link_to "Delete", relative_link("delete_inventory?inv_id=#{item.id}"), class: "btn btn-danger"
 
 :css
