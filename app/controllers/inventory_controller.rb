@@ -308,7 +308,8 @@ private
       payment_id: params[:data][:payment_id],
       value: credit_value,
       api_key: @key.api_key,
-      credit_type: credit_type
+      credit_type: credit_type,
+      creditable_type: params[:data][:creditable_type]
     }
     # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)
@@ -321,7 +322,8 @@ private
       user_token: params[:data][:user_token],
       value: credit_value,
       api_key: @key.api_key,
-      credit_type: credit_type
+      credit_type: credit_type,
+      creditable_type: params[:data][:creditable_type]
     }
     # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)
