@@ -16,23 +16,24 @@ class BondAdapt::UserService < BaseService
       Rails.logger.info "--- ABOUT TO INSERT"
       @new_cv = true
       @new_avatar = true
-      @contact_attributes               = map_contact_attributes
+      @contact_attributes = map_contact_attributes
       # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
-      @response = send_request("PushCandidate", @contact_attributes)
+      response = client.create_user(@contact_attributes)
       # Rails.logger.info "--- @response: #{@response.inspect}"
       # update user details
-      if @response['code'] == 200
+
+      if response.http.code == 200
         # API doesn't return ID of new record so we have to fetch it
-        @attrs = Hash.new
-        @attrs[:email] = @user.email
-        @attrs[:candidateName] = candidate_name
-        @response2 = send_request("CandidateDetails", @attrs)
-        if @response2['code'] == 200
-          Rails.logger.info "--- @response2: #{@response2.inspect}"
-          @user.update(
-            arithon_uid: @response2['records'][0]['candidateID']
-          )
-        end
+        # @attrs = Hash.new
+        # @attrs[:email] = @user.email
+        # @attrs[:candidateName] = candidate_name
+        # @response2 = send_request("CandidateDetails", @attrs)
+        # if @response2['code'] == 200
+        #   Rails.logger.info "--- @response2: #{@response2.inspect}"
+        #   @user.update(
+        #     arithon_uid: @response2['records'][0]['candidateID']
+        #   )
+        # end
       end
     rescue => e
       Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
@@ -44,11 +45,10 @@ class BondAdapt::UserService < BaseService
       Rails.logger.info "--- ABOUT TO UPDATE"
       # map contact attributes
       Rails.logger.info "--- ABOUT TO map_contact_attributes"
-      @contact_attributes               = map_contact_attributes
-      @contact_attributes[:candidateID] = @user.arithon_uid
+      @contact_attributes = map_contact_attributes
       Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
-      @response = send_request("PushCandidate", @contact_attributes)
+      @response = update_user(@user.bond_adapt_uid, @contact_attributes)
       Rails.logger.info "--- @response = #{@response.inspect}"
       # update user details
     rescue => e
@@ -68,16 +68,9 @@ class BondAdapt::UserService < BaseService
         @dup_attributes[:email] = @user.email
         # Rails.logger.info "--- @dup_attributes: #{@dup_attributes.inspect}"
 
-        @response = client.find_user(@user.email)
-        # Rails.logger.info "--- @response: #{@response.inspect}"
-        if @response["count"] > 0
-          Rails.logger.info '--- bond_adapt DUPLICATE CANDIDATE RECORD FOUND'
-          @last_candidate = @response["records"].last
-          # Rails.logger.info "--- @last_candidate: #{@last_candidate.inspect}"
-          bond_adapt_id     = @last_candidate["candidateID"]
-        else
-          bond_adapt_id = nil
-        end
+        bond_adapt_id = client.find_user_id(@user.email)
+
+        Rails.logger.info '--- bond_adapt DUPLICATE CANDIDATE RECORD FOUND' if bond_adapt_id.present?
       end
       return bond_adapt_id
     rescue => e

@@ -25,7 +25,7 @@ class BondAdapt::ClientService < BaseService
     Rails.logger.info "--- Bond Adapt get_session_id exception ----- : #{e.message}"
   end
 
-  def find_user
+  def find_user_id(email)
     client = Savon.client(
       log_level: :debug,
       log: true,
@@ -36,22 +36,27 @@ class BondAdapt::ClientService < BaseService
       wsdl: "#{@settings.endpoint}/SearchServiceV1?wsdl")
     
     request_hash = {
-      'long_1' => 908623019246591569,
+      'long_1' => @session_id,
       'String_2' => 'ContactSearch',
       'arrayOfSearchParameter_3' => {
-        'dataType' => 1
-            <dateValue></dateValue>
-            <longValue></longValue>
-            <name>EMAIL</name>
-            <stringValue>andrewneilson9@gmail.com</stringValue>
-         </arrayOfSearchParameter_3>
-         <long_4>1</long_4>
-         <long_5>5</long_5>
-         <boolean_6>0</boolean_6>
-         <String_7></String_7>
+        'dataType' => 1,
+        'dateValue' => '',
+        'longValue' => '',
+        'name' => 'EMAIL',
+        'stringValue' => email },
+      'long_4' => 1,
+      'long_5' => 5,
+      'boolean_6' => 0,
+      'String_7' => ''
     }
-    response = client.call(:runQuery, message: request_hash)
-    
+    response = client.call(:run_query, message: request_hash)
+    response.body[:run_query_response][:result][:found_entities].present? ? response.body[:run_query_response][:result][:found_entities].first : nil
+  end
+
+  def create_user(attributes)
+  end
+
+  def update_user(uid, attributes)
   end
 
   def auth_hash
