@@ -10,6 +10,10 @@ class Inventory < ActiveRecord::Base
 
   before_save :set_price_if_free
 
+  def self.in_date_range
+    where("start_date <= ?", Date.today).where("end_date >= ?", Date.today)
+  end
+
   # Calls strftime on start_date and returns a human-friendly version
   def human_start_date
     self.start_date.strftime(strftime_string)
