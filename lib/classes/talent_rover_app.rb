@@ -10,6 +10,7 @@ class TalentRoverApp
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
       parse_jobs
+      prune_jobs if get_prune_jobs_setting
     end
 
     puts '- END poll_jobs_feed'
@@ -69,6 +70,40 @@ class TalentRoverApp
     end
   end
 
+  def self.prune_jobs
+    puts '- START pruning jobs'
+    jobs = @job_data.xpath("//job")
+    posting_language = get_posting_language.downcase
+
+    live_job_refs = []
+    jobs.each do |job|
+      job_post_langs = job.xpath("postinglanguage").text
+      job_post_langs = job_post_langs.downcase.split(';') if job_post_langs.present?
+
+      if posting_language.present? 
+        if job_post_langs.include?(posting_language)
+          live_job_refs << job.xpath("referencenumber").text.strip if job.xpath("referencenumber").text.present?
+        end
+      end
+    end
+    response = HTTParty.get("http://#{@key.host}/api/v1/job_references.json")
+    
+    current_job_refs = JSON.parse response.read_body
+    current_job_refs.each do |job|
+      unless live_job_refs.include? job['job_reference']
+        begin
+          payload = {}
+          payload["job[api_key]"] = @key.api_key
+          payload["job[job_reference]"] = job['job_reference']
+          response = HTTParty.post("http://#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+          puts "#{response.code} - #{response.read_body}"
+        rescue Exception => e
+          puts "[FAIL] http.request failed to post DELETE payload: #{e}"
+        end
+      end
+    end
+  end
+
 private
   def self.get_xml
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
@@ -78,6 +113,11 @@ private
   def self.get_posting_language
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     settings.settings["Posting Language"] || ""
+  end
+
+  def self.get_prune_jobs_setting
+    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
+    settings.settings["Prune Jobs"] && settings.settings["Prune Jobs"].downcase == "yes"
   end
 
   def self.post_payload(payload)
