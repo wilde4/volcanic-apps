@@ -178,12 +178,13 @@ class InventoryController < ApplicationController
 
     available_actions.each do |action|
       if params[:user_group].present?
-        item = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price)#.first
       elsif params[:user_type].present?
-        item = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price)#.first
       else
-        item = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price)#.first
       end
+      item = items.select{|x| x.within_date}.first
       final_hash[item.credit_type] = item.attributes if item.present?
     end
     
