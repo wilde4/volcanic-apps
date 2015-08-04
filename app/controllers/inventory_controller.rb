@@ -174,6 +174,27 @@ class InventoryController < ApplicationController
   def best_options
     final_hash = {} #Hash.new{ |h,k| h[k] = [] } #new hash of empty arrays
 
+    available_actions = Inventory.where(dataset_id: params[:dataset_id]).pluck(:object_action)
+
+    available_actions.each do |action|
+      if params[:user_group].present?
+        item = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price).first
+      elsif params[:user_type].present?
+        item = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price).first
+      else
+        item = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price).first
+      end
+      final_hash[item.credit_type] = item.attributes if item.present?
+    end
+    
+    respond_to do |format|
+      format.json { render json: { success: true, items: final_hash } }
+    end
+  end
+
+  def best_options_by_action
+    final_hash = {} #Hash.new{ |h,k| h[k] = [] } #new hash of empty arrays
+
     available_actions = Inventory.where(dataset_id: params[:dataset_id]).where("credit_type IN (?)", Inventory.credit_types).pluck(:object_action)
 
     available_actions.each do |action|
