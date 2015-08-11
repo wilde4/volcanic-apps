@@ -10,6 +10,14 @@ class JobBoardController < ApplicationController
     @app_id = params[:data][:id]
   end
 
+  def new
+    @job_board = JobBoard.new
+  end
+
+  def edit
+    @job_board
+  end
+
 
   
 

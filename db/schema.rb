@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150811131101) do
+ActiveRecord::Schema.define(version: 20150811143144) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -93,6 +93,7 @@ ActiveRecord::Schema.define(version: 20150811131101) do
     t.integer  "cv_search_duration"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "currency"
   end
 
   add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree

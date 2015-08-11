@@ -1,0 +1,55 @@
+.row
+  .col-md-4
+    = f.hidden_field :id, value: @job_board.id
+    = f.hidden_field :app_dataset_id, value: @job_board.app_dataset_id
+
+    .form-group
+      = f.label :currency
+      = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
+
+    .checkbox
+      = f.label :charge_for_jobs do
+        = f.check_box :charge_for_jobs
+        Charge for Job Posting
+
+    .form-group
+      = f.label :job_token_price, "Price per Job Token"
+      .input-group
+        .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+        = f.number_field :job_token_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
+
+    .checkbox.mt30
+      = f.label :charge_for_cv_search do
+        = f.check_box :charge_for_cv_search
+        Charge for CV Search Feature
+
+    .form-group
+      = f.label :cv_search_price, "CV Search Access Price"
+      .input-group
+        .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+        = f.number_field :cv_search_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
+
+    .form-group
+      = f.label :cv_search_duration, "CV Search Access Duration"
+      .input-group
+        = f.number_field :cv_search_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
+        .input-group-addon days
+
+:javascript
+  $('#job_board_currency').change(function(){
+    var new_symbol = "£";
+    switch($(this).val()){
+      case "GBP":
+        new_symbol = "£";
+        break;
+      case "EUR":
+        new_symbol = "€";
+        break;
+      case "USD":
+        new_symbol = "$";
+        break;
+      default:
+        new_symbol = "-";
+    }
+    $('.currency-symbol').html(new_symbol);
+  });

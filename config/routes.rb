@@ -205,6 +205,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'job_board#activate_app'
     post "deactivate_app"   => 'job_board#deactivate_app'
     get "index"             => 'job_board#index'
+    get "new"               => 'job_board#new', as: :new_job_board
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
