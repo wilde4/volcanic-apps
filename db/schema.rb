@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150701092831) do
+ActiveRecord::Schema.define(version: 20150811131101) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -77,6 +77,25 @@ ActiveRecord::Schema.define(version: 20150701092831) do
     t.string   "user_group"
     t.string   "currency",                              default: "GBP"
   end
+
+  create_table "inventory_registration_bonuses", force: true do |t|
+    t.integer "inventory_id"
+    t.integer "registration_bonus_id"
+    t.integer "quantity"
+  end
+
+  create_table "job_boards", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.boolean  "charge_for_jobs"
+    t.decimal  "job_token_price",      precision: 8, scale: 2
+    t.boolean  "charge_for_cv_search"
+    t.decimal  "cv_search_price",      precision: 8, scale: 2
+    t.integer  "cv_search_duration"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree
 
   create_table "keys", force: true do |t|
     t.string  "host"
@@ -160,6 +179,14 @@ ActiveRecord::Schema.define(version: 20150701092831) do
     t.string   "account_number"
     t.string   "sort_code"
     t.integer  "dataset_id"
+  end
+
+  create_table "registration_bonuses", force: true do |t|
+    t.string  "name"
+    t.string  "user_group"
+    t.integer "dataset_id"
+    t.integer "quantity",    default: 0
+    t.string  "credit_type"
   end
 
   create_table "roles", force: true do |t|

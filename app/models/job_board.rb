@@ -1,4 +1,4 @@
-class Inventory < ActiveRecord::Base
+class JobBoard < ActiveRecord::Base
 
 
 end
