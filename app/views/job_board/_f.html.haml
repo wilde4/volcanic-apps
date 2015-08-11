@@ -35,6 +35,9 @@
         = f.number_field :cv_search_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
         .input-group-addon days
 
+    .form-actions.form-group
+      = f.submit "Save Settings", class: "btn btn-default"
+
 :javascript
   $('#job_board_currency').change(function(){
     var new_symbol = "£";
