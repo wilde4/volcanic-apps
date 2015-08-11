@@ -204,10 +204,11 @@ Apps::Application.routes.draw do
   scope :job_board do
     post "activate_app"     => 'job_board#activate_app'
     post "deactivate_app"   => 'job_board#deactivate_app'
-    get "index"             => 'job_board#index'
-    get "new"               => 'job_board#new', as: :new_job_board
+    get  "index"            => 'job_board#index'
+    get  "new"              => 'job_board#new', as: :new_job_board
     post "create"           => 'job_board#create'
-
+    get  "edit"             => 'job_board#edit', as: :edit_job_board
+    patch "update"           => 'job_board#update'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

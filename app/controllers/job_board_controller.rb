@@ -19,8 +19,6 @@ class JobBoardController < ApplicationController
   def create
     @job_board = JobBoard.new(job_board_params)
 
-    
-    
     respond_to do |format|
       if @job_board.save
         format.html { render action: 'index' }
@@ -38,6 +36,21 @@ class JobBoardController < ApplicationController
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
   end
 
+  def update
+    @job_board = JobBoard.find_by(params[:job_board][:id])
+    
+    respond_to do |format|
+      if @job_board.update_attributes(job_board_params)
+        format.html { render action: 'index' }
+        format.json { render json: { success: true, job_board: @job_board }}
+      else
+        format.html
+        format.json { render json: {
+          success: false, status: "Error: #{@job_board.errors.full_messages.join(', ')}"
+        }}
+      end
+    end
+  end
 
   protected
     def job_board_params
