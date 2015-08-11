@@ -201,5 +201,11 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :job_board do
+    post "activate_app"     => 'job_board#activate_app'
+    post "deactivate_app"   => 'job_board#deactivate_app'
+    get "index"             => 'job_board#index'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
