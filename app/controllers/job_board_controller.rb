@@ -3,7 +3,8 @@ class JobBoardController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :new, :edit]
+  before_action :set_key, only: [:index, :new, :edit, :purchasable]
+  before_action :authorise_key, only: [:purchasable] #requires set_key to have executed first
 
   def index
     @host = @key.host
@@ -52,6 +53,24 @@ class JobBoardController < ApplicationController
     end
   end
 
+  def purchasable
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    
+    if @job_board.present?
+      purchasable = {}
+      
+      purchasable[:job_token] = { price: @job_board.job_token_price } if @job_board.charge_for_jobs
+
+      purchasable[:cv_search] = { price: @job_board.cv_search_price, duration: @job_board.cv_search_duration } if @job_board.charge_for_cv_search
+
+      purchasable[:currency] = @job_board.currency
+
+      render json: { success: true, purchasable: purchasable }
+    else
+      render json: { success: false }
+    end
+  end
+
   protected
     def job_board_params
       params.require(:job_board).permit(:id, 
@@ -62,6 +81,10 @@ class JobBoardController < ApplicationController
                                         :charge_for_cv_search,
                                         :cv_search_price,
                                         :cv_search_duration)
+    end
+
+    def authorise_key
+      render nothing: true, status: 401 and return unless @key.api_key == params[:apikey]
     end
   
 

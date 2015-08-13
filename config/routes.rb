@@ -208,7 +208,8 @@ Apps::Application.routes.draw do
     get  "new"              => 'job_board#new', as: :new_job_board
     post "create"           => 'job_board#create'
     get  "edit"             => 'job_board#edit', as: :edit_job_board
-    patch "update"           => 'job_board#update'
+    patch "update"          => 'job_board#update'
+    get  "purchasable"      => 'job_board#purchasable'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
