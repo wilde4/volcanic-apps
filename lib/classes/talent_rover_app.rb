@@ -86,7 +86,7 @@ class TalentRoverApp
         end
       end
     end
-    response = HTTParty.get("http://#{@key.host}/api/v1/job_references.json")
+    response = HTTParty.get("http://#{@key.host}/api/v1/jobs/job_references.json")
     
     current_job_refs = JSON.parse response.read_body
     current_job_refs.each do |job|
