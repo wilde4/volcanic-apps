@@ -8,9 +8,14 @@
       = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
 
     .checkbox
+      = f.label :require_tokens_for_jobs do
+        = f.check_box :require_tokens_for_jobs
+        Require Credit to Post a Job
+
+    .checkbox
       = f.label :charge_for_jobs do
         = f.check_box :charge_for_jobs
-        Charge for Job Posting
+        Charge for Job Posting Credit
 
     .form-group
       = f.label :job_token_price, "Price per Job Token"
@@ -19,9 +24,14 @@
         = f.number_field :job_token_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
 
     .checkbox.mt30
+      = f.label :require_access_for_cv_search do
+        = f.check_box :require_access_for_cv_search
+        Require Access for CV Search Feature (enable time limited access)
+
+    .checkbox
       = f.label :charge_for_cv_search do
         = f.check_box :charge_for_cv_search
-        Charge for CV Search Feature
+        Charge for CV Search Access
 
     .form-group
       = f.label :cv_search_price, "CV Search Access Price"

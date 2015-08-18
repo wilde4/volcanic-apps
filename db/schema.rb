@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150811143144) do
+ActiveRecord::Schema.define(version: 20150818153835) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -87,13 +87,15 @@ ActiveRecord::Schema.define(version: 20150811143144) do
   create_table "job_boards", force: true do |t|
     t.integer  "app_dataset_id"
     t.boolean  "charge_for_jobs"
-    t.decimal  "job_token_price",      precision: 8, scale: 2
+    t.decimal  "job_token_price",              precision: 8, scale: 2
     t.boolean  "charge_for_cv_search"
-    t.decimal  "cv_search_price",      precision: 8, scale: 2
+    t.decimal  "cv_search_price",              precision: 8, scale: 2
     t.integer  "cv_search_duration"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "currency"
+    t.boolean  "require_tokens_for_jobs"
+    t.boolean  "require_access_for_cv_search"
   end
 
   add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree

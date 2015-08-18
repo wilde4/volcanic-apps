@@ -80,7 +80,9 @@ class JobBoardController < ApplicationController
                                         :job_token_price,
                                         :charge_for_cv_search,
                                         :cv_search_price,
-                                        :cv_search_duration)
+                                        :cv_search_duration,
+                                        :require_tokens_for_jobs,
+                                        :require_access_for_cv_search)
     end
 
     def authorise_key
