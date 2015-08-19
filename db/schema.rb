@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150818153835) do
+ActiveRecord::Schema.define(version: 20150819101213) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -52,6 +52,18 @@ ActiveRecord::Schema.define(version: 20150818153835) do
     t.datetime "updated_at"
     t.text     "linkedin_profile"
   end
+
+  create_table "cv_search_access_durations", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "user_token"
+    t.integer  "duration_added"
+    t.datetime "expiry_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "cv_search_access_durations", ["app_dataset_id"], name: "index_cv_search_access_durations_on_app_dataset_id", using: :btree
+  add_index "cv_search_access_durations", ["user_token"], name: "index_cv_search_access_durations_on_user_token", using: :btree
 
   create_table "featured_jobs", force: true do |t|
     t.integer "job_id"

@@ -3,8 +3,8 @@ class JobBoardController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :new, :edit, :purchasable]
-  before_action :authorise_key, only: [:purchasable] #requires set_key to have executed first
+  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time]
+  before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time] #requires set_key to have executed first
 
   def index
     @host = @key.host
@@ -70,6 +70,72 @@ class JobBoardController < ApplicationController
       render json: { success: false }
     end
   end
+
+  def require_tokens_for_jobs
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    if @job_board.present?
+      if @job_board.require_tokens_for_jobs
+        render json: { success: true, tokens: true }
+        return
+      else
+        render json: { success: true, tokens: false }
+        return
+      end
+    else
+      render json: { success: false }
+      return
+    end
+  end
+
+  def access_for_cv_search
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    if @job_board.present?
+      if @job_board.require_access_for_cv_search
+        most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+        if most_recent.present? && most_recent.expiry_date > Time.now
+          render json: { success: true, access: true, expiry_date: most_recent.expiry_date }
+          return
+        else
+          render json: { success: true, access: false }
+          return
+        end
+      else
+        render json: { success: true, access: true }
+        return
+      end
+    else
+      render json: { success: false }
+      return
+    end
+  end
+
+  def increase_cv_access_time
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+    duration = params[:data][:duration].to_i
+
+    if most_recent.present? && most_recent.expiry_date > Time.now
+      most_recent_expiry = most_recent.expiry_date
+    else
+      most_recent_expiry = Time.now
+    end
+
+    cv_search = CvSearchAccessDuration.new
+    cv_search.duration_added = duration
+    cv_search.expiry_date    = most_recent_expiry + duration.days
+    cv_search.user_token     = params[:data][:user_token]
+    cv_search.app_dataset_id = @key.app_dataset_id
+
+    if cv_search.save
+      render json: { success: true, expiry: cv_search.expiry_date }
+      return
+    else
+      render json: { success: false }
+      return
+    end
+  end
+
+
 
   protected
     def job_board_params

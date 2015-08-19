@@ -210,6 +210,9 @@ Apps::Application.routes.draw do
     get  "edit"             => 'job_board#edit', as: :edit_job_board
     patch "update"          => 'job_board#update'
     get  "purchasable"      => 'job_board#purchasable'
+    get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
+    get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
+    post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
