@@ -130,10 +130,10 @@ class JobBoardController < ApplicationController
     end
 
     cv_search = CvSearchAccessDuration.new
-    cv_search.duration_added = duration
-    cv_search.expiry_date    = most_recent_expiry + duration.days
-    # cv_search.user_token     = params[:data][:user_token]
-    # cv_search.client_token   = params[:data][:client_token]
+    cv_search.duration_added = duration * @job_board.cv_search_duration
+    cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
+    cv_search.user_token     = params[:data][:user_token]
+    cv_search.client_token   = params[:data][:client_token]
     cv_search.app_dataset_id = @key.app_dataset_id
 
     if cv_search.save
