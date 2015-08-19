@@ -91,7 +91,11 @@ class JobBoardController < ApplicationController
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
       if @job_board.require_access_for_cv_search
-        most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+        if params[:data][:client_token].present?
+          most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+        else
+          most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+        end        
         if most_recent.present? && most_recent.expiry_date > Time.now
           render json: { success: true, access: true, expiry_date: most_recent.expiry_date }
           return
@@ -111,7 +115,12 @@ class JobBoardController < ApplicationController
 
   def increase_cv_access_time
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
-    most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+    if params[:data][:client_token].present?
+      most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+    else
+      most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+    end
+
     duration = params[:data][:duration].to_i
 
     if most_recent.present? && most_recent.expiry_date > Time.now
@@ -123,11 +132,12 @@ class JobBoardController < ApplicationController
     cv_search = CvSearchAccessDuration.new
     cv_search.duration_added = duration
     cv_search.expiry_date    = most_recent_expiry + duration.days
-    cv_search.user_token     = params[:data][:user_token]
+    # cv_search.user_token     = params[:data][:user_token]
+    # cv_search.client_token   = params[:data][:client_token]
     cv_search.app_dataset_id = @key.app_dataset_id
 
     if cv_search.save
-      render json: { success: true, expiry: cv_search.expiry_date }
+      render json: { success: true, expiry_date: cv_search.expiry_date }
       return
     else
       render json: { success: false }
