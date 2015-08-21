@@ -213,6 +213,9 @@ Apps::Application.routes.draw do
     get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
     get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
     post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
+
+    get  "client_form"      => 'job_board#client_form'
+    post "client_create"    => 'job_board#client_create'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
