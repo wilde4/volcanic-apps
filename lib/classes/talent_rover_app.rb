@@ -9,6 +9,7 @@ class TalentRoverApp
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
+      @job_data = get_xml
       parse_jobs
       prune_jobs if get_prune_jobs_setting
     end
@@ -17,7 +18,6 @@ class TalentRoverApp
   end
 
   def self.parse_jobs
-    @job_data = get_xml
     jobs = @job_data.xpath("//job")
 
     # Has a Posting Language been defined?
@@ -84,6 +84,9 @@ class TalentRoverApp
         if job_post_langs.include?(posting_language)
           live_job_refs << job.xpath("referencenumber").text.strip if job.xpath("referencenumber").text.present?
         end
+      else
+        # ADD ALL JOBS SO THEY ARE NOT PURGED
+        live_job_refs << job.xpath("referencenumber").text.strip if job.xpath("referencenumber").text.present?
       end
     end
     response = HTTParty.get("http://#{@key.host}/api/v1/jobs/job_references.json")
@@ -95,10 +98,10 @@ class TalentRoverApp
           payload = {}
           payload["job[api_key]"] = @key.api_key
           payload["job[job_reference]"] = job['job_reference']
-          response = HTTParty.post("http://#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+          response = HTTParty.post("http://#{@key.host}/api/v1/jobs/expire.json", { body: payload })
           puts "#{response.code} - #{response.read_body}"
         rescue Exception => e
-          puts "[FAIL] http.request failed to post DELETE payload: #{e}"
+          puts "[FAIL] http.request failed to post Expire payload: #{e}"
         end
       end
     end
