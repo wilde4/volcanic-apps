@@ -216,6 +216,9 @@ Apps::Application.routes.draw do
 
     get  "client_form"      => 'job_board#client_form'
     post "client_create"    => 'job_board#client_create'
+
+    get  "user_form"      => 'job_board#user_form'
+    post "user_update"    => 'job_board#user_update'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

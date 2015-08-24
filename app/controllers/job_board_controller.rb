@@ -3,7 +3,7 @@ class JobBoardController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create]
+  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update]
   before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time] #requires set_key to have executed first
 
   def index
@@ -178,6 +178,38 @@ class JobBoardController < ApplicationController
     render nothing: true, status: 200 and return
   end
 
+  def user_form
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    @latest = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+  end
+
+  def user_update
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+
+    if params[:user][:extra].present?
+      extra = params[:user][:extra]
+      if extra[:cv_search].present? && extra[:cv_search][:duration].present?
+        most_recent = CvSearchAccessDuration.where(user_token: params[:user][:secure_random], app_dataset_id: @key.app_dataset_id).last
+        duration = extra[:cv_search][:duration].to_i
+
+        if most_recent.present? && most_recent.expiry_date > Time.now
+          most_recent_expiry = most_recent.expiry_date
+        else
+          most_recent_expiry = Time.now
+        end
+
+        cv_search = CvSearchAccessDuration.new
+        cv_search.duration_added = duration * @job_board.cv_search_duration
+        cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
+        cv_search.user_token   = params[:user][:secure_random]
+        cv_search.app_dataset_id = @key.app_dataset_id
+
+        cv_search.save
+      end
+    end
+
+    render nothing: true, status: 200 and return
+  end
 
 
   protected
