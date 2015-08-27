@@ -1,7 +1,7 @@
 .row
   .col-md-6
     .form-group
-      %label{for: "client__extra_cv_search_duration"}= "Add CV Search Access (currently #{distance_of_time_in_words(@latest.expiry_date, Time.now)} remaining)"
+      %label{for: "client__extra_cv_search_duration"}= "Add CV Search Access (currently #{@latest.present? ? distance_of_time_in_words(@latest.expiry_date, Time.now) : '0 days'} remaining)"
       .input-group
 
         %input.form-control#client_extra_cv_search_duration{name: "client[extra][cv_search][duration]"}
