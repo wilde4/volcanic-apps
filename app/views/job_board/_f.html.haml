@@ -3,48 +3,80 @@
     = f.hidden_field :id, value: @job_board.id
     = f.hidden_field :app_dataset_id, value: @job_board.app_dataset_id
 
-    .form-group
-      = f.label :currency
-      = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
+    .section.mb30
+      %h3 General Settings
+      .form-group
+        = f.label :currency
+        = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
+    %hr
+    .section.mb30
+      %h3 Job Credits
+      .checkbox
+        = f.label :require_tokens_for_jobs do
+          = f.check_box :require_tokens_for_jobs
+          Require Credit to Post a Job
 
-    .checkbox
-      = f.label :require_tokens_for_jobs do
-        = f.check_box :require_tokens_for_jobs
-        Require Credit to Post a Job
+      .checkbox
+        = f.label :charge_for_jobs do
+          = f.check_box :charge_for_jobs
+          Charge for Job Posting Credit
 
-    .checkbox
-      = f.label :charge_for_jobs do
-        = f.check_box :charge_for_jobs
-        Charge for Job Posting Credit
+      .form-group
+        = f.label :job_token_price, "Price per Job Token"
+        .input-group
+          .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+          = f.number_field :job_token_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
 
-    .form-group
-      = f.label :job_token_price, "Price per Job Token"
-      .input-group
-        .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
-        = f.number_field :job_token_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
+      .form-group
+        = f.label :job_duration, "Job Listing Duration"
+        .input-group
+          = f.number_field :job_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
+          .input-group-addon days
 
-    .checkbox.mt30
-      = f.label :require_access_for_cv_search do
-        = f.check_box :require_access_for_cv_search
-        Require Access for CV Search Feature (enable time limited access)
+      .form-group
+        = f.label :job_token_title, "Job Credit Title"
+        = f.text_field :job_token_title, placeholder: "e.g. Job Posting Credit", class: "form-control"
+        %span.help-block This is the name of this purchase as displayed to the user
 
-    .checkbox
-      = f.label :charge_for_cv_search do
-        = f.check_box :charge_for_cv_search
-        Charge for CV Search Access
+      .form-group
+        = f.label :job_token_description, "Job Credit Description"
+        = f.text_area :job_token_description, rows: 5, placeholder: "e.g. This will allow you to post a job", class: "form-control"
+        %span.help-block Description of this purchase as displayed to the user under the title
+    %hr
+    .section.mb30
+      %h3 CV Search
+      .checkbox.mt30
+        = f.label :require_access_for_cv_search do
+          = f.check_box :require_access_for_cv_search
+          Require Access for CV Search Feature (enable time limited access)
 
-    .form-group
-      = f.label :cv_search_price, "CV Search Access Price"
-      .input-group
-        .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
-        = f.number_field :cv_search_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
+      .checkbox
+        = f.label :charge_for_cv_search do
+          = f.check_box :charge_for_cv_search
+          Charge for CV Search Access
+      #cv_search_collapse
+        .form-group
+          = f.label :cv_search_price, "CV Search Access Price"
+          .input-group
+            .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+            = f.number_field :cv_search_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
 
-    .form-group
-      = f.label :cv_search_duration, "CV Search Access Duration"
-      .input-group
-        = f.number_field :cv_search_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
-        .input-group-addon days
+        .form-group
+          = f.label :cv_search_duration, "CV Search Access Duration"
+          .input-group
+            = f.number_field :cv_search_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
+            .input-group-addon days
 
+        .form-group
+          = f.label :cv_search_title, "CV Search Title"
+          = f.text_field :cv_search_title, placeholder: "e.g. CV Search Access", class: "form-control"
+          %span.help-block This is the name of this purchase as displayed to the user
+
+        .form-group
+          = f.label :cv_search_description, "CV Search Description"
+          = f.text_area :cv_search_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
+          %span.help-block Description of this purchase as displayed to the user under the title
+    %hr
     .form-actions.form-group
       = f.submit "Save Settings", class: "btn btn-default"
 
@@ -66,3 +98,5 @@
     }
     $('.currency-symbol').html(new_symbol);
   });
+
+  

@@ -59,9 +59,9 @@ class JobBoardController < ApplicationController
     if @job_board.present?
       purchasable = {}
       
-      purchasable[:job_token] = { price: @job_board.job_token_price } if @job_board.charge_for_jobs
+      purchasable[:job_token] = { price: @job_board.job_token_price, duration: @job_board.job_duration, title: @job_board.job_token_title, description: @job_board.job_token_description } if @job_board.charge_for_jobs
 
-      purchasable[:cv_search] = { price: @job_board.cv_search_price, duration: @job_board.cv_search_duration } if @job_board.charge_for_cv_search
+      purchasable[:cv_search] = { price: @job_board.cv_search_price, duration: @job_board.cv_search_duration, title: @job_board.cv_search_title, description: @job_board.cv_search_description } if @job_board.charge_for_cv_search
 
       purchasable[:currency] = @job_board.currency
 
@@ -223,7 +223,12 @@ class JobBoardController < ApplicationController
                                         :cv_search_price,
                                         :cv_search_duration,
                                         :require_tokens_for_jobs,
-                                        :require_access_for_cv_search)
+                                        :require_access_for_cv_search,
+                                        :job_duration,
+                                        :job_token_title,
+                                        :job_token_description,
+                                        :cv_search_title,
+                                        :cv_search_description)
     end
 
     def authorise_key
