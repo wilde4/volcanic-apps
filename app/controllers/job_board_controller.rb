@@ -59,9 +59,9 @@ class JobBoardController < ApplicationController
     if @job_board.present?
       purchasable = {}
       
-      purchasable[:job_token] = { price: @job_board.job_token_price, duration: @job_board.job_duration, title: @job_board.job_token_title, description: @job_board.job_token_description } if @job_board.charge_for_jobs
+      purchasable[:job_token] = { price: @job_board.job_token_settings.job_token_price, duration: @job_board.job_token_settings.job_duration, title: @job_board.job_token_settings.job_token_title, description: @job_board.job_token_settings.job_token_description } if @job_board.job_token_settings.charge_for_jobs
 
-      purchasable[:cv_search] = { price: @job_board.cv_search_price, duration: @job_board.cv_search_duration, title: @job_board.cv_search_title, description: @job_board.cv_search_description } if @job_board.charge_for_cv_search
+      purchasable[:cv_search] = { price: @job_board.cv_search_settings.cv_search_price, duration: @job_board.cv_search_settings.cv_search_duration, title: @job_board.cv_search_settings.cv_search_title, description: @job_board.cv_search_settings.cv_search_description } if @job_board.cv_search_settings.charge_for_cv_search
 
       purchasable[:currency] = @job_board.currency
 
@@ -76,7 +76,7 @@ class JobBoardController < ApplicationController
   def require_tokens_for_jobs
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
-      if @job_board.require_tokens_for_jobs
+      if @job_board.job_token_settings.require_tokens_for_jobs
         render json: { success: true, tokens: true }
         return
       else
@@ -92,7 +92,7 @@ class JobBoardController < ApplicationController
   def access_for_cv_search
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
-      if @job_board.require_access_for_cv_search
+      if @job_board.cv_search_settings.require_access_for_cv_search
         if params[:data][:client_token].present?
           most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
         else
@@ -132,7 +132,7 @@ class JobBoardController < ApplicationController
     end
 
     cv_search = CvSearchAccessDuration.new
-    cv_search.duration_added = duration * @job_board.cv_search_duration
+    cv_search.duration_added = duration * @job_board.cv_search_settings.cv_search_duration
     cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
     cv_search.user_token     = params[:data][:user_token]
     cv_search.client_token   = params[:data][:client_token]
@@ -168,7 +168,7 @@ class JobBoardController < ApplicationController
         end
 
         cv_search = CvSearchAccessDuration.new
-        cv_search.duration_added = duration * @job_board.cv_search_duration
+        cv_search.duration_added = duration * @job_board.cv_search_settings.cv_search_duration
         cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
         cv_search.client_token   = params[:client][:secure_random]
         cv_search.app_dataset_id = @key.app_dataset_id
@@ -201,7 +201,7 @@ class JobBoardController < ApplicationController
         end
 
         cv_search = CvSearchAccessDuration.new
-        cv_search.duration_added = duration * @job_board.cv_search_duration
+        cv_search.duration_added = duration * @job_board.cv_search_settings.cv_search_duration
         cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
         cv_search.user_token   = params[:user][:secure_random]
         cv_search.app_dataset_id = @key.app_dataset_id
@@ -219,18 +219,23 @@ class JobBoardController < ApplicationController
       params.require(:job_board).permit(:id, 
                                         :app_dataset_id, 
                                         :currency, 
-                                        :charge_for_jobs,
-                                        :job_token_price,
-                                        :charge_for_cv_search,
-                                        :cv_search_price,
-                                        :cv_search_duration,
-                                        :require_tokens_for_jobs,
-                                        :require_access_for_cv_search,
-                                        :job_duration,
-                                        :job_token_title,
-                                        :job_token_description,
-                                        :cv_search_title,
-                                        :cv_search_description)
+                                        job_token_settings_attributes: [
+                                          :charge_for_jobs,
+                                          :job_token_price,
+                                          :require_tokens_for_jobs,
+                                          :job_duration,
+                                          :job_token_title,
+                                          :job_token_description,
+                                        ],
+                                        cv_search_settings_attributes: [
+                                          :charge_for_cv_search,
+                                          :cv_search_price,
+                                          :cv_search_duration,                                        
+                                          :require_access_for_cv_search,                                        
+                                          :cv_search_title,
+                                          :cv_search_description
+                                        ]
+                                        )
     end
 
     def authorise_key

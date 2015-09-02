@@ -1,17 +1,14 @@
 class JobBoard < ActiveRecord::Base
   validates_presence_of :app_dataset_id
+  
+  has_one :job_token_settings
+  has_one :cv_search_settings
 
+  accepts_nested_attributes_for :job_token_settings, update_only: true
+  accepts_nested_attributes_for :cv_search_settings, update_only: true
 
-
-  def job_token_title
-    self.read_attribute(:job_token_title).present? ? self.read_attribute(:job_token_title) : "Job Credit"
-  end
-
-  def cv_search_title
-    self.read_attribute(:cv_search_title).present? ? self.read_attribute(:cv_search_title) : "CV Search Access"
-  end
 
   def job_duration
-    self.read_attribute(:job_duration).present? ? self.read_attribute(:job_duration) : 30
+    self.job_token_settings.job_duration
   end
 end

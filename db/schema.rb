@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150901143545) do
+ActiveRecord::Schema.define(version: 20150902105000) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -67,6 +67,16 @@ ActiveRecord::Schema.define(version: 20150901143545) do
   add_index "cv_search_access_durations", ["client_token"], name: "index_cv_search_access_durations_on_client_token", using: :btree
   add_index "cv_search_access_durations", ["user_token"], name: "index_cv_search_access_durations_on_user_token", using: :btree
 
+  create_table "cv_search_settings", force: true do |t|
+    t.integer "job_board_id"
+    t.boolean "charge_for_cv_search"
+    t.boolean "require_access_for_cv_search"
+    t.decimal "cv_search_price",              precision: 8, scale: 2
+    t.integer "cv_search_duration"
+    t.string  "cv_search_title"
+    t.text    "cv_search_description"
+  end
+
   create_table "featured_jobs", force: true do |t|
     t.integer "job_id"
     t.integer "user_id"
@@ -100,24 +110,22 @@ ActiveRecord::Schema.define(version: 20150901143545) do
 
   create_table "job_boards", force: true do |t|
     t.integer  "app_dataset_id"
-    t.boolean  "charge_for_jobs"
-    t.decimal  "job_token_price",              precision: 8, scale: 2
-    t.boolean  "charge_for_cv_search"
-    t.decimal  "cv_search_price",              precision: 8, scale: 2
-    t.integer  "cv_search_duration"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "currency"
-    t.boolean  "require_tokens_for_jobs"
-    t.boolean  "require_access_for_cv_search"
-    t.string   "job_token_title"
-    t.text     "job_token_description"
-    t.string   "cv_search_title"
-    t.text     "cv_search_description"
-    t.integer  "job_duration"
   end
 
   add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree
+
+  create_table "job_token_settings", force: true do |t|
+    t.integer "job_board_id"
+    t.boolean "charge_for_jobs"
+    t.boolean "require_tokens_for_jobs"
+    t.decimal "job_token_price",         precision: 8, scale: 2
+    t.string  "job_token_title"
+    t.text    "job_token_description"
+    t.integer "job_duration"
+  end
 
   create_table "keys", force: true do |t|
     t.string  "host"

@@ -24,6 +24,10 @@
               -if @job_board.job_token_price.present?
                 = "#{currency_to_symbol(@job_board.currency)} #{@job_board.job_token_price}"
           %tr
+            %th Job Duration
+            %td              
+              = "#{@job_board.job_duration} days"
+          %tr
             %th Require Access for CV Search?
             %td
               %i{class: "fa #{@job_board.require_access_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
