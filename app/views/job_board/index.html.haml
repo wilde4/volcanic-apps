@@ -13,16 +13,16 @@
           %tr
             %th Require Credits for Job Posting?
             %td
-              %i{class: "fa #{@job_board.require_tokens_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
+              %i{class: "fa #{@job_board.job_token_settings.require_tokens_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
           %tr
             %th Charge for Job Posting?
             %td
-              %i{class: "fa #{@job_board.charge_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
+              %i{class: "fa #{@job_board.job_token_settings.charge_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
           %tr
             %th Price per Job Token
             %td
-              -if @job_board.job_token_price.present?
-                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.job_token_price}"
+              -if @job_board.job_token_settings.job_token_price.present?
+                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.job_token_settings.job_token_price}"
           %tr
             %th Job Duration
             %td              
@@ -30,21 +30,21 @@
           %tr
             %th Require Access for CV Search?
             %td
-              %i{class: "fa #{@job_board.require_access_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
+              %i{class: "fa #{@job_board.cv_search_settings.require_access_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
           %tr
             %th Charge for CV Search?
             %td
-              %i{class: "fa #{@job_board.charge_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
+              %i{class: "fa #{@job_board.cv_search_settings.charge_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
           %tr
             %th Price for CV Search Access
             %td
-              -if @job_board.cv_search_price.present?
-                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_price}"
+              -if @job_board.cv_search_settings.cv_search_price.present?
+                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_search_price}"
           %tr
             %th CV Search Access Duration
             %td
-              -if @job_board.cv_search_duration.present?
-                = "#{@job_board.cv_search_duration} days"
+              -if @job_board.cv_search_settings.cv_search_duration.present?
+                = "#{@job_board.cv_search_settings.cv_search_duration} days"
 
     -else
       =link_to "Setup Job Board", relative_link("new"), class: "btn btn-primary"
