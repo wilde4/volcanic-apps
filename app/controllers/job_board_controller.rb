@@ -219,7 +219,11 @@ class JobBoardController < ApplicationController
   protected
     def job_board_params
       params.require(:job_board).permit(:id, 
-                                        :app_dataset_id, 
+                                        :app_dataset_id,
+                                        :address,
+                                        :phone_number,
+                                        :company_number,
+                                        :vat_number,
                                         :currency, 
                                         job_token_settings_attributes: [
                                           :charge_for_jobs,
