@@ -6,6 +6,18 @@
     .section.mb30
       %h3 General Settings
       .form-group
+        = f.label :address
+        = f.text_area :address, rows: 5, class: "form-control"
+      .form-group
+        = f.label :phone_number, "Support Phone Number"
+        = f.text_field :phone_number, class: "form-control"
+      .form-group
+        = f.label :company_number
+        = f.text_field :company_number, class: "form-control"
+      .form-group
+        = f.label :vat_number, "VAT Registered Number"
+        = f.text_field :vat_number, class: "form-control"
+      .form-group
         = f.label :currency
         = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
     %hr
