@@ -3,96 +3,14 @@
     = f.hidden_field :id, value: @job_board.id
     = f.hidden_field :app_dataset_id, value: @job_board.app_dataset_id
 
-    .section.mb30
-      %h3 General Settings
-      .form-group
-        = f.label :address
-        = f.text_area :address, rows: 5, class: "form-control"
-      .form-group
-        = f.label :phone_number, "Support Phone Number"
-        = f.text_field :phone_number, class: "form-control"
-      .form-group
-        = f.label :company_number
-        = f.text_field :company_number, class: "form-control"
-      .form-group
-        = f.label :vat_number, "VAT Registered Number"
-        = f.text_field :vat_number, class: "form-control"
-      .form-group
-        = f.label :currency
-        = f.select :currency, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.currency), {include_blank: false}, {class: "form-control"}
+    = render partial: "general_fields", locals: {f: f}
     %hr
-    = f.fields_for :job_token_settings do |ff|
-      .section.mb30
-        %h3 Job Credits
-        .checkbox
-          = ff.label :require_tokens_for_jobs do
-            = ff.check_box :require_tokens_for_jobs
-            Require Credit to Post a Job
-
-        .checkbox
-          = ff.label :charge_for_jobs do
-            = ff.check_box :charge_for_jobs
-            Charge for Job Posting Credit
-
-        .form-group
-          = ff.label :job_token_price, "Price per Job Token"
-          .input-group
-            .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
-            = ff.number_field :job_token_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
-
-        .form-group
-          = ff.label :job_duration, "Job Listing Duration"
-          .input-group
-            = ff.number_field :job_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
-            .input-group-addon days
-
-        .form-group
-          = ff.label :job_token_title, "Job Credit Title"
-          = ff.text_field :job_token_title, placeholder: "e.g. Job Posting Credit", class: "form-control"
-          %span.help-block This is the name of this purchase as displayed to the user
-
-        .form-group
-          = ff.label :job_token_description, "Job Credit Description"
-          = ff.text_area :job_token_description, rows: 5, placeholder: "e.g. This will allow you to post a job", class: "form-control"
-          %span.help-block Description of this purchase as displayed to the user under the title
-      %hr
-
-    = f.fields_for :cv_search_settings do |fg|
-      .section.mb30
-        %h3 CV Search
-        .checkbox.mt30
-          = fg.label :require_access_for_cv_search do
-            = fg.check_box :require_access_for_cv_search
-            Require Access for CV Search Feature (enable time limited access)
-
-        .checkbox
-          = fg.label :charge_for_cv_search do
-            = fg.check_box :charge_for_cv_search
-            Charge for CV Search Access
-        #cv_search_collapse
-          .form-group
-            = fg.label :cv_search_price, "CV Search Access Price"
-            .input-group
-              .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
-              = fg.number_field :cv_search_price, as: :numeric, input_html:{ step: 0.01, min: 0 }, class: "form-control"
-
-          .form-group
-            = fg.label :cv_search_duration, "CV Search Access Duration"
-            .input-group
-              = fg.number_field :cv_search_duration, as: :numeric, input_html:{ step: 1, min: 1 }, wrapper: false, label: false, class: "form-control"
-              .input-group-addon days
-
-          .form-group
-            = fg.label :cv_search_title, "CV Search Title"
-            = fg.text_field :cv_search_title, placeholder: "e.g. CV Search Access", class: "form-control"
-            %span.help-block This is the name of this purchase as displayed to the user
-
-          .form-group
-            = fg.label :cv_search_description, "CV Search Description"
-            = fg.text_area :cv_search_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
-            %span.help-block Description of this purchase as displayed to the user under the title
-      %hr
-
+    = render partial: "job_token_fields", locals: {f: f}
+    %hr
+    = render partial: "cv_search_fields", locals: {f: f}    
+    %hr
+    = render partial: "tax_fields", locals: {f: f}
+    %hr
     .form-actions.form-group
       = f.submit "Save Settings", class: "btn btn-default"
 

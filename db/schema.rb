@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150902124138) do
+ActiveRecord::Schema.define(version: 20150902135400) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -117,6 +117,8 @@ ActiveRecord::Schema.define(version: 20150902124138) do
     t.string   "vat_number"
     t.string   "phone_number"
     t.text     "address"
+    t.boolean  "charge_vat"
+    t.decimal  "default_vat_rate", precision: 8, scale: 2
   end
 
   add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree

@@ -69,6 +69,8 @@ class JobBoardController < ApplicationController
 
       purchasable[:company_details] = { address: @job_board.address, phone_number: @job_board.phone_number, company_number: @job_board.company_number, vat_number: @job_board.vat_number}
 
+      purchasable[:vat] = { charge_vat: @job_board.charge_vat, vat_rate: @job_board.default_vat_rate}
+
       render json: { success: true, purchasable: purchasable }
     else
       render json: { success: false }
@@ -224,7 +226,9 @@ class JobBoardController < ApplicationController
                                         :phone_number,
                                         :company_number,
                                         :vat_number,
-                                        :currency, 
+                                        :currency,
+                                        :charge_vat,
+                                        :default_vat_rate,
                                         job_token_settings_attributes: [
                                           :charge_for_jobs,
                                           :job_token_price,
