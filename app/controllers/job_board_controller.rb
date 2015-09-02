@@ -67,6 +67,8 @@ class JobBoardController < ApplicationController
 
       purchasable[:job_duration] = @job_board.job_duration
 
+      purchasable[:company_details] = { address: @job_board.address, phone_number: @job_board.phone_number, company_number: @job_board.company_number, vat_number: @job_board.vat_number}
+
       render json: { success: true, purchasable: purchasable }
     else
       render json: { success: false }
