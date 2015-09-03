@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150902135400) do
+ActiveRecord::Schema.define(version: 20150903151321) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -51,6 +51,11 @@ ActiveRecord::Schema.define(version: 20150902135400) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "linkedin_profile"
+  end
+
+  create_table "client_vat_rates", force: true do |t|
+    t.string  "client_token"
+    t.decimal "vat_rate",     precision: 8, scale: 2
   end
 
   create_table "cv_search_access_durations", force: true do |t|

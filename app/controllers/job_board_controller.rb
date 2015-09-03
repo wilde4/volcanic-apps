@@ -69,7 +69,20 @@ class JobBoardController < ApplicationController
 
       purchasable[:company_details] = { address: @job_board.address, phone_number: @job_board.phone_number, company_number: @job_board.company_number, vat_number: @job_board.vat_number}
 
-      purchasable[:vat] = { charge_vat: @job_board.charge_vat, vat_rate: @job_board.default_vat_rate}
+      
+      if params[:data][:client_token].present?
+        vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token])
+        if vat_rate.present? && vat_rate.vat_rate.present?
+          @vat_rate_to_use = vat_rate.vat_rate
+        else
+          @vat_rate_to_use = @job_board.default_vat_rate
+        end
+      else
+        @vat_rate_to_use = @job_board.default_vat_rate
+      end
+
+
+      purchasable[:vat] = { charge_vat: @job_board.charge_vat, vat_rate: @vat_rate_to_use}
 
       render json: { success: true, purchasable: purchasable }
     else
@@ -154,6 +167,7 @@ class JobBoardController < ApplicationController
   def client_form
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+    @vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token])
   end
 
   def client_create
@@ -178,6 +192,21 @@ class JobBoardController < ApplicationController
         cv_search.app_dataset_id = @key.app_dataset_id
 
         cv_search.save
+      end
+
+      if extra[:vat_rate].present?
+        if extra[:vat_rate][:new_vat_rate].present?
+          vat_rate = ClientVatRate.find_by(client_token: params[:client][:secure_random])
+
+          if vat_rate.present?
+            vat_rate.update(vat_rate: extra[:vat_rate][:new_vat_rate])
+          else
+            ClientVatRate.create(client_token: params[:client][:secure_random], vat_rate: extra[:vat_rate][:new_vat_rate])
+          end
+        elsif extra[:vat_rate][:new_vat_rate].blank? && extra[:vat_rate][:old_vat_rate].present?
+          vat_rate = ClientVatRate.find_by(client_token: params[:client][:secure_random])
+          vat_rate.destroy
+        end
       end
     end
 
