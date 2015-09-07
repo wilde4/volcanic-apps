@@ -14,6 +14,8 @@ class JobBoardController < ApplicationController
 
   def new
     @job_board = JobBoard.new
+    @job_board.job_token_settings = JobTokenSettings.new
+    @job_board.cv_search_settings = CvSearchSettings.new
     @job_board.app_dataset_id = @key.app_dataset_id
   end
 

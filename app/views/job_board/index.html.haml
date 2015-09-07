@@ -5,11 +5,20 @@
     -if @job_board
       =link_to "Edit Job Board Settings", relative_link("edit"), class: "btn btn-primary"
 
-      %table.table.mt20
+
+      %h3 Overview
+      %h4.mt20 General
+      %table.table
         %tbody
           %tr
             %th Currency
             %td= @job_board.currency
+          
+          
+      
+      %h4 Job Settings
+      %table.table
+        %tbody
           %tr
             %th Require Credits for Job Posting?
             %td
@@ -27,6 +36,10 @@
             %th Job Duration
             %td              
               = "#{@job_board.job_duration} days"
+
+      %h4 CV Search Settings
+      %table.table
+        %tbody
           %tr
             %th Require Access for CV Search?
             %td
@@ -46,5 +59,17 @@
               -if @job_board.cv_search_settings.cv_search_duration.present?
                 = "#{@job_board.cv_search_settings.cv_search_duration} days"
 
+      %h4 Tax Settings
+      %table.table
+        %tbody
+          %tr
+            %th Add VAT at checkout
+            %td
+              %i{class: "fa #{@job_board.charge_vat ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Default VAT Rate
+            %td= "#{@job_board.default_vat_rate} %"
+
     -else
       =link_to "Setup Job Board", relative_link("new"), class: "btn btn-primary"
+
