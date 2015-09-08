@@ -21,3 +21,10 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      job_token_settings:
+        job_token_price: "Price per Job Listing"
+      cv_search_settings:
+        cv_search_price: "Price per CV Search Interval"
+

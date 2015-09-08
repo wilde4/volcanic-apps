@@ -1,15 +1,21 @@
 = f.fields_for :cv_search_settings do |fg|
   .section.mb30
     %h3 CV Search
-    .checkbox.mt30
+    %h4 Control access to you candidate CV database
+    .mt30
+    .checkbox{style: "padding-left: 0"}
       = fg.label :require_access_for_cv_search do
         = fg.check_box :require_access_for_cv_search
-        Require Access for CV Search Feature (enable time limited access)
-
-    .checkbox
+        Enable time limited access to the CV Search
+      %span.help-block Time can be added manually
+    .mt20
+    .checkbox{style: "padding-left: 0"}
       = fg.label :charge_for_cv_search do
         = fg.check_box :charge_for_cv_search
-        Charge for CV Search Access
+        Allow users to purchase more access time
+      %span.help-block  Enables users to purchase access time using a credit/debit card
+    .mt20
+
     #cv_search_collapse
       .form-group
         = fg.label :cv_search_price, "CV Search Access Price"

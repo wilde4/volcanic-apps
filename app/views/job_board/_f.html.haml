@@ -1,5 +1,6 @@
 .row
   .col-md-4
+    .errors
     = f.hidden_field :id, value: @job_board.id
     = f.hidden_field :app_dataset_id, value: @job_board.app_dataset_id
 
@@ -12,6 +13,7 @@
     = render partial: "tax_fields", locals: {f: f}
     %hr
     .form-actions.form-group
+      .errors
       = f.submit "Save Settings", class: "btn btn-default"
 
 :javascript

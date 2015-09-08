@@ -3,8 +3,28 @@ class JobBoardController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
+
   before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update]
   before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time] #requires set_key to have executed first
+
+  def activate_app
+    key = Key.new
+    key.host = params[:data][:host]
+    key.app_dataset_id = params[:data][:app_dataset_id]
+    key.api_key = params[:data][:api_key]
+    key.app_name = params[:controller]
+
+    existing_job_board = JobBoard.find_by(app_dataset_id: params[:data][:app_dataset_id])
+    unless existing_job_board.present?
+      JobBoard.create(app_dataset_id: params[:data][:app_dataset_id])
+    end
+
+    respond_to do |format|
+      format.json { render json: { success: key.save }}
+    end
+  end
+
+
 
   def index
     @host = @key.host
@@ -17,6 +37,7 @@ class JobBoardController < ApplicationController
     @job_board.job_token_settings = JobTokenSettings.new
     @job_board.cv_search_settings = CvSearchSettings.new
     @job_board.app_dataset_id = @key.app_dataset_id
+    
   end
 
   def create
@@ -251,8 +272,7 @@ class JobBoardController < ApplicationController
 
   protected
     def job_board_params
-      params.require(:job_board).permit(:id, 
-                                        :app_dataset_id,
+      params.require(:job_board).permit(:app_dataset_id,
                                         :address,
                                         :phone_number,
                                         :company_number,
