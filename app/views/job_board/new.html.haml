@@ -1,0 +1,29 @@
+%h2 Create Job Board Settings
+
+= form_for @job_board, url: "" do |f|
+  = render partial: "f", locals: {f: f}
+
+
+:javascript
+  $(function() {
+    $('form').submit(function() {
+      var formData = $(this).serialize();
+      $.ajax({
+        url: "//#{app_server_host}/job_board/create.json",
+        type: "POST",
+        crossDomain: true,
+        data: formData,
+        dataType: 'json'
+      }).success(function(data) {
+        if(data.success) {
+          window.location = "index";
+        } else {
+          $('.errors').html(data.status);
+        }
+        return false;
+      });
+      return false;
+    });
+  });
+
+= link_to 'Back to Job Board App', 'index'

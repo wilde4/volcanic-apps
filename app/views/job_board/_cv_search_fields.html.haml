@@ -1,0 +1,40 @@
+= f.fields_for :cv_search_settings do |fg|
+  .section.mb30
+    %h3 CV Search
+    %h4 Control access to you candidate CV database
+    .mt30
+    .checkbox{style: "padding-left: 0"}
+      = fg.label :require_access_for_cv_search do
+        = fg.check_box :require_access_for_cv_search
+        Enable time limited access to the CV Search
+      %span.help-block Time can be added manually
+    .mt20
+    .checkbox{style: "padding-left: 0"}
+      = fg.label :charge_for_cv_search do
+        = fg.check_box :charge_for_cv_search
+        Allow users to purchase more access time
+      %span.help-block  Enables users to purchase access time using a credit/debit card
+    .mt20
+
+    #cv_search_collapse
+      .form-group
+        = fg.label :cv_search_price, "CV Search Access Price"
+        .input-group
+          .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+          = fg.number_field :cv_search_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
+
+      .form-group
+        = fg.label :cv_search_duration, "CV Search Access Duration"
+        .input-group
+          = fg.number_field :cv_search_duration, as: :numeric, step: 1, min: 1, wrapper: false, label: false, class: "form-control"
+          .input-group-addon days
+
+      .form-group
+        = fg.label :cv_search_title, "CV Search Title"
+        = fg.text_field :cv_search_title, placeholder: "e.g. CV Search Access", class: "form-control"
+        %span.help-block This is the name of this purchase as displayed to the user
+
+      .form-group
+        = fg.label :cv_search_description, "CV Search Description"
+        = fg.text_area :cv_search_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
+        %span.help-block Description of this purchase as displayed to the user under the title
