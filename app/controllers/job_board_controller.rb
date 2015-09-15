@@ -190,7 +190,7 @@ class JobBoardController < ApplicationController
   def client_form
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
-    @vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token])
+    @vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token]) || ClientVatRate.new
   end
 
   def client_create
