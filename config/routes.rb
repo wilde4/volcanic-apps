@@ -221,5 +221,15 @@ Apps::Application.routes.draw do
     post "user_update"    => 'job_board#user_update'
   end
 
+  scope :extra_form_fields do
+    post "activate_app"     => 'extra_form_fields#activate_app'
+    post "deactivate_app"   => 'extra_form_fields#deactivate_app'
+    get 'index'             => 'extra_form_fields#index'
+    get  "new"              => 'extra_form_fields#new', as: :new_form_field
+    post "create"           => 'extra_form_fields#create'
+    get "edit"              => 'extra_form_fields#edit'
+    patch "update"          => 'extra_form_fields#update'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

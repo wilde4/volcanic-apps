@@ -1,0 +1,25 @@
+.row
+  .col-md-4
+    .errors
+    = f.hidden_field :id, value: @extra_form_field.id
+    = f.hidden_field :app_dataset_id, value: @extra_form_field.app_dataset_id
+
+    .form-group
+      = f.label :form
+      = f.select :form, options_for_select(["job","job"]), {include_blank: false}, {class: "form-control"}
+
+    .form-group
+      = f.label :param_key
+      = f.text_field :param_key, class: "form-control"
+
+    .form-group
+      = f.label :label, "Question"
+      = f.text_field :label, class: "form-control"
+
+    .form-group
+      = f.label :hint
+      = f.text_field :hint, class: "form-control"
+
+    .form-actions.form-group
+      .errors
+      = f.submit "Save", class: "btn btn-default"

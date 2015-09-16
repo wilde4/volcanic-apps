@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150903151321) do
+ActiveRecord::Schema.define(version: 20150916104835) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,14 +27,6 @@ ActiveRecord::Schema.define(version: 20150903151321) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -88,6 +80,16 @@ ActiveRecord::Schema.define(version: 20150903151321) do
     t.integer "cv_search_duration"
     t.string  "cv_search_title"
     t.text    "cv_search_description"
+  end
+
+  create_table "extra_form_fields", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "form"
+    t.string   "param_key"
+    t.string   "label"
+    t.string   "hint"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "featured_jobs", force: true do |t|
