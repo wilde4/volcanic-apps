@@ -5,7 +5,7 @@ class ExtraFormFieldsController < ApplicationController
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
 
-  before_filter :set_key, only: [:index, :new, :edit]
+  before_filter :set_key, only: [:index, :new, :edit, :job_form]
 
   def index
     @host = @key.host
@@ -56,6 +56,12 @@ class ExtraFormFieldsController < ApplicationController
   end
 
   def destroy
+  end
+
+  def job_form
+    @extra_form_fields = ExtraFormField.where(app_dataset_id: @key.app_dataset_id, form: "job")
+    @job = JSON.parse(params[:data][:job])
+    render :layout => false
   end
 
   protected

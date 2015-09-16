@@ -229,6 +229,8 @@ Apps::Application.routes.draw do
     post "create"           => 'extra_form_fields#create'
     get "edit"              => 'extra_form_fields#edit'
     patch "update"          => 'extra_form_fields#update'
+
+    get 'job_form'          => 'extra_form_fields#job_form'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

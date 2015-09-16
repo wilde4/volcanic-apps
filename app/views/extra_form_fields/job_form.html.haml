@@ -1,0 +1,5 @@
+- @extra_form_fields.each do |field|
+  .form-group
+    %label{}= field.label
+    %input.form-control{name: "job[extra][#{field.param_key}]", value: @job["extra"][field.param_key]}
+   
