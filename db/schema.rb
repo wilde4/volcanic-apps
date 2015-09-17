@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150917123316) do
+ActiveRecord::Schema.define(version: 20150917135709) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -263,6 +263,7 @@ ActiveRecord::Schema.define(version: 20150917123316) do
     t.datetime "expiry_date"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "split_fee_value"
   end
 
   create_table "text_local_logs", force: true do |t|

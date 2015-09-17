@@ -239,6 +239,11 @@ Apps::Application.routes.draw do
     get 'index'             => 'split_fee#index'
     get 'edit'              => 'split_fee#edit'
     patch 'update'          => 'split_fee#update'
+
+    get 'job_form'          => 'split_fee#job_form'
+    post 'job_create'       => 'split_fee#job_create'
+
+    get 'current_split_fee' => 'split_fee#current_split_fee'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
