@@ -233,5 +233,13 @@ Apps::Application.routes.draw do
     get 'job_form'          => 'extra_form_fields#job_form'
   end
 
+  scope :split_fee do
+    post "activate_app"     => 'split_fee#activate_app'
+    post "deactivate_app"   => 'split_fee#deactivate_app'
+    get 'index'             => 'split_fee#index'
+    get 'edit'              => 'split_fee#edit'
+    patch 'update'          => 'split_fee#update'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

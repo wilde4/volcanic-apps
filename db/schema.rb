@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150916104835) do
+ActiveRecord::Schema.define(version: 20150917123316) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -243,6 +243,24 @@ ActiveRecord::Schema.define(version: 20150916104835) do
   create_table "roles", force: true do |t|
     t.integer  "dataset_id"
     t.string   "user_type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "split_fee_settings", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.text     "salary_bands"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "split_fees", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.integer  "job_id"
+    t.text     "salary_band"
+    t.integer  "fee_percentage"
+    t.text     "terms_of_fee"
+    t.datetime "expiry_date"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

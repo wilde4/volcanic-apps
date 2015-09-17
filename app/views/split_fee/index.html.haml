@@ -1,0 +1,6 @@
+.row
+  .col-md-4
+    %h2 Split Fee Control Panel
+
+    -if @split_fee_setting
+      =link_to "Edit Split Fee Settings", relative_link("edit"), class: "btn btn-primary"
