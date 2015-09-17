@@ -1,0 +1,23 @@
+.row
+  .col-md-4
+    %h2 Job Board Control Panel
+
+    %table.table
+      %thead
+        %tr
+          %th Form
+          %th Param Key
+          %th Question
+          %th
+      %tbody
+        - @extra_form_fields.each do |field|
+          %tr
+            %td= field.form
+            %td= field.param_key
+            %td= field.label
+            %td
+              =link_to "Edit", relative_link("edit?extra_form_field_id=#{field.id}")
+              
+
+    
+    =link_to "New Form Field", relative_link("new"), class: "btn btn-primary"

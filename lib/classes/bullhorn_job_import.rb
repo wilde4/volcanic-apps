@@ -11,13 +11,15 @@ class BullhornJobImport
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
       settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
-      parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+        client = Bullhorn::Rest::Client.new(
+          username: settings['username'],
+          password: settings['password'],
+          client_id: settings['client_id'],
+          client_secret: settings['client_secret']
+        )
+        parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      end
     end
 
     puts '- END import_jobs'
@@ -33,13 +35,15 @@ class BullhornJobImport
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
       settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
-      parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+        client = Bullhorn::Rest::Client.new(
+          username: settings['username'],
+          password: settings['password'],
+          client_id: settings['client_id'],
+          client_secret: settings['client_secret']
+        )
+        parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      end
     end
 
     puts '- END delete_jobs'
@@ -124,12 +128,18 @@ class BullhornJobImport
         puts "--- #{job.title} has been Deleted"
       end
     end
+
+    puts "Total data size = #{@job_data.length} jobs"
   end
 
   def self.parse_jobs_for_delete(client)
     @job_data = query_job_orders(client)
     # jobs = @job_data.xpath("//item")
     
+    
+
+    
+
     @job_data.each do |job|
       if job.isDeleted
         @job_payload = Hash.new
@@ -140,6 +150,8 @@ class BullhornJobImport
         post_payload_for_delete(@job_payload)
       end
     end
+
+    puts "Total data size = #{@job_data.length} jobs"
   end
 
   private
@@ -155,8 +167,28 @@ class BullhornJobImport
     #   client_id: settings['client_id'],
     #   client_secret: settings['client_secret']
     # )
-    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit')
-    jobs.data
+
+    # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
+    # Stop when less than 200 received in a query, and return concatenated results
+
+
+    offset = 0
+    results = 200 # prime the loop
+
+    complete_data = []
+    
+    while results == 200
+
+      jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+      
+      puts "Received #{jobs["count"]}"
+      puts "Received 200 - possibly another page" if jobs["count"] >= 200
+
+      results = jobs["count"]
+      offset += 200
+      complete_data.concat jobs.data
+    end
+    complete_data
   end
 
   def self.post_payload(payload)

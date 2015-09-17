@@ -201,5 +201,37 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :job_board do
+    post "activate_app"     => 'job_board#activate_app'
+    post "deactivate_app"   => 'job_board#deactivate_app'
+    get  "index"            => 'job_board#index'
+    get  "new"              => 'job_board#new', as: :new_job_board
+    post "create"           => 'job_board#create'
+    get  "edit"             => 'job_board#edit', as: :edit_job_board
+    patch "update"          => 'job_board#update'
+    get  "purchasable"      => 'job_board#purchasable'
+    get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
+    get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
+    post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
+
+    get  "client_form"      => 'job_board#client_form'
+    post "client_create"    => 'job_board#client_create'
+
+    get  "user_form"      => 'job_board#user_form'
+    post "user_update"    => 'job_board#user_update'
+  end
+
+  scope :extra_form_fields do
+    post "activate_app"     => 'extra_form_fields#activate_app'
+    post "deactivate_app"   => 'extra_form_fields#deactivate_app'
+    get 'index'             => 'extra_form_fields#index'
+    get  "new"              => 'extra_form_fields#new', as: :new_form_field
+    post "create"           => 'extra_form_fields#create'
+    get "edit"              => 'extra_form_fields#edit'
+    patch "update"          => 'extra_form_fields#update'
+
+    get 'job_form'          => 'extra_form_fields#job_form'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
