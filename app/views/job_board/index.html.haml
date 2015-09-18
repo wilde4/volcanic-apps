@@ -41,6 +41,10 @@
       %table.table
         %tbody
           %tr
+            %th CV Search Enabled
+            %td
+              %i{class: "fa #{@job_board.cv_search_settings.cv_search_enabled ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
             %th Require Access for CV Search?
             %td
               %i{class: "fa #{@job_board.cv_search_settings.require_access_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}

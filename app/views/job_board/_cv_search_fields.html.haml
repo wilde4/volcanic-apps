@@ -4,6 +4,12 @@
     %h4 Control access to you candidate CV database
     .mt30
     .checkbox{style: "padding-left: 0"}
+      = fg.label :cv_search_enabled do
+        = fg.check_box :cv_search_enabled
+        Enable CV Search Functionality
+      %span.help-block Completely hide CV search if desired
+    .mt20
+    .checkbox{style: "padding-left: 0"}
       = fg.label :require_access_for_cv_search do
         = fg.check_box :require_access_for_cv_search
         Enable time limited access to the CV Search

@@ -132,6 +132,7 @@ class JobBoardController < ApplicationController
   def access_for_cv_search
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
+      @cv_search_enabled = @job_board.cv_search_settings.cv_search_enabled
       if @job_board.cv_search_settings.require_access_for_cv_search
         if params[:data][:client_token].present?
           most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
@@ -139,18 +140,18 @@ class JobBoardController < ApplicationController
           most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
         end        
         if most_recent.present? && most_recent.expiry_date > Time.now
-          render json: { success: true, access: true, expiry_date: most_recent.expiry_date }
+          render json: { success: true, enabled: @cv_search_enabled, access: true, expiry_date: most_recent.expiry_date }
           return
         else
-          render json: { success: true, access: false }
+          render json: { success: true, enabled: @cv_search_enabled, access: false }
           return
         end
       else
-        render json: { success: true, access: true }
+        render json: { success: true, enabled: @cv_search_enabled, access: true }
         return
       end
     else
-      render json: { success: false }
+      render json: { success: false, enabled: @cv_search_enabled }
       return
     end
   end
@@ -296,7 +297,8 @@ class JobBoardController < ApplicationController
                                           :cv_search_duration,                                        
                                           :require_access_for_cv_search,                                        
                                           :cv_search_title,
-                                          :cv_search_description
+                                          :cv_search_description,
+                                          :cv_search_enabled
                                         ]
                                         )
     end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150917135709) do
+ActiveRecord::Schema.define(version: 20150918092425) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -80,6 +80,7 @@ ActiveRecord::Schema.define(version: 20150917135709) do
     t.integer "cv_search_duration"
     t.string  "cv_search_title"
     t.text    "cv_search_description"
+    t.boolean "cv_search_enabled",                                    default: true
   end
 
   create_table "extra_form_fields", force: true do |t|
