@@ -246,5 +246,10 @@ Apps::Application.routes.draw do
     get 'current_split_fee' => 'split_fee#current_split_fee'
   end
 
+  scope :eclipse_crm do    
+    post "activate_app"     => 'eclipse_crm#activate_app'
+    post "deactivate_app"   => 'eclipse_crm#deactivate_app'
+    get 'index'             => 'eclipse_crm#index'
+  end
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
