@@ -9,21 +9,6 @@ class BullhornController < ApplicationController
 
   def index
     # SOMETHING
-    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-    logger.info "--- settings = #{settings.inspect}"
-    client = Bullhorn::Rest::Client.new(
-      username: settings['username'],
-      password: settings['password'],
-      client_id: settings['client_id'],
-      client_secret: settings['client_secret']
-    )
-    @jobs = client.query_job_orders(where: "id IS NOT NULL")
-    @jobs.data.each do |job|
-      logger.info "--- JOB DETAILS:"
-      logger.info "--- job.title = #{job.title}"
-      logger.info "--- job.keys = #{job.keys}"
-    end
-    logger.info "--- jobs = #{@jobs.data.size}"
   end
 
   def save_user
