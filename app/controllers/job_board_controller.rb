@@ -140,18 +140,18 @@ class JobBoardController < ApplicationController
           most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
         end        
         if most_recent.present? && most_recent.expiry_date > Time.now
-          render json: { success: true, enabled: @cv_search_enabled, access: true, expiry_date: most_recent.expiry_date }
+          render json: { success: true, enabled: @cv_search_enabled, access: true, expiry_date: most_recent.expiry_date, display: true }
           return
         else
-          render json: { success: true, enabled: @cv_search_enabled, access: false }
+          render json: { success: true, enabled: @cv_search_enabled, access: false, display: true }
           return
         end
       else
-        render json: { success: true, enabled: @cv_search_enabled, access: true }
+        render json: { success: true, enabled: @cv_search_enabled, access: true, display: false }
         return
       end
     else
-      render json: { success: false, enabled: @cv_search_enabled }
+      render json: { success: false, enabled: @cv_search_enabled, display: false }
       return
     end
   end
