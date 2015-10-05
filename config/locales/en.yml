@@ -20,4 +20,6 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
-  hello: "Hello world"
+  bullhorn:
+    settings_form:
+      add_another_field_mapping: '+ Add Another Field Mapping'

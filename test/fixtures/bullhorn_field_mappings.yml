@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  bullhorn_app_setting_id: 
+  bullhorn_field_name: MyString
+  registration_question_reference: MyString
+  sync_from_bullhorn: false
+
+two:
+  bullhorn_app_setting_id: 
+  bullhorn_field_name: MyString
+  registration_question_reference: MyString
+  sync_from_bullhorn: false

@@ -1,0 +1,30 @@
+/ = simple_form_for @bullhorn_settings, url: 'https://apps.volcanic.co/bullhorn/save_settings', method: :post, remote: true do |f|
+= simple_form_for @bullhorn_setting, url: 'http://localhost:3001/bullhorn/save_settings', method: :post, remote: true do |f|
+  .panel.panel-default
+    .panel-heading Settings
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :bh_username
+          = f.input :bh_password, as: :string
+        .col-md-6
+          = f.input :bh_client_id
+          = f.input :bh_client_secret
+      = f.input :import_jobs
+  = f.input :dataset_id, as: :hidden
+  .clearfix
+  .mappings
+    = render :partial => 'bullhorn_field_mapping_fields', locals: { f: f }
+      
+  = link_to t('.add_another_field_mapping'), '#', id: 'add_another_mapping'
+  .form-group= f.submit class: 'btn btn-primary'
+  :javascript
+    $('#add_another_mapping').click(function() {
+      var time_i = Date.now();
+      var new_fields = '<div class="row"> \
+                          <div class="col-md-5"><div class="input string optional bullhorn_app_setting_bullhorn_field_mappings_bullhorn_field_name"><label class="string optional" for="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_bullhorn_field_name">Bullhorn field name</label><input class="string optional" id="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_bullhorn_field_name" name="bullhorn_app_setting[bullhorn_field_mappings_attributes]['+time_i+'][bullhorn_field_name]" type="text"></div></div> \
+                          <div class="col-md-5"><div class="input string optional bullhorn_app_setting_bullhorn_field_mappings_registration_question_reference"><label class="string optional" for="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_registration_question_reference">Registration question reference</label><input class="string optional" id="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_registration_question_reference" name="bullhorn_app_setting[bullhorn_field_mappings_attributes]['+time_i+'][registration_question_reference]" type="text"></div></div> \
+                          <div class="col-md-2"><div class="input boolean optional bullhorn_app_setting_bullhorn_field_mappings_sync_from_bullhorn"><input name="bullhorn_app_setting[bullhorn_field_mappings_attributes]['+time_i+'][sync_from_bullhorn]" type="hidden" value="0"><label class="boolean optional checkbox" for="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_sync_from_bullhorn"><input class="boolean optional" id="bullhorn_app_setting_bullhorn_field_mappings_attributes_'+time_i+'_sync_from_bullhorn" name="bullhorn_app_setting[bullhorn_field_mappings_attributes]['+time_i+'][sync_from_bullhorn]" type="checkbox" value="1">Sync from bullhorn</label></div></div> \
+                        </div><hr>';
+      $('.mappings').append(new_fields);
+    });

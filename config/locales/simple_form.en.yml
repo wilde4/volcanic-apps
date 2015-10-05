@@ -1,4 +1,8 @@
 en:
+  helpers:
+    submit:
+      bullhorn_app_setting:
+        update: Save App Settings
   simple_form:
     "yes": 'Yes'
     "no": 'No'
@@ -10,6 +14,13 @@ en:
       # html: '<abbr title="required">*</abbr>'
     error_notification:
       default_message: "Please review the problems below:"
+    labels:
+      bullhorn_app_setting:
+        bh_username: Bullhorn Username
+        bh_password: Bullhorn Password
+        bh_client_id: Bullhorn Client ID
+        bh_client_secret: Bullhorn Client Secret
+        import_jobs: Import Jobs from Bullhorn?
     # Examples
     # labels:
     #   defaults:

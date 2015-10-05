@@ -1,7 +1,7 @@
 .volcanic_apps
   .row
     .col-md-3
-      = image_tag(image_url('Bullhorn_Logo.png'), class: 'img-responsive')
+      = image_tag(image_url('Bullhorn.jpg'), class: 'img-responsive')
 
     .col-md-9
       %h3 This Bullhorn App sync's Candidate, Job and Application data between Volcanic and Bullhorn
@@ -15,3 +15,9 @@
       %br
 
       #flash_messages
+
+      .row
+        .col-md-12
+          %p Add your Authentication details and field mappings below. Use the Registration Question reference strings for the relevant Bullhorn field.
+          #settings_form
+            = render partial: 'settings_form'

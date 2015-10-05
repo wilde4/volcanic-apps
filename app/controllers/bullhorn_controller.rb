@@ -8,7 +8,27 @@ class BullhornController < ApplicationController
   before_action :set_key, only: [:index, :job_application]
 
   def index
-    # SOMETHING
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
+    @bullhorn_setting.bullhorn_field_mappings.build if @bullhorn_setting.bullhorn_field_mappings.blank?
+    render layout: false
+  end
+
+  def save_settings
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:bullhorn_app_setting][:dataset_id])
+    if @bullhorn_setting.present?
+      if @bullhorn_setting.update(params[:bullhorn_app_setting].permit!)
+        flash[:notice]  = "Settings successfully saved."
+      else
+        flash[:alert]   = "Settings could not be saved. Please try again."
+      end
+    else
+      @bullhorn_setting = BullhornAppSetting.new(params[:bullhorn_app_setting].permit!)
+      if @bullhorn_setting.save
+        flash[:notice]  = "Settings successfully saved."
+      else
+        flash[:alert]   = "Settings could not be saved. Please try again."
+      end
+    end
   end
 
   def save_user

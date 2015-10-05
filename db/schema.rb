@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150701092831) do
+ActiveRecord::Schema.define(version: 20151002153115) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -48,6 +48,28 @@ ActiveRecord::Schema.define(version: 20150701092831) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "bullhorn_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "encrypted_bh_username"
+    t.string   "encrypted_bh_password"
+    t.string   "encrypted_bh_client_id"
+    t.string   "encrypted_bh_client_secret"
+    t.boolean  "import_jobs",                default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "bullhorn_field_mappings", force: true do |t|
+    t.integer  "bullhorn_app_setting_id"
+    t.string   "bullhorn_field_name"
+    t.string   "registration_question_reference"
+    t.boolean  "sync_from_bullhorn",              default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "bullhorn_field_mappings", ["bullhorn_app_setting_id"], name: "index_bullhorn_field_mappings_on_bullhorn_app_setting_id", using: :btree
 
   create_table "bullhorn_users", force: true do |t|
     t.integer  "user_id"
