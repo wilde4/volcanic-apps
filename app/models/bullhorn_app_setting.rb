@@ -7,5 +7,5 @@ class BullhornAppSetting < ActiveRecord::Base
 
   has_many :bullhorn_field_mappings
 
-  accepts_nested_attributes_for :bullhorn_field_mappings
+  accepts_nested_attributes_for :bullhorn_field_mappings, allow_destroy: true
 end

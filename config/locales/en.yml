@@ -23,3 +23,6 @@ en:
   bullhorn:
     settings_form:
       add_another_field_mapping: '+ Add Another Field Mapping'
+    bullhorn_field_mapping_fields:
+      delete: 'Delete this Field Mapping'
+      really_delete: Do you really mean to Delete this Field Mapping?

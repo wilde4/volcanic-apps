@@ -1,6 +1,6 @@
 class BullhornController < ApplicationController
   require 'bullhorn/rest'
-  protect_from_forgery with: :null_session
+  protect_from_forgery with: :null_session, except: [:save_settings]
   respond_to :json
 
   # Controller requires cross-domain POST XHRs
