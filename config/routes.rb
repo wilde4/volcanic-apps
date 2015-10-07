@@ -244,6 +244,7 @@ Apps::Application.routes.draw do
     post 'job_create'       => 'split_fee#job_create'
 
     get 'current_split_fee' => 'split_fee#current_split_fee'
+    get 'get_split_fee'     => 'split_fee#get_split_fee'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

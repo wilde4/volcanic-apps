@@ -88,6 +88,13 @@ class SplitFeeController < ApplicationController
 
   end
 
+  def get_split_fee
+    fee = SplitFee.where(app_dataset_id: params[:dataset_id], job_id: params[:job_id]).last
+    respond_to do |format|
+      format.json { render json: { success: true, split_fee: fee } }
+    end
+  end
+
   protected
     def split_fee_setting_params
       params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands)
