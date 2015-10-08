@@ -261,22 +261,33 @@ class BullhornController < ApplicationController
         attributes['description'] = linkedin_description(user)
       end
 
+      # PREPARE ADDRESS
+      attributes['address'] = {}
+
       # MAP FIELDS TO FIELDS
       field_mappings.each do |fm|
         logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
         # TIMESTAMPS
         answer = user.registration_answers[fm.registration_question_reference] rescue nil
         logger.info "--- raw answer = #{answer}"
+
         case fm.bullhorn_field_name
-        when 'dateOfBirth' # AND OTHERS
-          logger.info "--- dateOfBirth"
+        when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
           answer = (Date.parse(answer).to_time.to_i.to_f * 1000.0).to_i rescue nil
+          logger.info "--- processed answer = #{answer}"
+          attributes[fm.bullhorn_field_name] = answer
+        when 'address1', 'address2', 'city', 'state', 'zip'
+          # ADDRESS
+          attributes['address'][fm.bullhorn_field_name] = answer rescue nil
+        when 'countryID'
+          # ADDRESS COUNTRY
+          attributes['address']['countryID'] = get_country_id(answer) rescue nil
+        else
+          attributes[fm.bullhorn_field_name] = answer rescue nil
         end
-        # ADDRESS?
+        
         # businessSectorID?
-        logger.info "--- processed answer = #{answer}"
-        attributes[fm.bullhorn_field_name] = answer
       end
 
       # attributes['companyName'] = user.registration_answers[settings['companyName']] if user.registration_answers[settings['companyName']].present?
