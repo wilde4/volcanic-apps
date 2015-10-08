@@ -7,6 +7,8 @@ class BullhornController < ApplicationController
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index, :job_application]
 
+  # To Autorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
+
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
     @bullhorn_setting.bullhorn_field_mappings.build if @bullhorn_setting.bullhorn_field_mappings.blank?
@@ -42,8 +44,8 @@ class BullhornController < ApplicationController
         registration_answers: params[:registration_answer_hash]
       )
         logger.info "--- params = #{params.inspect}"
-        post_user_to_bullhorn(@user, params)
-        upload_cv_to_bullhorn(@user, params)
+        post_user_to_bullhorn_2(@user, params)
+        upload_cv_to_bullhorn_2(@user, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -58,8 +60,8 @@ class BullhornController < ApplicationController
       @user.registration_answers = params[:registration_answer_hash]
 
       if @user.save
-        post_user_to_bullhorn(@user, params)
-        upload_cv_to_bullhorn(@user, params)
+        post_user_to_bullhorn_2(@user, params)
+        upload_cv_to_bullhorn_2(@user, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -181,7 +183,6 @@ class BullhornController < ApplicationController
     logger.info "--- jobs = #{jobs.inspect}"
   end
 
-
   def new_search
     # find app settings
     settings = AppSetting.find_by(dataset_id: params[:dataset_id]).settings
@@ -235,6 +236,102 @@ class BullhornController < ApplicationController
 
 
   private
+
+    def post_user_to_bullhorn_2(user, params)
+      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      field_mappings = settings.bullhorn_field_mappings
+      logger.info "--- settings = #{settings.inspect}"
+      client = Bullhorn::Rest::Client.new(
+        username: settings.bh_username,
+        password: settings.bh_password,
+        client_id: settings.bh_client_id,
+        client_secret: settings.bh_client_secret
+      )
+      logger.info "--- client = #{client.inspect}"
+      attributes = {
+        'firstName' => user.user_profile['first_name'],
+        'lastName' => user.user_profile['last_name'],
+        'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
+        'status' => 'New Lead',
+        'email' => user.email
+        # 'source' => settings.bullhorn_field_mappings['bullhorn_source'].present? ? settings['bullhorn_source'] : 'Company Website'
+      }
+
+      if user.linkedin_profile.present?
+        attributes['description'] = linkedin_description(user)
+      end
+
+      # MAP FIELDS TO FIELDS
+      field_mappings.each do |fm|
+        logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
+        # TIMESTAMPS
+        answer = user.registration_answers[fm.registration_question_reference] rescue nil
+        logger.info "--- raw answer = #{answer}"
+        case fm.bullhorn_field_name
+        when 'dateOfBirth' # AND OTHERS
+          logger.info "--- dateOfBirth"
+          # TIMESTAMP NEEDED IN MILLISECONDS
+          answer = (Date.parse(answer).to_time.to_i.to_f * 1000.0).to_i rescue nil
+        end
+        # ADDRESS?
+        # businessSectorID?
+        logger.info "--- processed answer = #{answer}"
+        attributes[fm.bullhorn_field_name] = answer
+      end
+
+      # attributes['companyName'] = user.registration_answers[settings['companyName']] if user.registration_answers[settings['companyName']].present?
+      # attributes['desiredLocations'] = user.registration_answers[settings['desiredLocations']] if user.registration_answers[settings['desiredLocations']].present?
+      # attributes['educationDegree'] = user.registration_answers[settings['educationDegree']] if user.registration_answers[settings['educationDegree']].present?
+      # attributes['employmentPreference'] = user.registration_answers[settings['employmentPreference']] if user.registration_answers[settings['employmentPreference']].present?
+      # attributes['mobile'] = user.registration_answers[settings['mobile']] if user.registration_answers[settings['mobile']].present?
+      # attributes['namePrefix'] = user.registration_answers[settings['namePrefix']] if user.registration_answers[settings['namePrefix']].present?
+      # attributes['occupation'] = user.registration_answers[settings['occupation']] if user.registration_answers[settings['occupation']].present?
+      # attributes['phone'] = user.registration_answers[settings['phone']] if user.registration_answers[settings['phone']].present?
+      # attributes['phone2'] = user.registration_answers[settings['phone2']] if user.registration_answers[settings['phone2']].present?
+      # attributes['salary'] = user.registration_answers[settings['salary']].to_i if user.registration_answers[settings['salary']].present?
+      # attributes['address'] = {}
+      # attributes['address']['address1'] = user.registration_answers[settings['address_address1']] if user.registration_answers[settings['address_address1']].present?
+      # attributes['address']['address2'] = user.registration_answers[settings['address_address2']] if user.registration_answers[settings['address_address2']].present?
+      # attributes['address']['city'] = user.registration_answers[settings['address_city']] if user.registration_answers[settings['address_city']].present?
+      # attributes['address']['zip'] = user.registration_answers[settings['address_zip']] if user.registration_answers[settings['address_zip']].present?
+      # attributes['address']['countryID'] = get_country_id(user.registration_answers[settings['address_country']]) if user.registration_answers[settings['address_country']].present?
+      # GET BULLHORN ID
+      if user.bullhorn_uid.present?
+        bullhorn_id = user.bullhorn_uid
+      else
+        email_query = "email:\"#{URI::encode(user.email)}\""
+        existing_candidate = client.search_candidates(query: email_query, sort: 'id')
+        logger.info "--- existing_candidate = #{existing_candidate.data.map{ |c| c.id }.inspect}"
+        if existing_candidate.record_count.to_i > 0
+          logger.info '--- CANDIDATE RECORD FOUND'
+          last_candidate = existing_candidate.data.last
+          bullhorn_id = last_candidate.id
+          @user.update(bullhorn_uid: bullhorn_id)
+        else
+          logger.info '--- CANDIDATE RECORD NOT FOUND'
+          bullhorn_id = nil
+        end
+        # bullhorn_id = nil
+      end
+      # CREATE CANDIDATE
+      if bullhorn_id.present?
+        logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
+        response = client.update_candidate(bullhorn_id, attributes.to_json)
+        logger.info "--- response = #{response.inspect}"
+      else
+        logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
+        response = client.create_candidate(attributes.to_json)
+        @user.update(bullhorn_uid: response['changedEntityId'])
+      end
+
+      # PROBLEMS:
+      # {
+      #   "errorMessage" : "unknown or badly structured command: /entity/Candidate."
+      # }
+    end
+
+    def upload_cv_to_bullhorn_2(user, params)
+    end
 
     def post_user_to_bullhorn(user, params)
       settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
