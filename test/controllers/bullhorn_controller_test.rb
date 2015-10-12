@@ -25,6 +25,8 @@ class BullhornControllerTest < ActionController::TestCase
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'customTextBlock1', registration_question_reference: 'leaving-reason'
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'mobile', registration_question_reference: 'mobile'
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'phone', registration_question_reference: 'phone'
+    FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'businessSectors', registration_question_reference: 'sector'
+    FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'category', registration_question_reference: 'category'
   end
 
   test 'test should create user' do
@@ -60,7 +62,9 @@ class BullhornControllerTest < ActionController::TestCase
           'availability' => '2016-01-01',
           'leaving-reason' => 'Fed up of work environment',
           'mobile' => '07898765432',
-          'phone' => '0161 413 6424'
+          'phone' => '0161 413 6424',
+          'sector' => 'Energy / Utilities / Mining / Oil & Gas',
+          'category' => 'Procurement / Buying / Purchasing'
         }
       )
     end

@@ -263,6 +263,7 @@ class BullhornController < ApplicationController
 
       # PREPARE ADDRESS
       attributes['address'] = {}
+      attributes['category'] = {}
 
       # MAP FIELDS TO FIELDS
       field_mappings.each do |fm|
@@ -283,6 +284,29 @@ class BullhornController < ApplicationController
         when 'countryID'
           # ADDRESS COUNTRY
           attributes['address']['countryID'] = get_country_id(answer) rescue nil
+        when 'businessSectors'
+          # FIND businessSector ID
+          # business_sectors = client.search_business_sectors(sort: 'id')
+          business_sectors = client.business_sectors
+          logger.info "--- business_sectors = #{business_sectors.inspect}"
+          business_sector = business_sectors.data.select{ |bs| bs.name == answer }.first
+          logger.info "--- business_sector = #{business_sector.inspect}"
+          # attributes['category']['id'] = category.id rescue nil
+          attributes[fm.bullhorn_field_name] = [{ id: business_sector.id }] rescue nil
+          # if business_sectors.record_count.to_i > 0
+          #   logger.info "--- BUSINESS SECTOR(S) FOUND = #{business_sectors.data.inspect}"
+          #   attributes[fm.bullhorn_field_name] = business_sectors.data.last.id.to_s rescue nil
+          # else
+          #   logger.info '--- BUSINESS SECTOR(S) NOT FOUND'
+          #   attributes[fm.bullhorn_field_name] = nil
+          # end
+        when 'category'
+          # FIND category ID
+          categories = client.categories
+          logger.info "--- categories = #{categories.inspect}"
+          category = categories.data.select{ |c| c.name == answer }.first
+          logger.info "--- category = #{category.inspect}"
+          attributes['category']['id'] = category.id rescue nil
         else
           attributes[fm.bullhorn_field_name] = answer rescue nil
         end
