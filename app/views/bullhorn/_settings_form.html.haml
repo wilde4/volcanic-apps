@@ -10,6 +10,12 @@
         .col-md-6
           = f.input :bh_client_id
           = f.input :bh_client_secret
+      %hr
+      .row
+        .col-md-6
+          = f.input :source_text
+        .col-md-6
+          = f.input :linkedin_bullhorn_field
       = f.input :import_jobs
   = f.input :dataset_id, as: :hidden
   .clearfix

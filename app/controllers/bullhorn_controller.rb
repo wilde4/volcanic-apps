@@ -69,6 +69,48 @@ class BullhornController < ApplicationController
     end
   end
 
+  def get_user
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+    # GET CANDIDATE DETAILS FROM BULLHORN
+    settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    field_mappings = settings.bullhorn_field_mappings.where(sync_from_bullhorn: true)
+    logger.info "--- settings = #{settings.inspect}"
+    client = Bullhorn::Rest::Client.new(
+      username: settings.bh_username,
+      password: settings.bh_password,
+      client_id: settings.bh_client_id,
+      client_secret: settings.bh_client_secret
+    )
+    candidate = client.candidate(@user.bullhorn_uid, {})
+    logger.info "--- candidate = #{candidate.inspect}"
+    # CREATE JSON OF SYNCABLE FIELDS
+    candidate_json = {}
+    candidate_json['user'] = {}
+    candidate_json['user_profile'] = {
+      'first_name' => candidate.data['firstName'],
+      'last_name' => candidate.data['lastName']
+    }
+    candidate_json['registration_answer_hash'] = {}
+    field_mappings.each do |fm|
+      case fm.bullhorn_field_name
+      when 'dateOfBirth', 'dateAvailable'
+        # CONVERT TO DATE
+        date = Time.at((candidate.data["#{fm.bullhorn_field_name}"].to_i.to_f) / 1000).to_date.to_s(:default)
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = date
+      when 'address1', 'address2', 'city', 'state', 'zip'
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data.address["#{fm.bullhorn_field_name}"]
+      when 'countryID'
+        # GET COUNTRY NAME
+      when 'category'
+        # GET CATEGORY NAME
+      else
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"]
+      end
+    end
+    logger.info "--- candidate_json = #{candidate_json.inspect}"
+    render json: candidate_json
+  end
+
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
@@ -253,13 +295,14 @@ class BullhornController < ApplicationController
         'lastName' => user.user_profile['last_name'],
         'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
         'status' => 'New Lead',
-        'email' => user.email
-        # 'source' => settings.bullhorn_field_mappings['bullhorn_source'].present? ? settings['bullhorn_source'] : 'Company Website'
+        'email' => user.email,
+        'source' => settings.source_text.present? ? settings.source_text : 'Company Website'
       }
 
       if user.linkedin_profile.present?
         attributes['description'] = linkedin_description(user)
       end
+      attributes["#{settings.linkedin_bullhorn_field}"] = user.user_profile['li_publicProfileUrl'] if user.user_profile['li_publicProfileUrl'].present?
 
       # PREPARE ADDRESS
       attributes['address'] = {}
@@ -284,22 +327,6 @@ class BullhornController < ApplicationController
         when 'countryID'
           # ADDRESS COUNTRY
           attributes['address']['countryID'] = get_country_id(answer) rescue nil
-        when 'businessSectors'
-          # FIND businessSector ID
-          # business_sectors = client.search_business_sectors(sort: 'id')
-          business_sectors = client.business_sectors
-          logger.info "--- business_sectors = #{business_sectors.inspect}"
-          business_sector = business_sectors.data.select{ |bs| bs.name == answer }.first
-          logger.info "--- business_sector = #{business_sector.inspect}"
-          # attributes['category']['id'] = category.id rescue nil
-          attributes[fm.bullhorn_field_name] = [{ id: business_sector.id }] rescue nil
-          # if business_sectors.record_count.to_i > 0
-          #   logger.info "--- BUSINESS SECTOR(S) FOUND = #{business_sectors.data.inspect}"
-          #   attributes[fm.bullhorn_field_name] = business_sectors.data.last.id.to_s rescue nil
-          # else
-          #   logger.info '--- BUSINESS SECTOR(S) NOT FOUND'
-          #   attributes[fm.bullhorn_field_name] = nil
-          # end
         when 'category'
           # FIND category ID
           categories = client.categories
@@ -310,26 +337,8 @@ class BullhornController < ApplicationController
         else
           attributes[fm.bullhorn_field_name] = answer rescue nil
         end
-        
-        # businessSectorID?
       end
 
-      # attributes['companyName'] = user.registration_answers[settings['companyName']] if user.registration_answers[settings['companyName']].present?
-      # attributes['desiredLocations'] = user.registration_answers[settings['desiredLocations']] if user.registration_answers[settings['desiredLocations']].present?
-      # attributes['educationDegree'] = user.registration_answers[settings['educationDegree']] if user.registration_answers[settings['educationDegree']].present?
-      # attributes['employmentPreference'] = user.registration_answers[settings['employmentPreference']] if user.registration_answers[settings['employmentPreference']].present?
-      # attributes['mobile'] = user.registration_answers[settings['mobile']] if user.registration_answers[settings['mobile']].present?
-      # attributes['namePrefix'] = user.registration_answers[settings['namePrefix']] if user.registration_answers[settings['namePrefix']].present?
-      # attributes['occupation'] = user.registration_answers[settings['occupation']] if user.registration_answers[settings['occupation']].present?
-      # attributes['phone'] = user.registration_answers[settings['phone']] if user.registration_answers[settings['phone']].present?
-      # attributes['phone2'] = user.registration_answers[settings['phone2']] if user.registration_answers[settings['phone2']].present?
-      # attributes['salary'] = user.registration_answers[settings['salary']].to_i if user.registration_answers[settings['salary']].present?
-      # attributes['address'] = {}
-      # attributes['address']['address1'] = user.registration_answers[settings['address_address1']] if user.registration_answers[settings['address_address1']].present?
-      # attributes['address']['address2'] = user.registration_answers[settings['address_address2']] if user.registration_answers[settings['address_address2']].present?
-      # attributes['address']['city'] = user.registration_answers[settings['address_city']] if user.registration_answers[settings['address_city']].present?
-      # attributes['address']['zip'] = user.registration_answers[settings['address_zip']] if user.registration_answers[settings['address_zip']].present?
-      # attributes['address']['countryID'] = get_country_id(user.registration_answers[settings['address_country']]) if user.registration_answers[settings['address_country']].present?
       # GET BULLHORN ID
       if user.bullhorn_uid.present?
         bullhorn_id = user.bullhorn_uid
@@ -359,10 +368,15 @@ class BullhornController < ApplicationController
         @user.update(bullhorn_uid: response['changedEntityId'])
       end
 
-      # PROBLEMS:
-      # {
-      #   "errorMessage" : "unknown or badly structured command: /entity/Candidate."
-      # }
+      # 'businessSectors'
+      # FIND businessSector ID
+      business_sectors = client.business_sectors
+      logger.info "--- business_sectors = #{business_sectors.inspect}"
+      business_sector = business_sectors.data.select{ |bs| bs.name == answer }.first
+      logger.info "--- business_sector = #{business_sector.inspect}"
+      # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
+      # TODO...
+      
     end
 
     def upload_cv_to_bullhorn_2(user, params)

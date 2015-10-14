@@ -21,6 +21,8 @@ en:
         bh_client_id: Bullhorn Client ID
         bh_client_secret: Bullhorn Client Secret
         import_jobs: Import Jobs from Bullhorn?
+        linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
+        source_text: Bullhorn Source Text for Candidate records
     # Examples
     # labels:
     #   defaults:

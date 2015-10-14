@@ -164,6 +164,7 @@ Apps::Application.routes.draw do
     get 'index'             => 'bullhorn#index'
     get 'jobs'              => 'bullhorn#jobs'
     get 'add_file_mapping_field' => 'bullhorn#add_file_mapping_field'
+    get 'get_user'          => 'bullhorn#get_user'
     post "save_settings"    => 'bullhorn#save_settings'
     post 'save_user'        => 'bullhorn#save_user'
     post 'upload_cv'        => 'bullhorn#upload_cv'
