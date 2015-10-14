@@ -29,7 +29,7 @@ class BullhornControllerTest < ActionController::TestCase
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'category', registration_question_reference: 'category', sync_from_bullhorn: true
   end
 
-  test 'test should create user' do
+  test 'should create user' do
     assert_difference('BullhornUser.count') do
       post(
         :save_user,
