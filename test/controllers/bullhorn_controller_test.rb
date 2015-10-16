@@ -25,7 +25,7 @@ class BullhornControllerTest < ActionController::TestCase
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'customTextBlock1', registration_question_reference: 'leaving-reason'
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'mobile', registration_question_reference: 'mobile', sync_from_bullhorn: true
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'phone', registration_question_reference: 'phone', sync_from_bullhorn: true
-    # FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'businessSectors', registration_question_reference: 'sector'
+    FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'businessSectors', registration_question_reference: 'sector', sync_from_bullhorn: true
     FactoryGirl.create :bullhorn_field_mapping, bullhorn_field_name: 'category', registration_question_reference: 'category', sync_from_bullhorn: true
   end
 

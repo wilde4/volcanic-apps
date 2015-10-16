@@ -1,7 +1,7 @@
 = f.simple_fields_for :bullhorn_field_mappings do |bfm|
-  .row
-    .col-md-5= bfm.input :bullhorn_field_name
-    .col-md-5= bfm.input :registration_question_reference
-    .col-md-2= bfm.input :sync_from_bullhorn
-  = link_to t('.delete'), save_settings_url(bullhorn_app_setting: { dataset_id: @bullhorn_setting.dataset_id, bullhorn_field_mappings_attributes: { id: bfm.object.id, "_destroy" => true } }), remote: true, method: :post, confirm: t('.really_delete')
-  %hr
+  .well
+    .row
+      .col-md-5= bfm.input :bullhorn_field_name
+      .col-md-5= bfm.input :registration_question_reference
+      .col-md-2= bfm.input :sync_from_bullhorn
+    = link_to t('.delete'), save_settings_url(bullhorn_app_setting: { dataset_id: @bullhorn_setting.dataset_id, bullhorn_field_mappings_attributes: { id: bfm.object.id, "_destroy" => true } }), remote: true, method: :post, confirm: t('.really_delete')

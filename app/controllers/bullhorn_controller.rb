@@ -101,12 +101,25 @@ class BullhornController < ApplicationController
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data.address["#{fm.bullhorn_field_name}"]
       when 'countryID'
         # GET COUNTRY NAME
+        logger.info "--- candidate.data.address['#{fm.bullhorn_field_name}'] = #{candidate.data.address["#{fm.bullhorn_field_name}"]}"
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = get_country_name(candidate.data.address["#{fm.bullhorn_field_name}"])
       when 'category'
         # GET CATEGORY NAME
+        categories = client.categories
+        # logger.info "--- categories = #{categories.inspect}"
+        category = categories.data.select{ |c| c.id == candidate.data.category.id }.first
+        # logger.info "--- category = #{category.inspect}"
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = category.name
+      when 'businessSectors'
+        # GET BUSINESS SECTORS
+        candidate_business_sectors = client.candidate(@user.bullhorn_uid, { association: 'businessSectors' })
+        # logger.info "--- candidate_business_sectors = #{candidate_business_sectors.inspect}"
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name
       else
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"]
       end
     end
+    
     logger.info "--- candidate_json = #{candidate_json.inspect}"
     render json: candidate_json
   end
@@ -289,7 +302,6 @@ class BullhornController < ApplicationController
         client_id: settings.bh_client_id,
         client_secret: settings.bh_client_secret
       )
-      logger.info "--- client = #{client.inspect}"
       attributes = {
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
@@ -310,10 +322,10 @@ class BullhornController < ApplicationController
 
       # MAP FIELDS TO FIELDS
       field_mappings.each do |fm|
-        logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
+        # logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
         # TIMESTAMPS
         answer = user.registration_answers[fm.registration_question_reference] rescue nil
-        logger.info "--- raw answer = #{answer}"
+        # logger.info "--- raw answer = #{answer}"
 
         case fm.bullhorn_field_name
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
@@ -334,6 +346,8 @@ class BullhornController < ApplicationController
           category = categories.data.select{ |c| c.name == answer }.first
           logger.info "--- category = #{category.inspect}"
           attributes['category']['id'] = category.id rescue nil
+        when 'businessSectors'
+          # UPDATE CANDIDATE AFTER CREATION
         else
           attributes[fm.bullhorn_field_name] = answer rescue nil
         end
@@ -365,17 +379,27 @@ class BullhornController < ApplicationController
       else
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
+        logger.info "--- response = #{response.inspect}"
         @user.update(bullhorn_uid: response['changedEntityId'])
+        bullhorn_id = response['changedEntityId']
       end
 
-      # 'businessSectors'
-      # FIND businessSector ID
-      business_sectors = client.business_sectors
-      logger.info "--- business_sectors = #{business_sectors.inspect}"
-      business_sector = business_sectors.data.select{ |bs| bs.name == answer }.first
-      logger.info "--- business_sector = #{business_sector.inspect}"
-      # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
-      # TODO...
+      # 'businessSectors'      
+      if bullhorn_id.present?
+        # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
+        # FIND businessSector ID
+        business_sectors = client.business_sectors
+        # logger.info "--- business_sectors = #{business_sectors.inspect}"
+        answer = user.registration_answers['businessSectors']
+        bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
+        if bs_mapping.present?
+          business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
+          # logger.info "--- business_sector = #{business_sector.inspect}"
+
+          bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+          logger.info "--- bs_response = #{bs_response.inspect}"
+        end
+      end
       
     end
 
@@ -594,8 +618,22 @@ class BullhornController < ApplicationController
       return string
     end
 
+    def get_country_name(country_id)
+      array_item = bullhorn_country_array.select{ |name, id| id == country_id.to_s }
+      if array_item.present?
+        array_item.first[0]
+      end
+    end
+
     def get_country_id(country_name)
-      bullhorn_country_array =  [
+      array_item = bullhorn_country_array.select{ |name, id| name == country_name }
+      if array_item.present?
+        array_item.first[1]
+      end
+    end
+
+    def bullhorn_country_array
+      return [
         ["United States","1"],
         ["Afghanistan","2185"],
         ["Albania","2186"],
@@ -782,10 +820,6 @@ class BullhornController < ApplicationController
         ["None Specified","NO2378"],
         ["Cayman Islands","2379"]
       ]
-      array_item = bullhorn_country_array.select{ |name, id| name == country_name }
-      if array_item.present?
-        array_item.first[1]
-      end
     end
 
     def create_note_entity(client, note_id, user)

@@ -1,7 +1,5 @@
-GIT
-  remote: https://github.com/bobop/bullhorn-rest.git
-  revision: c076b3ee2efa5a9e0401712c57bd00f7ecfcd26f
-  branch: create_candidates
+PATH
+  remote: ../gems/bullhorn-rest
   specs:
     bullhorn-rest (0.0.1)
       activesupport
