@@ -28,4 +28,14 @@ class JobBoard < ActiveRecord::Base
     self.charge_vat = false
     self.default_vat_rate = 0.0
   end
+
+  def salary_slider_attributes
+    { 
+      min: salary_min,
+      max: salary_max,
+      step: salary_step,
+      from: salary_from,
+      to: salary_to
+    }
+  end
 end

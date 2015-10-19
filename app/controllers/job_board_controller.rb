@@ -4,8 +4,8 @@ class JobBoardController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update]
-  before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time] #requires set_key to have executed first
+  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update, :salary_slider_attributes]
+  before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :salary_slider_attributes] #requires set_key to have executed first
 
   def activate_app
     key = Key.new
@@ -272,6 +272,16 @@ class JobBoardController < ApplicationController
     render nothing: true, status: 200 and return
   end
 
+  def salary_slider_attributes
+    @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    if @job_board.present?
+      render json: { success: true, attributes: @job_board.salary_slider_attributes }
+    else
+      render json: { success: false }
+      return
+    end
+  end
+
 
   protected
     def job_board_params
@@ -283,6 +293,11 @@ class JobBoardController < ApplicationController
                                         :currency,
                                         :charge_vat,
                                         :default_vat_rate,
+                                        :salary_min,
+                                        :salary_max,
+                                        :salary_step,
+                                        :salary_from,
+                                        :salary_to,
                                         job_token_settings_attributes: [
                                           :charge_for_jobs,
                                           :job_token_price,

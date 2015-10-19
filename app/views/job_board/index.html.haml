@@ -74,6 +74,30 @@
             %th Default VAT Rate
             %td= "#{@job_board.default_vat_rate} %"
 
+      %h4 Salary Slider Settings
+      %table.table
+        %tbody
+          %tr
+            %th Salary minimum
+            %td
+              = number_to_currency @job_board.salary_min.present? ? @job_board.salary_min : 0, precision: 0, unit: currency_to_symbol(@job_board.currency) 
+          %tr
+            %th Salary maximum
+            %td
+              = number_to_currency @job_board.salary_max.present? ? @job_board.salary_max : 200000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+          %tr
+            %th Salary step
+            %td
+              = number_to_currency @job_board.salary_step.present? ? @job_board.salary_step : 1000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+          %tr
+            %th Salary from
+            %td
+              = number_to_currency @job_board.salary_from.present? ? @job_board.salary_from : 20000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+          %tr
+            %th Salary to
+            %td
+              = number_to_currency @job_board.salary_to.present? ? @job_board.salary_to : 50000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+
     -else
       =link_to "Setup Job Board", relative_link("new"), class: "btn btn-primary"
 
