@@ -61,7 +61,7 @@ class JobBoardController < ApplicationController
   end
 
   def update
-    @job_board = JobBoard.find_by(params[:job_board][:id])
+    @job_board = JobBoard.find_by(id: params[:job_board][:id])
     
     respond_to do |format|
       if @job_board.update_attributes(job_board_params)
