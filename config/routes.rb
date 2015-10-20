@@ -248,5 +248,12 @@ Apps::Application.routes.draw do
     get 'get_split_fee'     => 'split_fee#get_split_fee'
   end
 
+  scope :filtered_notifications do
+    post "activate_app"     => 'filtered_notifications#activate_app'
+    post "deactivate_app"   => 'filtered_notifications#deactivate_app'
+    get "app_notifications" => 'filtered_notifications#app_notifications'
+    post "send_notification" => 'filtered_notifications#send_notification'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
