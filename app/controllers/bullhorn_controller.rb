@@ -35,6 +35,7 @@ class BullhornController < ApplicationController
 
   def save_user
     @user = BullhornUser.find_by(user_id: params[:user][:id])
+    client = authenticate_client(params[:user][:dataset_id])
     if @user.present?
       if @user.update(
         email: params[:user][:email],
@@ -44,8 +45,8 @@ class BullhornController < ApplicationController
         registration_answers: params[:registration_answer_hash]
       )
         logger.info "--- params = #{params.inspect}"
-        post_user_to_bullhorn_2(@user, params)
-        upload_cv_to_bullhorn_2(@user, params)
+        post_user_to_bullhorn_2(@user, client, params)
+        upload_cv_to_bullhorn_2(@user, client, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -60,8 +61,8 @@ class BullhornController < ApplicationController
       @user.registration_answers = params[:registration_answer_hash]
 
       if @user.save
-        post_user_to_bullhorn_2(@user, params)
-        upload_cv_to_bullhorn_2(@user, params)
+        post_user_to_bullhorn_2(@user, client, params)
+        upload_cv_to_bullhorn_2(@user, client, params)
         render json: { success: true, user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -74,7 +75,7 @@ class BullhornController < ApplicationController
     # GET CANDIDATE DETAILS FROM BULLHORN
     settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     field_mappings = settings.bullhorn_field_mappings.where(sync_from_bullhorn: true)
-    logger.info "--- settings = #{settings.inspect}"
+    logger.info "--- field_mappings = #{field_mappings.inspect}"
     client = Bullhorn::Rest::Client.new(
       username: settings.bh_username,
       password: settings.bh_password,
@@ -121,28 +122,30 @@ class BullhornController < ApplicationController
     end
     
     logger.info "--- candidate_json = #{candidate_json.inspect}"
-    render json: candidate_json
+    if candidate_json['registration_answer_hash'].present?
+      render json: { success: true, data: candidate_json }
+    else
+      render json: { success: false }
+    end
   end
 
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
-      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-      # cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
-      # UPLOAD PATHS USE CLOUDFRONT URL
-      cv_url = params[:user_profile][:upload_path]
+      if Rails.env.development?
+        key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+        cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+      else
+        # UPLOAD PATHS USE CLOUDFRONT URL
+        cv_url = params[:user_profile][:upload_path]
+      end
       logger.info "--- cv_url = #{cv_url}"
+
       require 'open-uri'
       require 'base64'
       cv = open(cv_url).read
-      settings = AppSetting.find_by(dataset_id: params[:dataset_id]).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
+      client = authenticate_client(params[:dataset_id])
 
       # UPOAD FILE
       base64_cv = Base64.encode64(cv)
@@ -292,16 +295,20 @@ class BullhornController < ApplicationController
 
   private
 
-    def post_user_to_bullhorn_2(user, params)
-      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-      field_mappings = settings.bullhorn_field_mappings
-      logger.info "--- settings = #{settings.inspect}"
-      client = Bullhorn::Rest::Client.new(
+    def authenticate_client(dataset_id)
+      settings = BullhornAppSetting.find_by(dataset_id: dataset_id)
+      return Bullhorn::Rest::Client.new(
         username: settings.bh_username,
         password: settings.bh_password,
         client_id: settings.bh_client_id,
         client_secret: settings.bh_client_secret
       )
+    end
+
+    def post_user_to_bullhorn_2(user, client, params)
+      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      field_mappings = settings.bullhorn_field_mappings
+
       attributes = {
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
@@ -318,7 +325,6 @@ class BullhornController < ApplicationController
 
       # PREPARE ADDRESS
       attributes['address'] = {}
-      attributes['category'] = {}
 
       # MAP FIELDS TO FIELDS
       field_mappings.each do |fm|
@@ -331,25 +337,28 @@ class BullhornController < ApplicationController
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
           answer = (Date.parse(answer).to_time.to_i.to_f * 1000.0).to_i rescue nil
-          logger.info "--- processed answer = #{answer}"
-          attributes[fm.bullhorn_field_name] = answer
+          # logger.info "--- processed answer = #{answer}"
+          attributes[fm.bullhorn_field_name] = answer if answer.present?
         when 'address1', 'address2', 'city', 'state', 'zip'
           # ADDRESS
-          attributes['address'][fm.bullhorn_field_name] = answer rescue nil
+          attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
         when 'countryID'
           # ADDRESS COUNTRY
-          attributes['address']['countryID'] = get_country_id(answer) rescue nil
+          attributes['address']['countryID'] = get_country_id(answer) if answer.present?
         when 'category'
           # FIND category ID
           categories = client.categories
-          logger.info "--- categories = #{categories.inspect}"
+          # logger.info "--- categories = #{categories.inspect}"
           category = categories.data.select{ |c| c.name == answer }.first
-          logger.info "--- category = #{category.inspect}"
-          attributes['category']['id'] = category.id rescue nil
+          # logger.info "--- category = #{category.inspect}"
+          if category.present?
+            attributes['category'] = {}
+            attributes['category']['id'] = category.id
+          end
         when 'businessSectors'
           # UPDATE CANDIDATE AFTER CREATION
         else
-          attributes[fm.bullhorn_field_name] = answer rescue nil
+          attributes[fm.bullhorn_field_name] = answer if answer.present?
         end
       end
 
@@ -369,9 +378,9 @@ class BullhornController < ApplicationController
           logger.info '--- CANDIDATE RECORD NOT FOUND'
           bullhorn_id = nil
         end
-        # bullhorn_id = nil
       end
-      # CREATE CANDIDATE
+
+      # CREATE/UPDATE CANDIDATE
       if bullhorn_id.present?
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
@@ -395,15 +404,13 @@ class BullhornController < ApplicationController
         if bs_mapping.present?
           business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
           # logger.info "--- business_sector = #{business_sector.inspect}"
-
-          bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-          logger.info "--- bs_response = #{bs_response.inspect}"
+          if business_sector.present?
+            bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+            logger.info "--- bs_response = #{bs_response.inspect}"
+          end
         end
       end
       
-    end
-
-    def upload_cv_to_bullhorn_2(user, params)
     end
 
     def post_user_to_bullhorn(user, params)
@@ -472,6 +479,37 @@ class BullhornController < ApplicationController
         logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
         response = client.create_candidate(attributes.to_json)
         @user.update(bullhorn_uid: response['changedEntityId'])
+      end
+    end
+
+    def upload_cv_to_bullhorn_2(user, client, params)
+      @user = user
+      logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
+      if params[:user_profile][:upload_path].present?
+        if Rails.env.development?
+          key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+          cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+        else
+          # UPLOAD PATHS USE CLOUDFRONT URL
+          cv_url = params[:user_profile][:upload_path]
+        end
+        logger.info "--- cv_url = #{cv_url}"
+
+        # @file_attributes COME FROM THIS
+        extract_file_attributes(cv_url, params)
+
+        file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
+        logger.info "--- file_response = #{file_response.inspect}"
+
+        # PARSE FILE
+        candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
+
+        # ADD TO CANDIDATE DESCRIPTION
+        if candidate_data.present? && candidate_data['description'].present?
+          attributes = {}
+          attributes['description'] = candidate_data['description']
+          response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+        end
       end
     end
 
