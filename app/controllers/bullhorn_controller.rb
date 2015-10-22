@@ -197,13 +197,7 @@ class BullhornController < ApplicationController
   end
 
   def job_application
-    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-    client = Bullhorn::Rest::Client.new(
-      username: settings['username'],
-      password: settings['password'],
-      client_id: settings['client_id'],
-      client_secret: settings['client_secret']
-    )
+    client = authenticate_client(@key.app_dataset_id)
     @user = BullhornUser.find_by(user_id: params[:user][:id])
     job_reference = params[:job][:job_reference]
     candidate = {
@@ -230,28 +224,13 @@ class BullhornController < ApplicationController
   end
 
   def jobs
-    settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-    client = Bullhorn::Rest::Client.new(
-      username: settings['username'],
-      password: settings['password'],
-      client_id: settings['client_id'],
-      client_secret: settings['client_secret']
-    )
+    client = authenticate_client(@key.app_dataset_id)
     jobs = client.job_orders
     logger.info "--- jobs = #{jobs.inspect}"
   end
 
   def new_search
-    # find app settings
-    settings = AppSetting.find_by(dataset_id: params[:dataset_id]).settings
-
-    # instantiate app client
-    client = Bullhorn::Rest::Client.new(
-      username: settings['username'],
-      password: settings['password'],
-      client_id: settings['client_id'],
-      client_secret: settings['client_secret']
-    )
+    client = authenticate_client(params[:dataset_id])
 
     # create candidate object
     user_id = params[:search][:user_id] || params[:user][:user][:id]

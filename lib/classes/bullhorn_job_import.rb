@@ -10,14 +10,17 @@ class BullhornJobImport
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
-      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
-      parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'] == true
+        client =  Bullhorn::Rest::Client.new(
+          username: settings.bh_username,
+          password: settings.bh_password,
+          client_id: settings.bh_client_id,
+          client_secret: settings.bh_client_secret
+        )
+        # parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+        parse_jobs(client) 
+      end
     end
 
     puts '- END import_jobs'
@@ -32,12 +35,12 @@ class BullhornJobImport
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
-      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
+      settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      client =  Bullhorn::Rest::Client.new(
+        username: settings.bh_username,
+        password: settings.bh_password,
+        client_id: settings.bh_client_id,
+        client_secret: settings.bh_client_secret
       )
       parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
     end
