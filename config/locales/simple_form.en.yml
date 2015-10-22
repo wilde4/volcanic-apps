@@ -23,6 +23,7 @@ en:
         import_jobs: Import Jobs from Bullhorn?
         linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
         source_text: Bullhorn Source Text for Candidate records
+        always_create: Always create a new Bullhorn record when a Candidate registers
     # Examples
     # labels:
     #   defaults:

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151012121958) do
+ActiveRecord::Schema.define(version: 20151022092546) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 20151012121958) do
     t.datetime "updated_at"
     t.string   "linkedin_bullhorn_field"
     t.string   "source_text"
+    t.boolean  "always_create",              default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|
