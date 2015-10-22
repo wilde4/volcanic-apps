@@ -25,15 +25,19 @@
     $(this).closest("form").unbind("submit").submit();
   })
 
-  function submitQuery(form){
-    //var formData = form.serialize();
-    var formData = $('input[name!=method]', this).serialize();
+  function submitQuery(form){ 
+    
+    var formData = new FormData(form[0]);
+
+    console.log(formData);
     $.ajax({
       url: "//#{app_server_host}/filtered_notifications/modal_content.json",
       type: "POST",
       crossDomain: true,
       data: formData,
-      dataType: 'json'
+      dataType: 'json',
+      processData: false,
+      contentType: false,
     }).success(function(data) {
       if(data.success) {
         $("#filtered-notifications-modal .modal-body").html(data.content);

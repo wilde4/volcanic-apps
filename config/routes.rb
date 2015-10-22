@@ -255,6 +255,7 @@ Apps::Application.routes.draw do
     post "send_notification" => 'filtered_notifications#send_notification'
     get "job_form"          => 'filtered_notifications#job_form'
     post "modal_content"    => 'filtered_notifications#modal_content'
+    patch "modal_content"    => 'filtered_notifications#modal_content'
   end
 
   # get 'send_email', :to => "end_points#send_email", :as => :send_email

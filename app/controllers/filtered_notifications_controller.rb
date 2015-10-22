@@ -46,8 +46,13 @@ class FilteredNotificationsController < ApplicationController
   end
 
   def modal_content
-
-    data = {}
+    data = Hash.new
+    if params[:job].present?
+      disciplines = params[:job][:discipline_ids]
+      puts disciplines
+      data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|")
+      data[:bool_method] = "should"
+    end
 
     @clients = HTTParty.get("http://jobsatteam.localhost.volcanic.co:3000/api/v1/clients/search.json", body: data)
 
