@@ -11,7 +11,7 @@
       .modal-footer
         -# %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close
         %button.btn.btn-primary#filtered-notifications-modal-submit{:type => "button"} Submit
-    
+%input{type: "hidden", value: @key.app_dataset_id, name: "job[extra][filtered_notifications][dataset_id]"}
 
 
 :javascript
@@ -27,7 +27,8 @@
   })
 
   function submitQuery(form){     
-    var formData = new FormData(form[0]);    
+    var formData = new FormData(form[0]);  
+
     $.ajax({
       url: "//#{app_server_host}/filtered_notifications/modal_content.json",
       type: "POST",

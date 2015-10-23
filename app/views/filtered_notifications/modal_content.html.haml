@@ -1,4 +1,4 @@
-- if @clients["clients"].present?
+- if @clients.present? && @clients["clients"].present?
   - @clients["clients"].each do |client|
     %label.text-center.company-element               
       %input.sr-only{name: "job[extra][filtered_notifications][client_ids][]", value: client["id"], type: "checkbox", checked: true} 

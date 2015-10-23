@@ -6,7 +6,7 @@ class FilteredNotificationsController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:send_notification]
+  before_action :set_key, only: [:send_notification, :job_form]
 
   after_filter :setup_access_control_origin, only: [:modal_content]
 
@@ -54,9 +54,17 @@ class FilteredNotificationsController < ApplicationController
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
       data[:key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|") if key_locations.present?
       data[:search_origin] = "filtered_notifications"
+
+      if params[:job][:extra][:filtered_notifications].present?
+        dataset_id = params[:job][:extra][:filtered_notifications][:dataset_id]
+
+        key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
+      end
+
+      @clients = HTTParty.get("http://#{key.host}/api/v1/clients/search.json", body: data) if key.present?
+
     end
 
-    @clients = HTTParty.get("http://jobsatteam.localhost.volcanic.co:3000/api/v1/clients/search.json", body: data)
 
     render json: {success: true, content: render_to_string("modal_content.html") }
   end
