@@ -51,8 +51,8 @@ class FilteredNotificationsController < ApplicationController
       disciplines = params[:job][:discipline_ids]
       key_locations = params[:job][:key_location_ids]
       # puts disciplines
-      data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|")
-      data[:key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|")
+      data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
+      data[:key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|") if key_locations.present?
       data[:search_origin] = "filtered_notifications"
     end
 
