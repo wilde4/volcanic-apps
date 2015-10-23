@@ -49,9 +49,11 @@ class FilteredNotificationsController < ApplicationController
     data = Hash.new
     if params[:job].present?
       disciplines = params[:job][:discipline_ids]
-      puts disciplines
+      key_locations = params[:job][:key_location_ids]
+      # puts disciplines
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|")
-      data[:bool_method] = "should"
+      data[:key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|")
+      data[:search_origin] = "filtered_notifications"
     end
 
     @clients = HTTParty.get("http://jobsatteam.localhost.volcanic.co:3000/api/v1/clients/search.json", body: data)

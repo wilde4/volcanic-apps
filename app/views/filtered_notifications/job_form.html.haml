@@ -17,6 +17,7 @@
 :javascript
   $("#filtered-notifications-modal").closest("form").submit(function(e){
     e.preventDefault();
+    $("#filtered-notifications-modal .modal-body").html("<h3><i class='fa fa-spin fa-spinner'></i> Fetching Companies</h3>");
     $("#filtered-notifications-modal").modal();
     submitQuery($(this));
   });
@@ -25,11 +26,8 @@
     $(this).closest("form").unbind("submit").submit();
   })
 
-  function submitQuery(form){ 
-    
-    var formData = new FormData(form[0]);
-
-    console.log(formData);
+  function submitQuery(form){     
+    var formData = new FormData(form[0]);    
     $.ajax({
       url: "//#{app_server_host}/filtered_notifications/modal_content.json",
       type: "POST",
