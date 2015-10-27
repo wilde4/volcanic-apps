@@ -14,9 +14,9 @@ class FilteredNotificationsController < ApplicationController
 
   def app_notifications
     notifications = { filtered_job_announcement: {
-                        description: "Custom Emails are sent by this",
+                        description: "a Filtered Notification is sent",
                         targets: [:user, :custom],
-                        tags: [:name]
+                        tags: [:name, :job_title, :job_link]
                       }
                     }
 
@@ -37,7 +37,7 @@ class FilteredNotificationsController < ApplicationController
 
       if client_ids.is_a?(Array)
 
-        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_job_announcement"})
+        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_job_announcement", job_id: params[:job][:id]})
       end
       # 485 482
 
@@ -54,6 +54,7 @@ class FilteredNotificationsController < ApplicationController
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
       data[:key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|") if key_locations.present?
       data[:search_origin] = "filtered_notifications"
+      data[:per_page] = 100
 
       if params[:job][:extra][:filtered_notifications].present?
         dataset_id = params[:job][:extra][:filtered_notifications][:dataset_id]
