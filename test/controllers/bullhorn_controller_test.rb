@@ -100,7 +100,7 @@ class BullhornControllerTest < ActionController::TestCase
     candidate = FactoryGirl.create :bullhorn_user
     get :get_user, user: { id: candidate.user_id, dataset_id: 123 }
     body = JSON.parse(@response.body)
-    assert_equal 'TEST2', body['data']['user_profile']['first_name']
+    assert_equal 'TESTER 2', body['data']['user_profile']['first_name']
     assert_equal 'Volcanic TEST', body['data']['registration_answer_hash']['company']
   end
 
