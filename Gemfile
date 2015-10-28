@@ -36,8 +36,8 @@ gem 'unicorn-worker-killer'
 
 # gem 'bullhorn-rest'
 # gem 'bullhorn-rest', git: 'https://github.com/getoutreach/bullhorn-rest.git'
-# gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 'create_candidates'
-gem 'bullhorn-rest', :path => "../gems/bullhorn-rest", branch: 'create_candidates'
+gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 'create_candidates'
+# gem 'bullhorn-rest', :path => "../gems/bullhorn-rest", branch: 'create_candidates'
 gem 'hashie'
 
 gem 'htmlentities', '~> 4.3.2'
