@@ -1,0 +1,17 @@
+%h4 Split Fee
+.form-group
+  %label Salary Band
+  %select.form-control{name: "job[extra][split_fee][salary_band]"}
+    - @salary_bands.each do |band|
+      -if @job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? && @job["extra"]["split_fee"]["salary_band"] == band
+        %option{value: band, selected: "selected"}= band
+      -else
+        %option{value: band}= band
+
+.form-group
+  %label Fee Percentage
+  %input.form-control{type: "number", name: "job[extra][split_fee][fee_percentage]", value: (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["fee_percentage"] : "")}
+
+.form-group
+  %label Terms of Fee
+  %textarea.form-control{name: "job[extra][split_fee][terms_of_fee]"}= (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["terms_of_fee"] : "")

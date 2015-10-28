@@ -1,0 +1,11 @@
+- if @clients.present? && @clients["clients"].present?
+  - @clients["clients"].each do |client|
+    %label.text-center.company-element               
+      %input.sr-only{name: "job[extra][filtered_notifications][client_ids][]", value: client["id"], type: "checkbox", checked: true} 
+      .client-box
+        %img{src: client["logo"]}    
+        = client["name"]
+- else
+  %h3 No matching companies found
+
+%style=Apps::Application.assets.find_asset('filtered_notifications.css').body

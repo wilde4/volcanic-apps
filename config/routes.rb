@@ -204,5 +204,62 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :job_board do
+    post "activate_app"     => 'job_board#activate_app'
+    post "deactivate_app"   => 'job_board#deactivate_app'
+    get  "index"            => 'job_board#index'
+    get  "new"              => 'job_board#new', as: :new_job_board
+    post "create"           => 'job_board#create'
+    get  "edit"             => 'job_board#edit', as: :edit_job_board
+    patch "update"          => 'job_board#update'
+    get  "purchasable"      => 'job_board#purchasable'
+    get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
+    get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
+    post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
+    get  "salary_slider_attributes" => 'job_board#salary_slider_attributes'
+
+    get  "client_form"      => 'job_board#client_form'
+    post "client_create"    => 'job_board#client_create'
+
+    get  "user_form"      => 'job_board#user_form'
+    post "user_update"    => 'job_board#user_update'
+  end
+
+  scope :extra_form_fields do
+    post "activate_app"     => 'extra_form_fields#activate_app'
+    post "deactivate_app"   => 'extra_form_fields#deactivate_app'
+    get 'index'             => 'extra_form_fields#index'
+    get  "new"              => 'extra_form_fields#new', as: :new_form_field
+    post "create"           => 'extra_form_fields#create'
+    get "edit"              => 'extra_form_fields#edit'
+    patch "update"          => 'extra_form_fields#update'
+
+    get 'job_form'          => 'extra_form_fields#job_form'
+  end
+
+  scope :split_fee do
+    post "activate_app"     => 'split_fee#activate_app'
+    post "deactivate_app"   => 'split_fee#deactivate_app'
+    get 'index'             => 'split_fee#index'
+    get 'edit'              => 'split_fee#edit'
+    patch 'update'          => 'split_fee#update'
+
+    get 'job_form'          => 'split_fee#job_form'
+    post 'job_create'       => 'split_fee#job_create'
+
+    get 'current_split_fee' => 'split_fee#current_split_fee'
+    get 'get_split_fee'     => 'split_fee#get_split_fee'
+  end
+
+  scope :filtered_notifications do
+    post "activate_app"     => 'filtered_notifications#activate_app'
+    post "deactivate_app"   => 'filtered_notifications#deactivate_app'
+    get "app_notifications" => 'filtered_notifications#app_notifications'
+    post "send_notification" => 'filtered_notifications#send_notification'
+    get "job_form"          => 'filtered_notifications#job_form'
+    post "modal_content"    => 'filtered_notifications#modal_content'
+    patch "modal_content"    => 'filtered_notifications#modal_content'
+  end
+
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
