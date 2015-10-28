@@ -20,10 +20,14 @@ en:
         bh_password: Bullhorn Password
         bh_client_id: Bullhorn Client ID
         bh_client_secret: Bullhorn Client Secret
-        import_jobs: Import Jobs from Bullhorn?
+        import_jobs: Import Jobs from Bullhorn
         linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
         source_text: Bullhorn Source Text for Candidate records
         always_create: Always create a new Bullhorn record when a Candidate registers
+      bullhorn_field_mappings:
+        bullhorn_field_name: Bullhorn Field Name
+        registration_question_reference: Registration Question Reference
+        sync_from_bullhorn: Sync from Bullhorn
     # Examples
     # labels:
     #   defaults:
