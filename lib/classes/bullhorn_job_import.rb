@@ -202,7 +202,7 @@ class BullhornJobImport
       #   http.request(request)
       # end
 
-      response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
+      response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
@@ -214,7 +214,7 @@ class BullhornJobImport
   def self.post_payload_for_delete(payload)
 
     begin
-      response = HTTParty.post("http://#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+      response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
