@@ -1,4 +1,5 @@
-= simple_form_for @bullhorn_setting, url: 'https://apps.volcanic.co/bullhorn/save_settings', method: :post, remote: true do |f|
+- url = Rails.env.development? ? 'http://localhost:3001/bullhorn/save_settings' : 'https://apps.volcanic.co/bullhorn/save_settings'
+= simple_form_for @bullhorn_setting, url: url, method: :post, remote: true do |f|
   / = simple_form_for @bullhorn_setting, url: 'http://localhost:3001/bullhorn/save_settings', method: :post, remote: true do |f|
   .panel.panel-default
     .panel-heading Settings

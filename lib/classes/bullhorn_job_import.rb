@@ -18,8 +18,9 @@ class BullhornJobImport
           client_id: settings.bh_client_id,
           client_secret: settings.bh_client_secret
         )
-        # parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
         parse_jobs(client)
+        # @job_data = query_job_orders(client)
+        # puts "--- @job_data.size = #{@job_data.size}"
       end
     end
 
@@ -36,20 +37,22 @@ class BullhornJobImport
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
       settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
-      client =  Bullhorn::Rest::Client.new(
-        username: settings.bh_username,
-        password: settings.bh_password,
-        client_id: settings.bh_client_id,
-        client_secret: settings.bh_client_secret
-      )
-      parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'] == true
+        client =  Bullhorn::Rest::Client.new(
+          username: settings.bh_username,
+          password: settings.bh_password,
+          client_id: settings.bh_client_id,
+          client_secret: settings.bh_client_secret
+        )
+        parse_jobs_for_delete(client)
+      end
     end
 
     puts '- END delete_jobs'
   end
 
   def self.parse_jobs(client)
-    @job_data = query_job_orders(client)
+    @job_data = query_job_orders(client, false)
     # jobs = @job_data.xpath("//item")
     
     @job_data.each do |job|
@@ -132,7 +135,7 @@ class BullhornJobImport
   end
 
   def self.parse_jobs_for_delete(client)
-    @job_data = query_job_orders(client)
+    @job_data = query_job_orders(client, true)
     # jobs = @job_data.xpath("//item")
     
     
@@ -155,21 +158,9 @@ class BullhornJobImport
 
   private
 
-  def self.query_job_orders(client)
-    # settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
-    # doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
-    # settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-    # logger.info "--- settings = #{settings.inspect}"
-    # client = Bullhorn::Rest::Client.new(
-    #   username: settings['username'],
-    #   password: settings['password'],
-    #   client_id: settings['client_id'],
-    #   client_secret: settings['client_secret']
-    # )
-
+  def self.query_job_orders(client, is_deleted)
     # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Stop when less than 200 received in a query, and return concatenated results
-
 
     offset = 0
     results = 200 # prime the loop
@@ -178,7 +169,7 @@ class BullhornJobImport
     
     while results == 200
 
-      jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+      jobs = client.query_job_orders(where: "id IS NOT NULL AND isDeleted = #{is_deleted}", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit', count: 200, start: offset)
       
       puts "Received #{jobs["count"]}"
       puts "Received 200 - possibly another page" if jobs["count"] >= 200
