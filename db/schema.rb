@@ -186,7 +186,7 @@ ActiveRecord::Schema.define(version: 20151029113445) do
     t.integer "app_dataset_id"
     t.string  "api_key"
     t.string  "app_name"
-    t.boolean "secure",         default: false
+    t.string  "protocol",       default: "http://"
   end
 
   create_table "likes_jobs", force: true do |t|
