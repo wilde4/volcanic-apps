@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151022092546) do
+ActiveRecord::Schema.define(version: 20151029113445) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -186,6 +186,7 @@ ActiveRecord::Schema.define(version: 20151022092546) do
     t.integer "app_dataset_id"
     t.string  "api_key"
     t.string  "app_name"
+    t.boolean "secure",         default: false
   end
 
   create_table "likes_jobs", force: true do |t|
