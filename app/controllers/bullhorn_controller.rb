@@ -11,7 +11,17 @@ class BullhornController < ApplicationController
 
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
-    @bullhorn_setting.bullhorn_field_mappings.build if @bullhorn_setting.bullhorn_field_mappings.blank?
+    @authorised = false
+    if @bullhorn_setting.auth_settings_filled
+      client = authenticate_client(params[:data][:dataset_id])
+      begin
+        candidates = client.candidates(fields: 'id', sort: 'id')
+        @authorised = candidates.data.size > 0
+      rescue
+
+      end
+    end
+    # @bullhorn_setting.bullhorn_field_mappings.build if @bullhorn_setting.bullhorn_field_mappings.blank?
     render layout: false
   end
 
@@ -19,6 +29,16 @@ class BullhornController < ApplicationController
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:bullhorn_app_setting][:dataset_id])
     if @bullhorn_setting.present?
       if @bullhorn_setting.update(params[:bullhorn_app_setting].permit!)
+        @authorised = false
+        if @bullhorn_setting.auth_settings_filled
+          client = authenticate_client(params[:bullhorn_app_setting][:dataset_id])
+          begin
+            candidates = client.candidates(fields: 'id', sort: 'id')
+            @authorised = candidates.data.size > 0
+          rescue
+
+          end
+        end
         flash[:notice]  = "Settings successfully saved."
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
@@ -26,6 +46,16 @@ class BullhornController < ApplicationController
     else
       @bullhorn_setting = BullhornAppSetting.new(params[:bullhorn_app_setting].permit!)
       if @bullhorn_setting.save
+        @authorised = false
+        if @bullhorn_setting.auth_settings_filled
+          client = authenticate_client(params[:bullhorn_app_setting][:dataset_id])
+          begin
+            candidates = client.candidates(fields: 'id', sort: 'id')
+            @authorised = candidates.data.size > 0
+          rescue
+
+          end
+        end
         flash[:notice]  = "Settings successfully saved."
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
