@@ -61,6 +61,7 @@ ActiveRecord::Schema.define(version: 20151029113445) do
     t.string   "linkedin_bullhorn_field"
     t.string   "source_text"
     t.boolean  "always_create",              default: false
+    t.boolean  "authorised",                 default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|
