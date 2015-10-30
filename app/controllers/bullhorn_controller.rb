@@ -11,17 +11,6 @@ class BullhornController < ApplicationController
 
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
-    @authorised = false
-    if @bullhorn_setting.auth_settings_filled
-      client = authenticate_client(params[:data][:dataset_id])
-      begin
-        candidates = client.candidates(fields: 'id', sort: 'id')
-        @authorised = candidates.data.size > 0
-      rescue
-
-      end
-    end
-    # @bullhorn_setting.bullhorn_field_mappings.build if @bullhorn_setting.bullhorn_field_mappings.blank?
     render layout: false
   end
 
@@ -29,16 +18,7 @@ class BullhornController < ApplicationController
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:bullhorn_app_setting][:dataset_id])
     if @bullhorn_setting.present?
       if @bullhorn_setting.update(params[:bullhorn_app_setting].permit!)
-        @authorised = false
-        if @bullhorn_setting.auth_settings_filled
-          client = authenticate_client(params[:bullhorn_app_setting][:dataset_id])
-          begin
-            candidates = client.candidates(fields: 'id', sort: 'id')
-            @authorised = candidates.data.size > 0
-          rescue
-
-          end
-        end
+        update_authorised_setting(@bullhorn_setting)
         flash[:notice]  = "Settings successfully saved."
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
@@ -46,16 +26,7 @@ class BullhornController < ApplicationController
     else
       @bullhorn_setting = BullhornAppSetting.new(params[:bullhorn_app_setting].permit!)
       if @bullhorn_setting.save
-        @authorised = false
-        if @bullhorn_setting.auth_settings_filled
-          client = authenticate_client(params[:bullhorn_app_setting][:dataset_id])
-          begin
-            candidates = client.candidates(fields: 'id', sort: 'id')
-            @authorised = candidates.data.size > 0
-          rescue
-
-          end
-        end
+        update_authorised_setting(@bullhorn_setting)
         flash[:notice]  = "Settings successfully saved."
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
@@ -312,6 +283,22 @@ class BullhornController < ApplicationController
         client_id: settings.bh_client_id,
         client_secret: settings.bh_client_secret
       )
+    end
+
+    def update_authorised_setting(bullhorn_setting)
+      if bullhorn_setting.auth_settings_changed
+        if bullhorn_setting.auth_settings_filled
+          begin
+            client = authenticate_client(params[:bullhorn_app_setting][:dataset_id])
+            candidates = client.candidates(fields: 'id', sort: 'id')
+            bullhorn_setting.authorised = candidates.data.size > 0
+            bullhorn_setting.save
+          rescue
+            bullhorn_setting.authorised = false
+            bullhorn_setting.save
+          end
+        end
+      end
     end
 
     def post_user_to_bullhorn_2(user, client, params)

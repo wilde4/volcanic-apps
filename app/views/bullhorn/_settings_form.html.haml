@@ -2,7 +2,7 @@
 = simple_form_for @bullhorn_setting, url: 'http://localhost:3001/bullhorn/save_settings', method: :post, remote: true do |f|
   = f.input :dataset_id, as: :hidden
   .panel.panel-default
-    .panel-heading Settings
+    .panel-heading 1. Authentication Settings
     .panel-body
       .row
         .col-md-6
@@ -11,35 +11,42 @@
         .col-md-6
           = f.input :bh_client_id
           = f.input :bh_client_secret
-      .form-group= f.submit class: 'btn btn-primary' unless @authorised
-  - unless @authorised
+      .form-group= f.submit class: 'btn btn-primary'
+  - unless @bullhorn_setting.authorised
     .alert.alert-danger
       %button.close{type: "button", data: {dismiss: "alert"}} ×
       Your authorisation details are not working, please correct them.
   - else
-    %hr
-    .row
-      .col-md-6
-        = f.input :source_text
-      .col-md-6
-        = f.input :linkedin_bullhorn_field
-    %hr
-    .well
-      %p This App can import Vacancies from Bullhorn to your Volcanic website. Applications by Candidates through the website are updated in Bullhorn if this option is selected. 
-      %p Do not select this option if your website uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
-      = f.input :import_jobs
-    .well
-      %p 
-        When a Candidate registers an account through the website, this App determines if they already have a Candidate profile in Bullhorn using their email address. 
-        If so, the Bullhorn Candidate record is updated with the registration data the Candidate provides.
-      %p You can force a new Candidate profile to be created in Bullhorn instead of updating an existing account by selecting this option.
-      = f.input :always_create
-    .mappings
-      = render :partial => 'bullhorn_field_mapping_fields', locals: { f: f }
-    .text-right= link_to t('.add_another_field_mapping'), '#', id: 'add_another_mapping'
-    .form-group= f.submit class: 'btn btn-primary'
+    .panel.panel-default
+      .panel-heading 2. Integration Settings
+      .panel-body
+        .row
+          .col-md-6
+            = f.input :source_text
+          .col-md-6
+            = f.input :linkedin_bullhorn_field
+        %hr
+        .well
+          %p This App can import Vacancies from Bullhorn to your Volcanic website. Applications by Candidates through the website are updated in Bullhorn if this option is selected. 
+          %p Do not select this option if your website uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
+          = f.input :import_jobs
+        .well
+          %p 
+            When a Candidate registers an account through the website, this App determines if they already have a Candidate profile in Bullhorn using their email address. 
+            If so, the Bullhorn Candidate record is updated with the registration data the Candidate provides.
+          %p You can force a new Candidate profile to be created in Bullhorn instead of updating an existing account by selecting this option.
+          = f.input :always_create
+        .form-group= f.submit class: 'btn btn-primary'
+    .panel.panel-default
+      .panel-heading 3. Field Mappings
+      .panel-body
+        .mappings
+          = render :partial => 'bullhorn_field_mapping_fields', locals: { f: f }
+        .text-right= link_to t('.add_another_field_mapping'), '#', id: 'add_another_mapping'
+        .form-group= f.submit class: 'btn btn-primary'
     :javascript
-      $('#add_another_mapping').click(function() {
+      $('#add_another_mapping').click(function(e) {
+        e.preventDefault();
         var time_i = Date.now();
         var new_fields = '<div class="well"> \
                             <div class="row"> \
