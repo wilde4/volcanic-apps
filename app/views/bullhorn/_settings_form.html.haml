@@ -15,8 +15,12 @@
   - unless @bullhorn_setting.authorised
     .alert.alert-danger
       %button.close{type: "button", data: {dismiss: "alert"}} ×
+      %i.fa.fa-thumbs-o-down
       Your authorisation details are not working, please correct them.
   - else
+    .alert.alert-success
+      %i.fa.fa-thumbs-o-up
+      Your authorisation details are valid and your website is connected to your Bullhorn account.
     .panel.panel-default
       .panel-heading 2. Integration Settings
       .panel-body
