@@ -309,7 +309,7 @@ class BullhornController < ApplicationController
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
         'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        'status' => 'New Lead',
+        'status' => settings.status_text.present? ? settings.status_text : 'New Lead',
         'email' => user.email,
         'source' => settings.source_text.present? ? settings.source_text : 'Company Website'
       }

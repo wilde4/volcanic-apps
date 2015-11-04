@@ -22,12 +22,17 @@ en:
         bh_client_secret: Bullhorn Client Secret
         import_jobs: Import Jobs from Bullhorn
         linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
-        source_text: Bullhorn Source Text for Candidate records
+        source_text: Bullhorn Source text for Candidate records
         always_create: Always create a new Bullhorn record when a Candidate registers
+        status_text: Bullhorn Status text for Candidate records
       bullhorn_field_mappings:
         bullhorn_field_name: Bullhorn Field Name
         registration_question_reference: Registration Question Reference
         sync_from_bullhorn: Sync from Bullhorn
+    hints:
+      bullhorn_app_setting:
+        source_text: 'Default if left empty: Company Website'
+        status_text: 'Default if left empty: New Lead'
     # Examples
     # labels:
     #   defaults:
