@@ -261,5 +261,10 @@ Apps::Application.routes.draw do
     patch "modal_content"    => 'filtered_notifications#modal_content'
   end
 
+  scope :servicedott do
+    get "email_data"     => 'servicedott#email_data'
+    post "activate_app"     => 'servicedott#activate_app'
+    post "deactivate_app"   => 'servicedott#deactivate_app'
+  end
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end
