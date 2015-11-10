@@ -30,6 +30,7 @@ class JobBoardController < ApplicationController
     @host = @key.host
     @app_id = params[:data][:id]
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    render layout: false
   end
 
   def new
@@ -58,6 +59,7 @@ class JobBoardController < ApplicationController
 
   def edit
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
+    render layout: false
   end
 
   def update
@@ -313,7 +315,12 @@ class JobBoardController < ApplicationController
                                           :require_access_for_cv_search,                                        
                                           :cv_search_title,
                                           :cv_search_description,
-                                          :cv_search_enabled
+                                          :cv_search_enabled,
+                                          :access_control_type,
+                                          :cv_credit_price,
+                                          :cv_credit_expiry_duration,
+                                          :cv_credit_title,
+                                          :cv_credit_description
                                         ]
                                         )
     end

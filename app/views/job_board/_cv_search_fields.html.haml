@@ -3,44 +3,89 @@
     %h3 CV Search
     %h4 Control access to your candidate CV database
     .mt30
-    .checkbox{style: "padding-left: 0"}
+    -# .checkbox{style: "padding-left: 0"}
+    .checkbox
       = fg.label :cv_search_enabled do
         = fg.check_box :cv_search_enabled
         Enable CV Search Functionality
       %span.help-block Completely hide CV search if desired
     .mt20
-    .checkbox{style: "padding-left: 0"}
-      = fg.label :require_access_for_cv_search do
-        = fg.check_box :require_access_for_cv_search
-        Enable time limited access to the CV Search
-      %span.help-block Time can be added manually
+    -# .checkbox{style: "padding-left: 0"}
+    -#   = fg.label :require_access_for_cv_search do
+    -#     = fg.check_box :require_access_for_cv_search
+    -#     Enable time limited access to the CV Search
+    -#   %span.help-block Time can be added manually
+    .form-group
+      %h4 Access Control Method
+      = fg.label :access_control_type, "Credits to Download", value: "credits", class: "checkbox-inline" do
+        = fg.radio_button :access_control_type, "credits", style: "margin-left: -20px", checked: true, data: { target: "#cv_search_credits"}
+        Spend Credits to View
+    
+      = fg.label :access_control_type, "Time Limited Access", value: "time", class: "checkbox-inline" do
+        = fg.radio_button :access_control_type, "time", style: "margin-left: -20px", data: { target: "#cv_search_time"}
+        Time Limited Access
+
     .mt20
-    .checkbox{style: "padding-left: 0"}
+    .checkbox
       = fg.label :charge_for_cv_search do
         = fg.check_box :charge_for_cv_search
         Allow users to purchase more access time
       %span.help-block  Enables users to purchase access time using a credit/debit card
     .mt20
 
-    #cv_search_collapse
-      .form-group
-        = fg.label :cv_search_price, "CV Search Access Price"
-        .input-group
-          .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
-          = fg.number_field :cv_search_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
+    .tab-content
+      .tab-pane#cv_search_credits{class: "#{@job_board.cv_search_settings.access_control_type == 'credits' ? 'active' : ''}"}
+        .form-group
+          = fg.label :cv_credit_price
+          .input-group
+            .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+            = fg.number_field :cv_credit_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
 
-      .form-group
-        = fg.label :cv_search_duration, "CV Search Access Duration"
-        .input-group
-          = fg.number_field :cv_search_duration, as: :numeric, step: 1, min: 1, wrapper: false, label: false, class: "form-control"
-          .input-group-addon days
+        .form-group
+          = fg.label :cv_credit_expiry_duration, "CV Credit Expiry Length"
+          .input-group
+            = fg.number_field :cv_credit_expiry_duration, as: :numeric, step: 1, min: 1, wrapper: false, label: false, class: "form-control"
+            .input-group-addon days
 
-      .form-group
-        = fg.label :cv_search_title, "CV Search Title"
-        = fg.text_field :cv_search_title, placeholder: "e.g. CV Search Access", class: "form-control"
-        %span.help-block This is the name of this purchase as displayed to the user
+        .form-group
+          = fg.label :cv_credit_title, "CV Credit Title"
+          = fg.text_field :cv_credit_title, placeholder: "e.g. CV Search Access", class: "form-control"
+          %span.help-block This is the name of this purchase as displayed to the user
 
-      .form-group
-        = fg.label :cv_search_description, "CV Search Description"
-        = fg.text_area :cv_search_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
-        %span.help-block Description of this purchase as displayed to the user under the title
+        .form-group
+          = fg.label :cv_credit_description, "CV Credit Description"
+          = fg.text_area :cv_credit_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
+          %span.help-block Description of this purchase as displayed to the user under the title
+
+
+
+
+      .tab-pane#cv_search_time{class: "#{@job_board.cv_search_settings.access_control_type == 'time' ? 'active' : ''}"}
+        .form-group
+          = fg.label :cv_search_price, "CV Search Access Price"
+          .input-group
+            .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+            = fg.number_field :cv_search_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
+
+        .form-group
+          = fg.label :cv_search_duration, "CV Search Access Duration"
+          .input-group
+            = fg.number_field :cv_search_duration, as: :numeric, step: 1, min: 1, wrapper: false, label: false, class: "form-control"
+            .input-group-addon days
+
+        .form-group
+          = fg.label :cv_search_title, "CV Search Title"
+          = fg.text_field :cv_search_title, placeholder: "e.g. CV Search Access", class: "form-control"
+          %span.help-block This is the name of this purchase as displayed to the user
+
+        .form-group
+          = fg.label :cv_search_description, "CV Search Description"
+          = fg.text_area :cv_search_description, rows: 5, placeholder: "e.g. This will allow you to search our candidates", class: "form-control"
+          %span.help-block Description of this purchase as displayed to the user under the title
+
+:javascript
+  $(document).ready(function(){
+    $('input[name="job_board[cv_search_settings_attributes][access_control_type]"]').click(function () {
+      $(this).tab('show');
+    });
+  })

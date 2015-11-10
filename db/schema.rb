@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151104132606) do
+ActiveRecord::Schema.define(version: 20151110151700) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -108,6 +108,11 @@ ActiveRecord::Schema.define(version: 20151104132606) do
     t.string  "cv_search_title"
     t.text    "cv_search_description"
     t.boolean "cv_search_enabled",                                    default: true
+    t.string  "access_control_type"
+    t.decimal "cv_credit_price",              precision: 8, scale: 2
+    t.integer "cv_credit_expiry_duration"
+    t.string  "cv_credit_title"
+    t.text    "cv_credit_description"
   end
 
   create_table "extra_form_fields", force: true do |t|
