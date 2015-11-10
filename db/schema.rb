@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151110151700) do
+ActiveRecord::Schema.define(version: 20151110164204) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -83,6 +83,17 @@ ActiveRecord::Schema.define(version: 20151110151700) do
   create_table "client_vat_rates", force: true do |t|
     t.string  "client_token"
     t.decimal "vat_rate",     precision: 8, scale: 2
+  end
+
+  create_table "cv_credits", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "client_token"
+    t.integer  "credits_added"
+    t.integer  "credits_spent"
+    t.boolean  "expired"
+    t.datetime "expiry_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "cv_search_access_durations", force: true do |t|

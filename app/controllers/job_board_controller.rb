@@ -161,33 +161,52 @@ class JobBoardController < ApplicationController
 
   def increase_cv_access_time
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
-    if params[:data][:client_token].present?
-      most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+
+    if @job_board.cv_search_settings.access_control_type == "credits"
+      cv_credit = CvCredit.new
+      cv_credit.app_dataset_id = @key.app_dataset_id
+      cv_credit.client_token = params[:data][:client_token]
+      cv_credit.credits_added = params[:data][:duration].to_i
+      cv_credit.expiry_date = Time.now + @job_board.cv_search_settings.cv_credit_expiry_duration.days
+      cv_credit.expired = false
+
+      if cv_credit.save
+        render json: { success: true, expiry_date: cv_credit.expiry_date }
+        return
+      else
+        render json: { success: false }
+        return
+      end
+
     else
-      most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
-    end
+      if params[:data][:client_token].present?
+        most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+      else
+        most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+      end
 
-    duration = params[:data][:duration].to_i
+      duration = params[:data][:duration].to_i
 
-    if most_recent.present? && most_recent.expiry_date > Time.now
-      most_recent_expiry = most_recent.expiry_date
-    else
-      most_recent_expiry = Time.now
-    end
+      if most_recent.present? && most_recent.expiry_date > Time.now
+        most_recent_expiry = most_recent.expiry_date
+      else
+        most_recent_expiry = Time.now
+      end
 
-    cv_search = CvSearchAccessDuration.new
-    cv_search.duration_added = duration * @job_board.cv_search_settings.cv_search_duration
-    cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
-    cv_search.user_token     = params[:data][:user_token]
-    cv_search.client_token   = params[:data][:client_token]
-    cv_search.app_dataset_id = @key.app_dataset_id
+      cv_search = CvSearchAccessDuration.new
+      cv_search.duration_added = duration * @job_board.cv_search_settings.cv_search_duration
+      cv_search.expiry_date    = most_recent_expiry + cv_search.duration_added.days
+      cv_search.user_token     = params[:data][:user_token]
+      cv_search.client_token   = params[:data][:client_token]
+      cv_search.app_dataset_id = @key.app_dataset_id
 
-    if cv_search.save
-      render json: { success: true, expiry_date: cv_search.expiry_date }
-      return
-    else
-      render json: { success: false }
-      return
+      if cv_search.save
+        render json: { success: true, expiry_date: cv_search.expiry_date }
+        return
+      else
+        render json: { success: false }
+        return
+      end
     end
   end
 
