@@ -86,7 +86,8 @@ class JobBoardController < ApplicationController
       
       purchasable[:job_token] = { price: @job_board.job_token_settings.job_token_price, duration: @job_board.job_token_settings.job_duration, title: @job_board.job_token_settings.job_token_title, description: @job_board.job_token_settings.job_token_description } if @job_board.job_token_settings.charge_for_jobs
 
-      purchasable[:cv_search] = { price: @job_board.cv_search_settings.cv_search_price, duration: @job_board.cv_search_settings.cv_search_duration, title: @job_board.cv_search_settings.cv_search_title, description: @job_board.cv_search_settings.cv_search_description } if @job_board.cv_search_settings.charge_for_cv_search
+      # purchasable[:cv_search] = { price: @job_board.cv_search_settings.cv_search_price, duration: @job_board.cv_search_settings.cv_search_duration, title: @job_board.cv_search_settings.cv_search_title, description: @job_board.cv_search_settings.cv_search_description } if @job_board.cv_search_settings.charge_for_cv_search
+      purchasable[:cv_search] = @job_board.cv_search_settings.purchasable_details if @job_board.cv_search_settings.charge_for_cv_search
 
       purchasable[:currency] = @job_board.currency
 
