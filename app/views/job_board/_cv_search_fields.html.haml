@@ -10,11 +10,11 @@
         Enable CV Search Functionality
       %span.help-block Completely hide CV search if desired
     .mt20
-    -# .checkbox{style: "padding-left: 0"}
-    -#   = fg.label :require_access_for_cv_search do
-    -#     = fg.check_box :require_access_for_cv_search
-    -#     Enable time limited access to the CV Search
-    -#   %span.help-block Time can be added manually
+    .checkbox
+      = fg.label :require_access_for_cv_search do
+        = fg.check_box :require_access_for_cv_search
+        Enable restricted access to the CV Search
+      %span.help-block Access can be added manually
     .form-group
       %h4 Access Control Method
       = fg.label :access_control_type, "Credits to Download", value: "credits", class: "checkbox-inline" do
@@ -29,8 +29,8 @@
     .checkbox
       = fg.label :charge_for_cv_search do
         = fg.check_box :charge_for_cv_search
-        Allow users to purchase more access time
-      %span.help-block  Enables users to purchase access time using a credit/debit card
+        Allow users to purchase more access
+      %span.help-block  Enables users to purchase access using a credit/debit card
     .mt20
 
     .tab-content

@@ -11,6 +11,7 @@ class CvSearchSettings < ActiveRecord::Base
 
   def set_defaults
     self.cv_search_duration = 7
+    self.access_control_type = "time"
   end
 
   def price_if_payment_required

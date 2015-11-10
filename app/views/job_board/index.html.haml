@@ -52,16 +52,34 @@
             %th Charge for CV Search?
             %td
               %i{class: "fa #{@job_board.cv_search_settings.charge_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          
           %tr
-            %th Price for CV Search Access
-            %td
-              -if @job_board.cv_search_settings.cv_search_price.present?
-                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_search_price}"
-          %tr
-            %th CV Search Access Duration
-            %td
-              -if @job_board.cv_search_settings.cv_search_duration.present?
-                = "#{@job_board.cv_search_settings.cv_search_duration} days"
+            %th Access Control Method
+            %td= @job_board.cv_search_settings.access_control_type.capitalize
+
+          - if @job_board.cv_search_settings.access_control_type == "credits"
+            %tr
+              %th Price for CV Search Credit
+              %td
+                -if @job_board.cv_search_settings.cv_credit_price.present?
+                  = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_credit_price}"
+            %tr
+              %th CV Search Credit Expiry Length
+              %td
+                -if @job_board.cv_search_settings.cv_credit_expiry_duration.present?
+                  = "#{@job_board.cv_search_settings.cv_credit_expiry_duration} days"
+          
+          - else
+            %tr
+              %th Price for CV Search Access
+              %td
+                -if @job_board.cv_search_settings.cv_search_price.present?
+                  = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_search_price}"
+            %tr
+              %th CV Search Access Duration
+              %td
+                -if @job_board.cv_search_settings.cv_search_duration.present?
+                  = "#{@job_board.cv_search_settings.cv_search_duration} days"
 
       %h4 Tax Settings
       %table.table
