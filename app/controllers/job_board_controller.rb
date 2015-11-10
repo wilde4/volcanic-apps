@@ -135,24 +135,37 @@ class JobBoardController < ApplicationController
   def access_for_cv_search
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
-      @cv_search_enabled = @job_board.cv_search_settings.cv_search_enabled
+      @cv_search_enabled = @job_board.cv_search_settings.cv_search_enabled   
       if @job_board.cv_search_settings.require_access_for_cv_search
-        if params[:data][:client_token].present?
-          most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
-        else
-          most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
-        end        
-        if most_recent.present? && most_recent.expiry_date > Time.now
-          render json: { success: true, enabled: @cv_search_enabled, access: true, expiry_date: most_recent.expiry_date, display: true }
+
+        # HANDLE THE 2 ACCESS TYPES
+        if @job_board.cv_search_settings.access_control_type == "credits"
+          # CREDIT ACCESS
+          valid_credits = CvCredit.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).where(expired: false).where("expiry_date > ?", Time.now)
+          valid_credit_count = valid_credits.sum(:credits_added) - valid_credits.sum(:credits_spent)
+          render json: { success: true, enabled: @cv_search_enabled, type: "credits", access: true, credits_remaining: valid_credit_count, display: true }
           return
         else
-          render json: { success: true, enabled: @cv_search_enabled, access: false, display: true }
-          return
+          # TIME LIMITED ACCESS
+          if params[:data][:client_token].present?
+            most_recent = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+          else
+            most_recent = CvSearchAccessDuration.where(user_token: params[:data][:user_token], app_dataset_id: @key.app_dataset_id).last
+          end        
+          if most_recent.present? && most_recent.expiry_date > Time.now
+            render json: { success: true, enabled: @cv_search_enabled, type: "time", access: true, expiry_date: most_recent.expiry_date, display: true }
+            return
+          else
+            render json: { success: true, enabled: @cv_search_enabled, type: "time", access: false, display: true }
+            return
+          end
         end
       else
         render json: { success: true, enabled: @cv_search_enabled, access: true, display: false }
         return
       end
+
+
     else
       render json: { success: false, enabled: @cv_search_enabled, display: false }
       return
@@ -169,6 +182,7 @@ class JobBoardController < ApplicationController
       cv_credit.credits_added = params[:data][:duration].to_i
       cv_credit.expiry_date = Time.now + @job_board.cv_search_settings.cv_credit_expiry_duration.days
       cv_credit.expired = false
+      cv_credit.credits_spent = 0
 
       if cv_credit.save
         render json: { success: true, expiry_date: cv_credit.expiry_date }
