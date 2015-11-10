@@ -7,6 +7,8 @@ class JobBoard < ActiveRecord::Base
   accepts_nested_attributes_for :job_token_settings, update_only: true
   accepts_nested_attributes_for :cv_search_settings, update_only: true
 
+  serialize :posting_currencies
+
   before_validation :create_settings, on: :create
   before_validation :set_defaults, on: :create
 
@@ -45,5 +47,9 @@ class JobBoard < ActiveRecord::Base
       job_functions: job_functions_limit,
       key_locations: key_locations_limit
     }
+  end
+
+  def form_attributes
+    { salary_slider: salary_slider_attributes, selection_limits: selection_limits, posting_currencies: posting_currencies }
   end
 end

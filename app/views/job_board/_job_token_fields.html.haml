@@ -38,3 +38,8 @@
       = ff.label :job_token_description, "Description when buying a Credit"
       = ff.text_area :job_token_description, rows: 5, placeholder: "e.g. This will allow you to post a job", class: "form-control"
       %span.help-block Description displayed on the checkout to give more information to the user
+
+
+.form-group
+  = f.label :posting_currencies
+  = f.select :posting_currencies, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.posting_currencies), {}, {class: "form-control", multiple: true}

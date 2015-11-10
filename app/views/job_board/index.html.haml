@@ -36,6 +36,11 @@
             %th Job Duration
             %td              
               = "#{@job_board.job_duration} days"
+          %tr
+            %th Posting Currencies
+            %td
+              - if @job_board.posting_currencies.present?
+                = @job_board.posting_currencies.join(', ')
 
       %h4 Selection Limits
       %table.table
@@ -105,23 +110,23 @@
           %tr
             %th Salary minimum
             %td
-              = number_to_currency @job_board.salary_min.present? ? @job_board.salary_min : 0, precision: 0, unit: currency_to_symbol(@job_board.currency) 
+              = number_with_delimiter @job_board.salary_min.present? ? @job_board.salary_min : 0, precision: 0 
           %tr
             %th Salary maximum
             %td
-              = number_to_currency @job_board.salary_max.present? ? @job_board.salary_max : 200000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+              = number_with_delimiter @job_board.salary_max.present? ? @job_board.salary_max : 200000, precision: 0
           %tr
             %th Salary step
             %td
-              = number_to_currency @job_board.salary_step.present? ? @job_board.salary_step : 1000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+              = number_with_delimiter @job_board.salary_step.present? ? @job_board.salary_step : 1000, precision: 0
           %tr
             %th Salary from
             %td
-              = number_to_currency @job_board.salary_from.present? ? @job_board.salary_from : 20000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+              = number_with_delimiter @job_board.salary_from.present? ? @job_board.salary_from : 20000, precision: 0
           %tr
             %th Salary to
             %td
-              = number_to_currency @job_board.salary_to.present? ? @job_board.salary_to : 50000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+              = number_with_delimiter @job_board.salary_to.present? ? @job_board.salary_to : 50000, precision: 0
 
 
     -else

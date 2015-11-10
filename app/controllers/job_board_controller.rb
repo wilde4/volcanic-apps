@@ -64,6 +64,7 @@ class JobBoardController < ApplicationController
     @job_board = JobBoard.find_by(id: params[:job_board][:id])
     
     respond_to do |format|
+      params[:job_board][:posting_currencies] = params[:job_board][:posting_currencies].delete_if { |v| v.blank? } unless params[:job_board][:posting_currencies].blank?
       if @job_board.update_attributes(job_board_params)
         format.html { render action: 'index' }
         format.json { render json: { success: true, job_board: @job_board }}
@@ -275,7 +276,7 @@ class JobBoardController < ApplicationController
   def form_attributes
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
     if @job_board.present?
-      render json: { success: true, attributes: { salary_slider: @job_board.salary_slider_attributes, selection_limits: @job_board.selection_limits } }
+      render json: { success: true, attributes: @job_board.form_attributes }
     else
       render json: { success: false }
       return
@@ -301,6 +302,7 @@ class JobBoardController < ApplicationController
                                         :disciplines_limit,
                                         :job_functions_limit,
                                         :key_locations_limit,
+                                        posting_currencies: [],
                                         job_token_settings_attributes: [
                                           :charge_for_jobs,
                                           :job_token_price,
