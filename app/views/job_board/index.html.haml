@@ -37,6 +37,31 @@
             %td              
               = "#{@job_board.job_duration} days"
 
+      %h4 Selection Limits
+      %table.table
+        %tbody
+          %tr
+            %th Max Disciplines
+            %td
+              - if @job_board.disciplines_limit.present?
+                = @job_board.disciplines_limit > 0 ? @job_board.disciplines_limit : "Unlimited"
+              - else
+                Unlimited
+          %tr
+            %th Max Job Functions
+            %td
+              - if @job_board.job_functions_limit.present?
+                = @job_board.job_functions_limit > 0 ? @job_board.job_functions_limit : "Unlimited"
+              - else
+                Unlimited
+          %tr
+            %th Max Job Locations
+            %td
+              - if @job_board.key_locations_limit.present?
+                = @job_board.key_locations_limit > 0 ? @job_board.key_locations_limit : "Unlimited"
+              - else
+                Unlimited
+
       %h4 CV Search Settings
       %table.table
         %tbody
@@ -97,6 +122,7 @@
             %th Salary to
             %td
               = number_to_currency @job_board.salary_to.present? ? @job_board.salary_to : 50000, precision: 0, unit: currency_to_symbol(@job_board.currency)
+
 
     -else
       =link_to "Setup Job Board", relative_link("new"), class: "btn btn-primary"

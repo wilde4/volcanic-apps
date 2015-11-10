@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151022092546) do
+ActiveRecord::Schema.define(version: 20151110131500) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -167,6 +167,9 @@ ActiveRecord::Schema.define(version: 20151022092546) do
     t.integer  "salary_step"
     t.integer  "salary_from"
     t.integer  "salary_to"
+    t.integer  "disciplines_limit",                           default: 0
+    t.integer  "job_functions_limit",                         default: 0
+    t.integer  "key_locations_limit",                         default: 0
   end
 
   add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree

@@ -38,4 +38,12 @@ class JobBoard < ActiveRecord::Base
       to: salary_to
     }
   end
+
+  def selection_limits
+    {
+      disciplines: disciplines_limit,
+      job_functions: job_functions_limit,
+      key_locations: key_locations_limit
+    }
+  end
 end

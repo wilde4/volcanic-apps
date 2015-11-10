@@ -1,0 +1,11 @@
+%h4 Selection limits
+.form-group
+  = f.label :disciplines_limit
+  = f.number_field :disciplines_limit, class: "form-control", placeholder: 0
+  %span.help-block The maximum number of disciplines that can be selected (use 0 for unlimited)
+  = f.label :job_functions_limit
+  = f.number_field :job_functions_limit, class: "form-control", placeholder: 0
+  %span.help-block The maximum number of job functions that can be selected (use 0 for unlimited)
+  = f.label :key_locations_limit
+  = f.number_field :key_locations_limit, class: "form-control", placeholder: 0
+  %span.help-block The maximum number of key locations that can be selected (use 0 for unlimited)

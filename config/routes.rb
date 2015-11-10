@@ -216,7 +216,7 @@ Apps::Application.routes.draw do
     get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
     get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
     post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
-    get  "salary_slider_attributes" => 'job_board#salary_slider_attributes'
+    get  "form_attributes" => 'job_board#form_attributes'
 
     get  "client_form"      => 'job_board#client_form'
     post "client_create"    => 'job_board#client_create'
