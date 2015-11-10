@@ -1,0 +1,11 @@
+!!! XML
+%details
+  %candidatedetails
+    %name{ caption: 'Name' }= @name
+    %email{ caption: 'Email' }= @user['email']
+    %firstregistered{ caption: 'First Registered' }= Time.parse(@user['created_at']).strftime('%d %b %H:%M')
+    %source Achieve Website
+  %jobdetails
+    %jobtitle{ caption: 'Job Title' }= @job['job_title']
+    %jobreference{ caption: 'Job Reference' }= @job['job_reference']
+    %applicationdate{ caption: 'Application Date' }= Time.now.strftime('%B %d, %Y %H:%M')

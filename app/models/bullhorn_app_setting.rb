@@ -8,4 +8,12 @@ class BullhornAppSetting < ActiveRecord::Base
   has_many :bullhorn_field_mappings
 
   accepts_nested_attributes_for :bullhorn_field_mappings, allow_destroy: true
+
+  def auth_settings_filled
+    bh_username.present? && bh_password.present? && bh_client_id.present? && bh_client_secret.present?
+  end
+
+  def auth_settings_changed
+    previous_changes['encrypted_bh_username'].present? || previous_changes['encrypted_bh_password'].present? || previous_changes['encrypted_bh_client_id'].present? || previous_changes['encrypted_bh_client_secret'].present?
+  end
 end

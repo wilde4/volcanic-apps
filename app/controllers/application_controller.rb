@@ -23,6 +23,7 @@ class ApplicationController < ActionController::Base
     key.host = params[:data][:host]
     key.app_dataset_id = params[:data][:app_dataset_id]
     key.api_key = params[:data][:api_key]
+    key.protocol = params[:data][:protocol]
     key.app_name = params[:controller]
 
     respond_to do |format|
