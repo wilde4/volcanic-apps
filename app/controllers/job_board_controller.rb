@@ -4,7 +4,7 @@ class JobBoardController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update, :salary_slider_attributes]
+  before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update, :salary_slider_attributes, :deduct_cv_credit]
   before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :salary_slider_attributes] #requires set_key to have executed first
 
   def activate_app
@@ -221,6 +221,19 @@ class JobBoardController < ApplicationController
         render json: { success: false }
         return
       end
+    end
+  end
+
+  def deduct_cv_credit
+    valid_credits = CvCredit.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).where(expired: false).where("expiry_date > ?", Time.now).order("expiry_date ASC")
+    credit = valid_credits.first
+    credit.credits_spent = credit.credits_spent + 1
+    if credit.save
+      render json: { success: true }
+      return
+    else
+      render json: { success: false }
+      return
     end
   end
 

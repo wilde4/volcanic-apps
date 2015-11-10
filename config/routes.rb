@@ -217,6 +217,7 @@ Apps::Application.routes.draw do
     get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
     post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
     get  "salary_slider_attributes" => 'job_board#salary_slider_attributes'
+    get  "deduct_cv_credit" => 'job_board#deduct_cv_credit'
 
     get  "client_form"      => 'job_board#client_form'
     post "client_create"    => 'job_board#client_create'
