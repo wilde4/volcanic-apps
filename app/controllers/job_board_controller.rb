@@ -241,7 +241,13 @@ class JobBoardController < ApplicationController
 
   def client_form
     @job_board = JobBoard.find_by(app_dataset_id: @key.app_dataset_id)
-    @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+    if @job_board.cv_search_settings.access_control_type == "credits"
+      valid_credits = CvCredit.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).where(expired: false).where("expiry_date > ?", Time.now)
+      valid_credit_count = valid_credits.sum(:credits_added) - valid_credits.sum(:credits_spent)
+      @current_credits = valid_credit_count
+    else
+      @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+    end
     @vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token]) || ClientVatRate.new
     render :layout => false
   end
@@ -251,7 +257,7 @@ class JobBoardController < ApplicationController
 
     if params[:client][:extra].present?
       extra = params[:client][:extra]
-      if extra[:cv_search].present? && extra[:cv_search][:duration].present?
+      if extra[:cv_search].present? && extra[:cv_search][:duration].present? && @job_board.cv_search_settings.access_control_type == "time"
         most_recent = CvSearchAccessDuration.where(client_token: params[:client][:secure_random], app_dataset_id: @key.app_dataset_id).last
         duration = extra[:cv_search][:duration].to_i
 
@@ -268,6 +274,17 @@ class JobBoardController < ApplicationController
         cv_search.app_dataset_id = @key.app_dataset_id
 
         cv_search.save
+      end
+
+      if extra[:cv_search].present? && extra[:cv_search][:amount].present? && @job_board.cv_search_settings.access_control_type == "credits"
+        cv_credit = CvCredit.new
+        cv_credit.app_dataset_id = @key.app_dataset_id
+        cv_credit.client_token = params[:client][:secure_random]
+        cv_credit.credits_added = extra[:cv_search][:amount].to_i
+        cv_credit.expiry_date = Time.now + @job_board.cv_search_settings.cv_credit_expiry_duration.days
+        cv_credit.expired = false
+        cv_credit.credits_spent = 0
+        cv_credit.save
       end
 
       if extra[:vat_rate].present?

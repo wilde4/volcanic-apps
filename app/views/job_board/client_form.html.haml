@@ -1,11 +1,19 @@
 .row
   .col-md-6
-    .form-group
-      %label{for: "client_extra_cv_search_duration"}= "Add CV Search Access (currently #{@latest.present? ? distance_of_time_in_words(@latest.expiry_date, Time.now) : '0 days'} remaining)"
-      .input-group
 
-        %input.form-control#client_extra_cv_search_duration{name: "client[extra][cv_search][duration]"}
-        .input-group-addon= "x #{@job_board.cv_search_settings.cv_search_duration} Days" 
+    -if @job_board.cv_search_settings.access_control_type == "credits"
+      .form-group
+        %label{for: "client_extra_cv_search_duration"}= "Add CV Credits (currently #{@current_credits} credits remaining)"        
+
+        %input.form-control#client_extra_cv_search_duration{name: "client[extra][cv_search][amount]", type: "number"}
+
+    -else
+      .form-group
+        %label{for: "client_extra_cv_search_duration"}= "Add CV Search Access (currently #{@latest.present? ? distance_of_time_in_words(@latest.expiry_date, Time.now) : '0 days'} remaining)"
+        .input-group
+
+          %input.form-control#client_extra_cv_search_duration{name: "client[extra][cv_search][duration]", type: "number"}
+          .input-group-addon= "x #{@job_board.cv_search_settings.cv_search_duration} Days" 
 
 .row
   .col-md-6
