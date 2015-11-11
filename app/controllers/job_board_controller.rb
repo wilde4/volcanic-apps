@@ -227,14 +227,16 @@ class JobBoardController < ApplicationController
   def deduct_cv_credit
     valid_credits = CvCredit.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).where(expired: false).where("expiry_date > ?", Time.now).order("expiry_date ASC")
     credit = valid_credits.first
-    credit.credits_spent = credit.credits_spent + 1
-    if credit.save
-      render json: { success: true }
-      return
-    else
-      render json: { success: false }
-      return
+    if credit.present?
+      credit.credits_spent = credit.credits_spent + 1
+      if credit.save
+        render json: { success: true }
+        return
+      end
     end
+    render json: { success: false }
+    return
+    
   end
 
   def client_form
