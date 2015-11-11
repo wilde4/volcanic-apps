@@ -3,13 +3,13 @@
     %h3 Job Posting
     %h4 Control how users post jobs on your website.
     .mt30
-    .checkbox{style: "padding-left: 0"}
+    .checkbox
       = ff.label :require_tokens_for_jobs do
         = ff.check_box :require_tokens_for_jobs
         Require Job Credits        
       %span.help-block Require users to spend a credit to post a job. Credits can be given manually
     .mb20
-    .checkbox{style: "padding-left: 0"}
+    .checkbox
       = ff.label :charge_for_jobs do
         = ff.check_box :charge_for_jobs
         Allow credit card purchases
