@@ -11,9 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
 ActiveRecord::Schema.define(version: 20151110221913) do
-
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -29,6 +27,14 @@ ActiveRecord::Schema.define(version: 20151110221913) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "arithon_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "api_key"
+    t.string   "company_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -163,12 +169,6 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.string   "currency",                              default: "GBP"
   end
 
-  create_table "inventory_registration_bonuses", force: true do |t|
-    t.integer "inventory_id"
-    t.integer "registration_bonus_id"
-    t.integer "quantity"
-  end
-
   create_table "job_boards", force: true do |t|
     t.integer  "app_dataset_id"
     t.datetime "created_at"
@@ -179,7 +179,7 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.string   "phone_number"
     t.text     "address"
     t.boolean  "charge_vat"
-    t.decimal  "default_vat_rate", precision: 8, scale: 2
+    t.decimal  "default_vat_rate",    precision: 8, scale: 2
     t.integer  "salary_min"
     t.integer  "salary_max"
     t.integer  "salary_step"
@@ -286,14 +286,6 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.string   "account_number"
     t.string   "sort_code"
     t.integer  "dataset_id"
-  end
-
-  create_table "registration_bonuses", force: true do |t|
-    t.string  "name"
-    t.string  "user_group"
-    t.integer "dataset_id"
-    t.integer "quantity",    default: 0
-    t.string  "credit_type"
   end
 
   create_table "roles", force: true do |t|
