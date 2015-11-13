@@ -19,7 +19,10 @@ class BullhornJobImport
           client_secret: settings.bh_client_secret
         )
         parse_jobs(client)
-        # @job_data = query_job_orders(client)
+        # @job_data = query_job_orders(client, false)
+        # @job_data.each do |j|
+        #   puts "--- #{j.id}"
+        # end
         # puts "--- @job_data.size = #{@job_data.size}"
       end
     end
@@ -143,12 +146,12 @@ class BullhornJobImport
     
 
     @job_data.each do |job|
-      if job.isDeleted
+      if job.isDeleted || job.status == 'Archive'
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
         @job_payload['job[job_reference]'] = job.id
 
-        puts "--- @job_payload = #{@job_payload.inspect}"
+        # puts "--- @job_payload = #{@job_payload.inspect}"
         post_payload_for_delete(@job_payload)
       end
     end
@@ -168,8 +171,11 @@ class BullhornJobImport
     complete_data = []
     
     while results == 200
-
-      jobs = client.query_job_orders(where: "id IS NOT NULL AND isDeleted = #{is_deleted}", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+      if is_deleted
+        jobs = client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,status,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+      else
+        jobs = client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,status,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+      end
       
       puts "Received #{jobs["count"]}"
       puts "Received 200 - possibly another page" if jobs["count"] >= 200
