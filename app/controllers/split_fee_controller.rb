@@ -51,7 +51,7 @@ class SplitFeeController < ApplicationController
 
   def job_form
     @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
-    @salary_bands = @split_fee_setting.salary_bands.lines
+    @salary_bands = @split_fee_setting.salary_bands.lines    
     @job = JSON.parse(params[:data][:job])
     render layout: false
   end
@@ -97,7 +97,7 @@ class SplitFeeController < ApplicationController
 
   protected
     def split_fee_setting_params
-      params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands)
+      params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
     end
 
   
