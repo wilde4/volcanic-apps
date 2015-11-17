@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151117142602) do
+ActiveRecord::Schema.define(version: 20151117151339) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -145,6 +145,13 @@ ActiveRecord::Schema.define(version: 20151117142602) do
     t.text    "extra"
     t.date    "feature_start"
     t.date    "feature_end"
+  end
+
+  create_table "filtered_notification_sendings", force: true do |t|
+    t.integer  "job_id"
+    t.text     "client_ids"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "inventories", force: true do |t|

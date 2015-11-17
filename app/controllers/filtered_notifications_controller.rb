@@ -35,7 +35,9 @@ class FilteredNotificationsController < ApplicationController
 
       client_ids = params[:job][:extra][:filtered_notifications][:client_ids]
 
+
       if client_ids.is_a?(Array)
+        FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
 
         response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_job_announcement", job_id: params[:job][:id]})
       end
