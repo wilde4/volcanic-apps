@@ -11,9 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
-ActiveRecord::Schema.define(version: 20151110221913) do
-
+ActiveRecord::Schema.define(version: 20151117142602) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -179,7 +177,7 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.string   "phone_number"
     t.text     "address"
     t.boolean  "charge_vat"
-    t.decimal  "default_vat_rate", precision: 8, scale: 2
+    t.decimal  "default_vat_rate",    precision: 8, scale: 2
     t.integer  "salary_min"
     t.integer  "salary_max"
     t.integer  "salary_step"
@@ -308,6 +306,7 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.text     "salary_bands"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "details"
   end
 
   create_table "split_fees", force: true do |t|
