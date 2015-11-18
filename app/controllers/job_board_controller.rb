@@ -6,7 +6,7 @@ class JobBoardController < ApplicationController
 
 
   before_action :set_key, only: [:index, :new, :edit, :purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :client_form, :client_create, :user_form, :user_update, :form_attributes, :salary_slider_attributes, :deduct_cv_credit]
-  before_action :authorise_key, only: [:purchasable, :require_tokens_for_jobs, :access_for_cv_search, :increase_cv_access_time, :form_attributes, :salary_slider_attributes] #requires set_key to have executed first
+  before_action :authorise_key, only: [:purchasable, :access_for_cv_search, :increase_cv_access_time, :form_attributes, :salary_slider_attributes] #requires set_key to have executed first
 
 
   def activate_app
