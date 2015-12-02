@@ -11,9 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
 ActiveRecord::Schema.define(version: 20151117151339) do
-
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -29,14 +27,6 @@ ActiveRecord::Schema.define(version: 20151117151339) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
