@@ -26,10 +26,12 @@ class SplitFeeController < ApplicationController
     @host = @key.host
     @app_id = params[:data][:id]
     @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
+    render layout: false
   end
 
   def edit
     @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
+    render layout: false
   end
 
   def update
