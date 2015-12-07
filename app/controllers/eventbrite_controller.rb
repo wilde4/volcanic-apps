@@ -77,7 +77,7 @@ class EventbriteController < ApplicationController
     def app_server_host
       if Rails.env.development?
         "http://localhost:3001"
-      elsif Rails.env.production?
+      else
         "apps.volcanic.co"
       end
     end
