@@ -3,7 +3,6 @@ Apps::Application.routes.draw do
 
   get 'send_sms', :to => "text_local#send_sms", :as => :send_sms
   post 'send_sms', :to => "text_local#send_sms", :as => :post_sms
-  get 'related-events', :to => "event_brite#related_events", :as => :related_events
   get 'skype', :to => "skype#consultant", :as => :skype
   get 'export-list', :to => "mail_chimp#export_list", :as => :export_list
   get 'related-videos', :to => "youtube#related_videos", :as => :related_videos
@@ -159,7 +158,18 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'zapier#activate_app'
     post "deactivate_app"   => 'zapier#deactivate_app'
   end
-
+  
+  scope :eventbrite do
+    get  'index'            => 'eventbrite#index'
+    # get  'check_access'     => 'eventbrite#check_access'
+    get  'search'           => 'eventbrite#search'
+    get  'import'           => 'eventbrite#import'
+    post 'activate_app'     => 'eventbrite#activate_app'
+    post 'deactivate_app'   => 'eventbrite#deactivate_app'
+    post 'update_settings'  => 'eventbrite#update_settings'
+    post "update_eventbrite_settings"  => 'eventbrite#update_eventbrite_settings', as: :eventbrite_settings_update
+  end
+  
   scope :bullhorn do
     get 'index'             => 'bullhorn#index'
     get 'jobs'              => 'bullhorn#jobs'

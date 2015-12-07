@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151117151339) do
+ActiveRecord::Schema.define(version: 20151203111600) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -124,6 +124,13 @@ ActiveRecord::Schema.define(version: 20151117151339) do
     t.integer "cv_credit_expiry_duration"
     t.string  "cv_credit_title"
     t.text    "cv_credit_description"
+  end
+
+  create_table "eventbrite_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "access_token"
   end
 
   create_table "extra_form_fields", force: true do |t|

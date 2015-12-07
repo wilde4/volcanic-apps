@@ -1,0 +1,96 @@
+.volcanic_apps
+  .row
+    .col-md-3
+      = image_tag(image_url('eventbrite/eventbrite.png'), class: 'img-responsive')
+
+    .col-md-9
+      %h3 The Eventbrite app allows you to import an event from your Eventbrite account to your website.
+      %hr.featurette-divider
+      %h4 Setup instructions 
+      %p="1) Login to your Eventbrite account (this should be the account you use for creating the events you want to import to the website )." 
+      %p="2) Then navigate to #{link_to 'http://www.eventbrite.com/myaccount/apps/new/', 'http://www.eventbrite.com/myaccount/apps/new/', target: '_balnk'} and fill out the form.".html_safe 
+      %p="3) Make sure you enter the address of your website in the  Application URL  and OAuth Redirect URI fields and Submit the form"
+      %p="4) On the following page click the 'Show Client Secret and OAuth Token' link. "
+      %p="5) In section that is revealed locate the 'Your personal OAuth token' value and copy it into the field bellow (on this page) and click update"
+      %br
+      
+      %p
+        Please enter your Eventbrite personal OAuth token:
+
+      = render partial: "form"
+
+  /
+  / %br
+  / %hr.featurette-divider
+  / %br
+  /
+  / .row
+  /   %h3.text-center How to get your Eventbrite Access Token
+  /
+  /   %br
+  /
+  /   #quote-carousel.carousel.slide{ "data-ride" => "carousel", "data-interval"=>"false" }
+  /     -# Bottom Carousel Indicators
+  /     %ol.carousel-indicators
+  /       %li.active{"data-slide-to" => "0", "data-target" => "#quote-carousel"}
+  /       %li{"data-slide-to" => "1", "data-target" => "#quote-carousel"}
+  /       %li{"data-slide-to" => "2", "data-target" => "#quote-carousel"}
+  /       %li{"data-slide-to" => "3", "data-target" => "#quote-carousel"}
+  /     -# Carousel Slides / Quotes
+  /
+  /     .carousel-inner.text-center
+  /       -#  Quote 1
+  /       .item.active
+  /         .row.push-bottom--double
+  /           .col-sm-8.col-sm-offset-2
+  /             %p Sign up for an api account by visiting the following link - <a href="http://eventbrite.com/api/key" target="_blank">Register here</a>.
+  /         %br
+  /         .push-bottom--double
+  /           = image_tag(image_url('eventbrite/step-1-eventbrite-auth.png'), class: 'img-responsive')
+  /         %br
+  /
+  /       -#  Quote 2
+  /       .item
+  /         .row.push-bottom--double
+  /           .col-sm-8.col-sm-offset-2
+  /             %p Once logged in, click on the <b>"Create a new app"</b> link shown below.
+  /         %br
+  /         .push-bottom--double
+  /           = image_tag(image_url('eventbrite/step-2-eventbrite-auth.png'), class: 'img-responsive push-bottom--double')
+  /         %br
+  /
+  /       -#  Quote 3
+  /       .item
+  /         .row.push-bottom--double
+  /           .col-sm-8.col-sm-offset-2
+  /             %p Complete the mandatory fields, highlighted by a red asterick <span class="text-danger">*</span>.
+  /         %br
+  /         .push-bottom--double
+  /           = image_tag(image_url('eventbrite/step-3-eventbrite-auth.png'), class: 'img-responsive push-bottom--double')
+  /         %br
+  /
+  /       -#  Quote 4
+  /       .item
+  /         .row.push-bottom--double
+  /           .col-sm-8.col-sm-offset-2
+  /             %p To reveal your OAuth Token, please click the "Show Client Secret and OAuth Token" link, as highlighted below.
+  /         %br
+  /         .push-bottom--double
+  /           = image_tag(image_url('eventbrite/step-4-eventbrite-auth.png'), class: 'img-responsive push-bottom--double')
+  /         %br
+  /
+  /       -#  Quote 5
+  /       .item
+  /         .row.push-bottom--double
+  /           .col-sm-8.col-sm-offset-2
+  /             %p Lastly, copy the ID and Secret generated into the form above.
+  /         %br
+  /         .push-bottom--double
+  /           = image_tag(image_url('eventbrite/step-5-eventbrite-auth.png'), class: 'img-responsive push-bottom--double')
+  /         %br
+  /
+  /     -# Carousel Buttons Next/Prev
+  /     %a.left.carousel-control{"data-slide" => "prev", :href => "#quote-carousel"}
+  /       %i.fa.fa-chevron-left.text-info
+  /     %a.right.carousel-control{"data-slide" => "next", :href => "#quote-carousel"}
+  /       %i.fa.fa-chevron-right.text-info
