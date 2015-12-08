@@ -78,7 +78,7 @@ class EventbriteController < ApplicationController
       if Rails.env.development?
         "http://localhost:3001"
       else
-        "http://apps.volcanic.co"
+        "https://apps.volcanic.co"
       end
     end
 
