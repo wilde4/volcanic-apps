@@ -554,6 +554,7 @@ class BullhornController < ApplicationController
     def extract_file_attributes(cv_url, params)
       require 'open-uri'
       require 'base64'
+      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
       @cv = open(cv_url).read
       # UPOAD FILE
       base64_cv = Base64.encode64(@cv)
@@ -581,7 +582,7 @@ class BullhornController < ApplicationController
         'name' => params[:user_profile][:upload_name],
         'fileContent' => base64_cv,
         'contentType' => @ct,
-        'type' => 'CV'
+        'type' => settings.cv_type_text.present? ? settings.cv_type_text : 'CV'
       }
     end
 

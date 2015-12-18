@@ -25,6 +25,7 @@ en:
         source_text: Bullhorn Source text for Candidate records
         always_create: Always create a new Bullhorn record when a Candidate registers
         status_text: Bullhorn Status text for Candidate records
+        cv_type_text: Bullhorn CV Type text for Candidate CV files
       bullhorn_field_mappings:
         bullhorn_field_name: Bullhorn Field Name
         registration_question_reference: Registration Question Reference
@@ -33,6 +34,7 @@ en:
       bullhorn_app_setting:
         source_text: 'Default if left empty: Company Website'
         status_text: 'Default if left empty: New Lead'
+        cv_type_text: 'Default if left empty: CV'
     # Examples
     # labels:
     #   defaults:
