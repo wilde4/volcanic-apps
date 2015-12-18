@@ -116,7 +116,7 @@ class BullhornController < ApplicationController
         # GET BUSINESS SECTORS
         candidate_business_sectors = client.candidate(@user.bullhorn_uid, { association: 'businessSectors' })
         # logger.info "--- candidate_business_sectors = #{candidate_business_sectors.inspect}"
-        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name if candidate_business_sectors.present?
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name if candidate_business_sectors.data.first.present?
       else
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"]
       end
@@ -338,6 +338,9 @@ class BullhornController < ApplicationController
         when 'address1', 'address2', 'city', 'state', 'zip'
           # ADDRESS
           attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
+        when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
+          answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
+          attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
         when 'countryID'
           # ADDRESS COUNTRY
           attributes['address']['countryID'] = get_country_id(answer) if answer.present?
