@@ -111,12 +111,12 @@ class BullhornController < ApplicationController
         # logger.info "--- categories = #{categories.inspect}"
         category = categories.data.select{ |c| c.id == candidate.data.category.id }.first
         # logger.info "--- category = #{category.inspect}"
-        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = category.name
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = category.name if category.present?
       when 'businessSectors'
         # GET BUSINESS SECTORS
         candidate_business_sectors = client.candidate(@user.bullhorn_uid, { association: 'businessSectors' })
         # logger.info "--- candidate_business_sectors = #{candidate_business_sectors.inspect}"
-        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name if candidate_business_sectors.present?
       else
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"]
       end
