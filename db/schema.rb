@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151110221913) do
+ActiveRecord::Schema.define(version: 20151203111600) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,14 +27,6 @@ ActiveRecord::Schema.define(version: 20151110221913) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -134,6 +126,13 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.text    "cv_credit_description"
   end
 
+  create_table "eventbrite_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "access_token"
+  end
+
   create_table "extra_form_fields", force: true do |t|
     t.integer  "app_dataset_id"
     t.string   "form"
@@ -153,6 +152,13 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.text    "extra"
     t.date    "feature_start"
     t.date    "feature_end"
+  end
+
+  create_table "filtered_notification_sendings", force: true do |t|
+    t.integer  "job_id"
+    t.text     "client_ids"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "inventories", force: true do |t|
@@ -300,6 +306,7 @@ ActiveRecord::Schema.define(version: 20151110221913) do
     t.text     "salary_bands"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "details"
   end
 
   create_table "split_fees", force: true do |t|

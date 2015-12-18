@@ -10,4 +10,8 @@
       .help-block Enter one salary band per line, upper value used for split fee calculation
 
     .form-group
+      = f.label :details
+      = f.text_area :details, rows: 10, class: "form-control"
+      .help-block Enter an explanation about Split Fee
+    .form-group
       = f.submit "Save", class: "btn btn-primary"
