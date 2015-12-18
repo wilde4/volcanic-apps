@@ -338,7 +338,7 @@ class BullhornController < ApplicationController
         when 'address1', 'address2', 'city', 'state', 'zip'
           # ADDRESS
           attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
-        when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
+        when 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
           answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
           attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
         when 'countryID'
@@ -392,12 +392,30 @@ class BullhornController < ApplicationController
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
+        if response.errors.present?
+          response.errors.each do |e|
+            Honeybadger.notify(
+              :error_class => "Bullhorn Error",
+              :error_message => "Bullhorn Error: #{e.inspect}",
+              :parameters => params
+            )
+          end
+        end
       else
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
+        if response.errors.present?
+          response.errors.each do |e|
+            Honeybadger.notify(
+              :error_class => "Bullhorn Error",
+              :error_message => "Bullhorn Error: #{e.inspect}",
+              :parameters => params
+            )
+          end
+        end
       end
 
       # 'businessSectors'      
