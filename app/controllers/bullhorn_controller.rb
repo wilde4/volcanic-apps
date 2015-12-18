@@ -98,7 +98,7 @@ class BullhornController < ApplicationController
       when 'dateOfBirth', 'dateAvailable'
         # CONVERT TO DATE
         date = Time.at((candidate.data["#{fm.bullhorn_field_name}"].to_i.to_f) / 1000).to_date.to_s(:default)
-        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = date
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = date unless date == '1970-01-01'
       when 'address1', 'address2', 'city', 'state', 'zip'
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data.address["#{fm.bullhorn_field_name}"]
       when 'countryID'
@@ -118,7 +118,7 @@ class BullhornController < ApplicationController
         # logger.info "--- candidate_business_sectors = #{candidate_business_sectors.inspect}"
         candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate_business_sectors.data.first.name if candidate_business_sectors.data.first.present?
       else
-        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"]
+        candidate_json['registration_answer_hash']["#{fm.registration_question_reference}"] = candidate.data["#{fm.bullhorn_field_name}"] unless candidate.data["#{fm.bullhorn_field_name}"] == 0.0
       end
     end
     
