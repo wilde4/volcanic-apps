@@ -338,7 +338,7 @@ class BullhornController < ApplicationController
         when 'address1', 'address2', 'city', 'state', 'zip'
           # ADDRESS
           attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
-        when 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
+        when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
           answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
           attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
         when 'countryID'
