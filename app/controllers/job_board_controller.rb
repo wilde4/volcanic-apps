@@ -249,7 +249,7 @@ class JobBoardController < ApplicationController
       valid_credit_count = valid_credits.sum(:credits_added) - valid_credits.sum(:credits_spent)
       @current_credits = valid_credit_count
     else
-      @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).last
+      @latest = CvSearchAccessDuration.where(client_token: params[:data][:client_token], app_dataset_id: @key.app_dataset_id).where("expiry_date > ?", Time.now).last
     end
     @vat_rate = ClientVatRate.find_by(client_token: params[:data][:client_token]) || ClientVatRate.new
     render :layout => false
@@ -399,7 +399,7 @@ class JobBoardController < ApplicationController
     end
 
     def authorise_key
-      render nothing: true, status: 401 and return unless @key.api_key == params[:apikey]
+      render nothing: true, status: 401 and return unless @key.api_key == params[:apikey] || @key.api_key == params[:apikey][:access_token]
     end
   
 
