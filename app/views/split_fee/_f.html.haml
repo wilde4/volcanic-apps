@@ -4,10 +4,10 @@
     = f.hidden_field :id, value: @split_fee_setting.id
     = f.hidden_field :app_dataset_id, value: @split_fee_setting.app_dataset_id
     
-    .form-group
-      = f.label :salary_bands
-      = f.text_area :salary_bands, rows: 20, class: "form-control"
-      .help-block Enter one salary band per line, upper value used for split fee calculation
+    -# .form-group
+    -#   = f.label :salary_bands
+    -#   = f.text_area :salary_bands, rows: 20, class: "form-control"
+    -#   .help-block Enter one salary band per line, upper value used for split fee calculation
 
     .form-group
       = f.label :details

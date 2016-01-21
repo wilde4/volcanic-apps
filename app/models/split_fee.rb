@@ -7,7 +7,7 @@ class SplitFee < ActiveRecord::Base
   end
 
   protected
-    def calculate_split_fee_value
+    def calculate_split_fee_value_deprecated
       band = self.salary_band.split("-").last
       band = band.strip
       band = band.gsub(/\D/, '')
@@ -15,6 +15,11 @@ class SplitFee < ActiveRecord::Base
       # puts band
       split_fee_value = (band / 100) * self.fee_percentage
       # puts self.split_fee_value
+      self.update_column(:split_fee_value, split_fee_value)
+    end
+
+    def calculate_split_fee_value
+      split_fee_value = (self.salary_band.to_f / 100) * self.fee_percentage
       self.update_column(:split_fee_value, split_fee_value)
     end
 end

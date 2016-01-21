@@ -1,13 +1,13 @@
 %h4 Split Fee
 .form-group= @split_fee_setting.details.html_safe
-.form-group
-  %label Salary Band
-  %select.form-control#split-fee-band{name: "job[extra][split_fee][salary_band]"}
-    - @salary_bands.each do |band|
-      -if @job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? && @job["extra"]["split_fee"]["salary_band"] == band
-        %option{value: band, selected: "selected"}= band
-      -else
-        %option{value: band}= band
+-# .form-group
+-#   %label Salary Band
+-#   %select.form-control#split-fee-band{name: "job[extra][split_fee][salary_band]"}
+-#     - @salary_bands.each do |band|
+-#       -if @job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? && @job["extra"]["split_fee"]["salary_band"] == band
+-#         %option{value: band, selected: "selected"}= band
+-#       -else
+-#         %option{value: band}= band
 
 .form-group
   %label Fee Percentage
@@ -23,18 +23,16 @@
 :javascript
   $(document).ready(function(){
     calculateFee();
-    $("#split-fee-band, #split-fee-percentage").change(function(){
+    $("#job_salary_high, #split-fee-percentage").change(function(){
       calculateFee();
     });
 
     function calculateFee(){
-      band = $("#split-fee-band").val();
+      band = $("#job_salary_high").val();
       percent = $("#split-fee-percentage").val();
 
       if( band && percent){
-        var arr = band.split(" ");
-        var top_band = parseInt(arr[arr.length -1].substring(1));
-        var fee = (top_band / 100) * percent;
+        var fee = (band / 100) * percent;
         $("span#split-fee-approx-total").text("£" + fee);
       }
     };

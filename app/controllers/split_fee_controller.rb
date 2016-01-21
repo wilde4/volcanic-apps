@@ -64,26 +64,28 @@ class SplitFeeController < ApplicationController
     if params[:job][:extra].present? && params[:job][:extra][:split_fee].present?
       split_free_params = params[:job][:extra][:split_fee]
       split_fee = SplitFee.find_by(job_id: job_id)
+      salary_band = params[:job][:salary_high]
       if split_fee.present?
         split_fee.update_attributes(job_id: job_id,
                         app_dataset_id: @key.app_dataset_id,
-                        salary_band: split_free_params[:salary_band],
+                        salary_band: salary_band,
                         fee_percentage: split_free_params[:fee_percentage],
-                        terms_of_fee: split_free_params[:terms_of_fee])
+                        terms_of_fee: split_free_params[:terms_of_fee],
+                        expiry_date: params[:job][:expiry_date])
       else
         SplitFee.create(job_id: job_id,
                         app_dataset_id: @key.app_dataset_id,
-                        salary_band: split_free_params[:salary_band],
+                        salary_band: salary_band,
                         fee_percentage: split_free_params[:fee_percentage],
                         terms_of_fee: split_free_params[:terms_of_fee],
-                        expiry_date: Time.now + 30.days)
+                        expiry_date: params[:job][:expiry_date])
       end
     end
     render nothing: true, status: 200 and return
   end
 
   def current_split_fee
-    value = SplitFee.where(app_dataset_id: params[:dataset_id]).where("expiry_date > ?", Time.now).sum(:split_fee_value)
+    value = SplitFee.where(app_dataset_id: params[:dataset_id]).where("expiry_date >= ?", Time.now).sum(:split_fee_value)
     respond_to do |format|
       format.json { render json: { success: true, total: value } }
     end
