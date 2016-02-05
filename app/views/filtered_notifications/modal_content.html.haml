@@ -5,6 +5,9 @@
       .client-box
         %img{src: client["logo"]}    
         -# = client["name"]
+        .client-link
+          = link_to client['url'], target: "_blank" do
+            %i.fa.fa-external-link 
 - else
   %h3 No matching companies found
 

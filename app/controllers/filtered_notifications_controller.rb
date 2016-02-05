@@ -61,12 +61,14 @@ class FilteredNotificationsController < ApplicationController
       if params[:job][:extra][:filtered_notifications].present?
         dataset_id = params[:job][:extra][:filtered_notifications][:dataset_id]
 
-        key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
+        @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      @clients = HTTParty.get("http://#{key.host}/api/v1/clients/search.json", body: data) if key.present?
+      @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
 
     end
+
+
 
 
     render json: {success: true, content: render_to_string("modal_content.html") }

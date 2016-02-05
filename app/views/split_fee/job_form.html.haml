@@ -10,15 +10,21 @@
 -#         %option{value: band}= band
 
 .form-group
-  %label Fee Percentage
-  %input.form-control#split-fee-percentage{type: "number", name: "job[extra][split_fee][fee_percentage]", value: (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["fee_percentage"] : "")}
+  .required
+    %label.required
+      %abbr{title: "Required"} *
+      Fee Percentage
+    %input.form-control#split-fee-percentage{type: "number", name: "job[extra][split_fee][fee_percentage]", value: (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["fee_percentage"] : ""), required: true}
 .form-group
   %label 
     Approximate Total Fee:
     %span#split-fee-approx-total
 .form-group
-  %label Split Fee Terms
-  %textarea.form-control{name: "job[extra][split_fee][terms_of_fee]"}= (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["terms_of_fee"] : "")
+  .required
+    %label.required
+      %abbr{title: "Required"} *
+      Split Fee Terms
+    %textarea.form-control{name: "job[extra][split_fee][terms_of_fee]", required: true, rows: 6}= (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["terms_of_fee"] : "")
 
 :javascript
   $(document).ready(function(){

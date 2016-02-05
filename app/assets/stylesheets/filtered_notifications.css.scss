@@ -34,6 +34,17 @@
       padding: 10px;
       font-size: 20px;
     }
+    .client-link{
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      z-index: 100;
+      a{
+        font-size: 15px;
+        display:inline-block;
+        z-index: 100;
+      }
+    }
   }
   :checked + .client-box{
     background: #DFF0D8;
