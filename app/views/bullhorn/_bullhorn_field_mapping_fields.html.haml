@@ -1,4 +1,4 @@
-= f.simple_fields_for :bullhorn_field_mappings do |bfm|
+= f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.user do |bfm|
   .well
     .row
       .col-md-6= bfm.input :bullhorn_field_name

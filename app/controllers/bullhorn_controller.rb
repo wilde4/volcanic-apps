@@ -18,6 +18,14 @@ class BullhornController < ApplicationController
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:bullhorn_app_setting][:dataset_id])
     if @bullhorn_setting.present?
       if @bullhorn_setting.update(params[:bullhorn_app_setting].permit!)
+        if @bullhorn_setting.import_jobs?
+          # Set default custom mappings unless present
+          @bullhorn_setting.bullhorn_field_mappings.create_with(bullhorn_field_name: 'customFloat1').find_or_create_by(job_attribute: 'salary_high')
+          @bullhorn_setting.bullhorn_field_mappings.create_with(bullhorn_field_name: 'customText3').find_or_create_by(job_attribute: 'salary_free')
+        else
+          @bullhorn_setting.bullhorn_field_mappings.job.destroy_all
+        end
+
         update_authorised_setting(@bullhorn_setting)
         flash[:notice]  = "Settings successfully saved."
       else
@@ -75,7 +83,7 @@ class BullhornController < ApplicationController
     @user = BullhornUser.find_by(user_id: params[:user][:id])
     # GET CANDIDATE DETAILS FROM BULLHORN
     settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    field_mappings = settings.bullhorn_field_mappings.where(sync_from_bullhorn: true)
+    field_mappings = settings.bullhorn_field_mappings.user.where(sync_from_bullhorn: true)
     logger.info "--- field_mappings = #{field_mappings.inspect}"
     client = Bullhorn::Rest::Client.new(
       username: settings.bh_username,
@@ -303,7 +311,7 @@ class BullhornController < ApplicationController
 
     def post_user_to_bullhorn_2(user, client, params)
       settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-      field_mappings = settings.bullhorn_field_mappings
+      field_mappings = settings.bullhorn_field_mappings.user
 
       attributes = {
         'firstName' => user.user_profile['first_name'],

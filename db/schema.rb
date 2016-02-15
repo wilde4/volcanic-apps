@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151218115154) do
+ActiveRecord::Schema.define(version: 20160215143333) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -73,6 +73,7 @@ ActiveRecord::Schema.define(version: 20151218115154) do
     t.boolean  "sync_from_bullhorn",              default: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "job_attribute"
   end
 
   add_index "bullhorn_field_mappings", ["bullhorn_app_setting_id"], name: "index_bullhorn_field_mappings_on_bullhorn_app_setting_id", using: :btree

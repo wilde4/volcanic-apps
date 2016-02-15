@@ -39,6 +39,14 @@
           %p This App can import Vacancies from Bullhorn to your Volcanic website. Applications by Candidates through the website are updated in Bullhorn if this option is selected. 
           %p Do not select this option if your website uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
           = f.input :import_jobs
+        - if @bullhorn_setting.bullhorn_field_mappings.job.present?
+          .well
+            %p When importing jobs some attributes are set by custom Bullhorn fields, you can define those here.
+            = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.job do |bfm|
+              .row
+                .col-md-6= bfm.input :job_attribute, readonly: true
+                .col-md-6= bfm.input :bullhorn_field_name
+
         .well
           %p 
             When a Candidate registers an account through the website, this App determines if they already have a Candidate profile in Bullhorn using their email address. 

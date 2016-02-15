@@ -93,18 +93,30 @@ class BullhornJobImport
         @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
         @job_payload['job[job_type]'] = job.employmentType
 
-        # NEED TO USE job.customFloat1 FOR MAX SALARY
-        # NEED TO USE job.customText3 FOR SALARY FREE
-        puts "--- job.customText3 = #{job.customText3}"
-        puts "--- job.customFloat1 = #{job.customFloat1}"
-        @job_payload['job[salary_free]'] = job.customText3
         salary_val = job.salary > 0 ? job.salary : nil
         @job_payload['job[salary_low]'] = salary_val
-        if job.customFloat1.present? && job.customFloat1 != '0.0'
-          @job_payload['job[salary_high]'] = job.customFloat1
-        else
-          @job_payload['job[salary_high]'] = salary_val
+
+        # MAX SALARY and SALARY FREE are set to configurable custom fields:
+
+        settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+        field_mappings = settings.bullhorn_field_mappings.job
+
+        field_mappings.each do |fm|
+
+          puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
+          
+          case fm.job_attribute
+          when 'salary_free'
+            @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
+          when 'salary_high'
+            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
+              @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
+            else
+              @job_payload['job[salary_high]'] = salary_val
+            end
+          end
         end
+        
         salary_per = 'hour' if job.salaryUnit == 'Per Hour'
         salary_per = 'day' if job.salaryUnit == 'Per Day'
         @job_payload['job[salary_per]'] = salary_per
