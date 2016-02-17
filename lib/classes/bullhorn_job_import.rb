@@ -55,7 +55,10 @@ class BullhornJobImport
   end
 
   def self.parse_jobs(client)
-    @job_data = query_job_orders(client, false)
+    settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+    field_mappings = settings.bullhorn_field_mappings.job
+    
+    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
     # jobs = @job_data.xpath("//item")
     
     @job_data.each do |job|
@@ -97,9 +100,6 @@ class BullhornJobImport
         @job_payload['job[salary_low]'] = salary_val
 
         # MAX SALARY and SALARY FREE are set to configurable custom fields:
-
-        settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
-        field_mappings = settings.bullhorn_field_mappings.job
 
         field_mappings.each do |fm|
 
@@ -173,7 +173,7 @@ class BullhornJobImport
 
   private
 
-  def self.query_job_orders(client, is_deleted)
+  def self.query_job_orders(client, is_deleted, custom_fields)
     # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Stop when less than 200 received in a query, and return concatenated results
 
@@ -181,12 +181,14 @@ class BullhornJobImport
     results = 200 # prime the loop
 
     complete_data = []
+
+    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description isOpen isDeleted status salaryUnit) + custom_fields).join(',')
     
     while results == 200
       if is_deleted
-        jobs = client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,status,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+        jobs = client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
       else
-        jobs = client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,status,customFloat1,customText3,salaryUnit', count: 200, start: offset)
+        jobs = client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
       end
       
       puts "Received #{jobs["count"]}"
