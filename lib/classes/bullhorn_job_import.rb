@@ -173,7 +173,7 @@ class BullhornJobImport
 
   private
 
-  def self.query_job_orders(client, is_deleted, custom_fields)
+  def self.query_job_orders(client, is_deleted, custom_fields = [])
     # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Stop when less than 200 received in a query, and return concatenated results
 
