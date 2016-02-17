@@ -11,6 +11,7 @@ class ExtraFormFieldsController < ApplicationController
     @host = @key.host
     @app_id = params[:data][:id]
     @extra_form_fields = ExtraFormField.where(app_dataset_id: @key.app_dataset_id)
+    render layout: false
 
   end
 

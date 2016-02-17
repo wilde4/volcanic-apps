@@ -11,7 +11,7 @@ class FeaturedJobsController < ApplicationController
     @jobs_of_the_moment = FeaturedJob.by_dataset(@key.app_dataset_id).where.not(feature_start: nil).order('feature_end DESC')
 
     respond_to do |format|
-      format.html
+      format.html { render layout: false }
       format.json { render json: {success: true, items: @jobs_of_the_moment } }
     end
   end

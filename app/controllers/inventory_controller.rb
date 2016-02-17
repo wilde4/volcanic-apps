@@ -14,7 +14,7 @@ class InventoryController < ApplicationController
     @items = Inventory.by_dataset(@key.app_dataset_id) || []
 
     respond_to do |format|
-      format.html
+      format.html { render layout: false }
       format.json { render json: {success: true, items: @items } }
     end
   end

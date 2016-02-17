@@ -11,6 +11,7 @@ class JobAdderController < ApplicationController
   def index
     @host = @key.host
     @app_id = params[:data][:id]
+    render layout: false
   end
 
   def capture_jobs

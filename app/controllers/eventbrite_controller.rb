@@ -11,6 +11,7 @@ class EventbriteController < ApplicationController
     @dataset_id = @key.app_dataset_id
     @host = app_server_host + "/eventbrite/update_eventbrite_settings"
     @settings = EventbriteSetting.find_by(dataset_id: @dataset_id)
+    render layout: false
   end
 
   def edit

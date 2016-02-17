@@ -6,5 +6,6 @@ class LogicMelonController < ApplicationController
 
   def index
     @host = @key.host
+    render layout: false
   end
 end
