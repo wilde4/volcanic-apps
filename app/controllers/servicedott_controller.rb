@@ -12,9 +12,10 @@ class ServicedottController < ApplicationController
 
     if params[:email_name] == 'apply_for_vacancy'
       # BUILD XML
-      xml_string = render_to_string(action: 'email_data.xml.haml', layout: false)
+      xml_string = render_to_string(action: 'email_data.xml.builder', layout: false)
       # RETURN XML DIRECTLY
     end
     render json: { success: true, xml_string: xml_string }
+    # render xml: xml_string
   end
 end

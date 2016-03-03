@@ -278,6 +278,7 @@ Apps::Application.routes.draw do
 
   scope :servicedott do
     get "email_data"     => 'servicedott#email_data'
+    post "email_data"     => 'servicedott#email_data'
     post "activate_app"     => 'servicedott#activate_app'
     post "deactivate_app"   => 'servicedott#deactivate_app'
   end
