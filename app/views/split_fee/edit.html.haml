@@ -1,0 +1,29 @@
+%h2 Update Extra Form Field
+
+= form_for @split_fee_setting, url: "" do |f|
+  = render partial: "f", locals: {f: f}
+
+
+:javascript
+  $(function() {
+    $('form').submit(function() {
+      var formData = $(this).serialize();
+      $.ajax({
+        url: "//#{app_server_host}/split_fee/update.json",
+        type: "POST",
+        crossDomain: true,
+        data: formData,
+        dataType: 'json'
+      }).success(function(data) {
+        if(data.success) {
+          window.location = "index";
+        } else {
+          $('.errors').html(data.status);
+        }
+        return false;
+      });
+      return false;
+    });
+  });
+
+= link_to 'Back to Split Fee App', 'index'

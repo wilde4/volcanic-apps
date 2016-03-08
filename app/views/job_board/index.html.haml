@@ -1,0 +1,152 @@
+.row
+  .col-md-4
+    %h2 Job Board Control Panel
+
+    -if @job_board
+      =link_to "Edit Job Board Settings", relative_link("edit"), class: "btn btn-primary"
+
+
+      %h3 Overview
+      %h4.mt20 General
+      %table.table
+        %tbody
+          %tr
+            %th Currency
+            %td= @job_board.currency
+          
+          
+      
+      %h4 Job Settings
+      %table.table
+        %tbody
+          %tr
+            %th Require Credits for Job Posting?
+            %td
+              %i{class: "fa #{@job_board.job_token_settings.require_tokens_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Charge for Job Posting?
+            %td
+              %i{class: "fa #{@job_board.job_token_settings.charge_for_jobs ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Price per Job Token
+            %td
+              -if @job_board.job_token_settings.job_token_price.present?
+                = "#{currency_to_symbol(@job_board.currency)} #{@job_board.job_token_settings.job_token_price}"
+          %tr
+            %th Job Duration
+            %td              
+              = "#{@job_board.job_duration} days"
+          %tr
+            %th Posting Currencies
+            %td
+              - if @job_board.posting_currencies.present?
+                = @job_board.posting_currencies.join(', ')
+
+      %h4 Selection Limits
+      %table.table
+        %tbody
+          %tr
+            %th Max Disciplines
+            %td
+              - if @job_board.disciplines_limit.present?
+                = @job_board.disciplines_limit > 0 ? @job_board.disciplines_limit : "Unlimited"
+              - else
+                Unlimited
+          %tr
+            %th Max Job Functions
+            %td
+              - if @job_board.job_functions_limit.present?
+                = @job_board.job_functions_limit > 0 ? @job_board.job_functions_limit : "Unlimited"
+              - else
+                Unlimited
+          %tr
+            %th Max Job Locations
+            %td
+              - if @job_board.key_locations_limit.present?
+                = @job_board.key_locations_limit > 0 ? @job_board.key_locations_limit : "Unlimited"
+              - else
+                Unlimited
+
+      %h4 CV Search Settings
+      %table.table
+        %tbody
+          %tr
+            %th CV Search Enabled
+            %td
+              %i{class: "fa #{@job_board.cv_search_settings.cv_search_enabled ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Require Access for CV Search?
+            %td
+              %i{class: "fa #{@job_board.cv_search_settings.require_access_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Charge for CV Search?
+            %td
+              %i{class: "fa #{@job_board.cv_search_settings.charge_for_cv_search ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          
+          %tr
+            %th Access Control Method
+            %td= @job_board.cv_search_settings.access_control_type.capitalize
+
+          - if @job_board.cv_search_settings.access_control_type == "credits"
+            %tr
+              %th Price for CV Search Credit
+              %td
+                -if @job_board.cv_search_settings.cv_credit_price.present?
+                  = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_credit_price}"
+            %tr
+              %th CV Search Credit Expiry Length
+              %td
+                -if @job_board.cv_search_settings.cv_credit_expiry_duration.present?
+                  = "#{@job_board.cv_search_settings.cv_credit_expiry_duration} days"
+          
+          - else
+            %tr
+              %th Price for CV Search Access
+              %td
+                -if @job_board.cv_search_settings.cv_search_price.present?
+                  = "#{currency_to_symbol(@job_board.currency)} #{@job_board.cv_search_settings.cv_search_price}"
+            %tr
+              %th CV Search Access Duration
+              %td
+                -if @job_board.cv_search_settings.cv_search_duration.present?
+                  = "#{@job_board.cv_search_settings.cv_search_duration} days"
+
+      %h4 Tax Settings
+      %table.table
+        %tbody
+          %tr
+            %th Add VAT at checkout
+            %td
+              %i{class: "fa #{@job_board.charge_vat ? 'fa-check text-success' : 'fa-times text-danger'}"}
+          %tr
+            %th Default VAT Rate
+            %td= "#{@job_board.default_vat_rate} %"
+
+      %h4 Salary Slider Settings
+      %table.table
+        %tbody
+          %tr
+            %th Salary minimum
+            %td
+              = number_with_delimiter @job_board.salary_min.present? ? @job_board.salary_min : 0, precision: 0 
+          %tr
+            %th Salary maximum
+            %td
+              = number_with_delimiter @job_board.salary_max.present? ? @job_board.salary_max : 200000, precision: 0
+          %tr
+            %th Salary step
+            %td
+              = number_with_delimiter @job_board.salary_step.present? ? @job_board.salary_step : 1000, precision: 0
+          %tr
+            %th Salary from
+            %td
+              = number_with_delimiter @job_board.salary_from.present? ? @job_board.salary_from : 20000, precision: 0
+          %tr
+            %th Salary to
+            %td
+              = number_with_delimiter @job_board.salary_to.present? ? @job_board.salary_to : 50000, precision: 0
+
+
+    -else
+      =link_to "Setup Job Board", relative_link("new"), class: "btn btn-primary"
+

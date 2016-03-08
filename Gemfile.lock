@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/bobop/bullhorn-rest.git
-  revision: c076b3ee2efa5a9e0401712c57bd00f7ecfcd26f
+  revision: 2ce1666267802e149ac7af57b5f8fefb626d1b61
   branch: create_candidates
   specs:
     bullhorn-rest (0.0.1)
@@ -40,6 +40,8 @@ GEM
       gyoku (>= 0.4.0)
       nokogiri
     arel (4.0.2)
+    attr_encrypted (1.3.4)
+      encryptor (>= 1.3.0)
     bootstrap-sass (3.2.0.1)
       sass (~> 3.2)
     builder (3.1.4)
@@ -61,8 +63,10 @@ GEM
     columnize (0.9.0)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
+    crass (0.2.0)
     daemons (1.1.9)
     debugger-linecache (1.2.0)
+    encryptor (1.3.0)
     erubis (2.7.0)
     excon (0.33.0)
     execjs (2.0.2)
@@ -123,6 +127,8 @@ GEM
     mysql2 (0.3.15)
     newrelic_rpm (3.7.2.195)
     nokogiri (1.5.11)
+    nokogumbo (1.1.9)
+      nokogiri
     nori (2.6.0)
     oauth (0.4.7)
     oauth2 (0.9.3)
@@ -158,6 +164,10 @@ GEM
     raindrops (0.13.0)
     rake (10.3.1)
     safe_yaml (1.0.3)
+    sanitize (3.0.0)
+      crass (~> 0.2.0)
+      nokogiri (>= 1.4.4)
+      nokogumbo (= 1.1.9)
     sass (3.2.19)
     sass-rails (4.0.3)
       railties (>= 4.0.0, < 5.0)
@@ -227,6 +237,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  attr_encrypted (~> 1.3.4)
   bootstrap-sass
   bullhorn-rest!
   clockwork
@@ -252,6 +263,7 @@ DEPENDENCIES
   oauth2
   pry-byebug
   rails (= 4.0.1)
+  sanitize (= 3.0.0)
   sass-rails (~> 4.0.0)
   savon (~> 2.0)
   simple_form

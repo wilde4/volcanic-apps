@@ -1,4 +1,4 @@
-class IdibuController < ApplicationController
+class RecruitiveController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json
 
@@ -6,5 +6,6 @@ class IdibuController < ApplicationController
 
   def index
     @host = @key.host
+    render layout: false
   end
 end

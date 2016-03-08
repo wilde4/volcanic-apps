@@ -5,6 +5,7 @@ class ZapierController < ApplicationController
   before_filter :set_key, only: [:index]
 
   def index
+    render layout: false
   end
 
 end

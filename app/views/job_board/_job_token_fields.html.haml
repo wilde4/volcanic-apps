@@ -1,0 +1,45 @@
+= f.fields_for :job_token_settings do |ff|
+  .section.mb30
+    %h3 Job Posting
+    %h4 Control how users post jobs on your website.
+    .mt30
+    .checkbox
+      = ff.label :require_tokens_for_jobs do
+        = ff.check_box :require_tokens_for_jobs
+        Require Job Credits        
+      %span.help-block Require users to spend a credit to post a job. Credits can be given manually
+    .mb20
+    .checkbox
+      = ff.label :charge_for_jobs do
+        = ff.check_box :charge_for_jobs
+        Allow credit card purchases
+      %span.help-block Enables users to purchase job posting credits via your website using a credit/debit card
+    .mb20
+    .form-group
+      = ff.label :job_token_price#, "Price per Job Listing"
+      .input-group
+        .input-group-addon.currency-symbol= currency_to_symbol(@job_board.currency)
+        = ff.number_field :job_token_price, as: :numeric, step: 0.01, min: 0, class: "form-control"
+      %span.help-block The cost of each job posting credit
+
+    .form-group
+      = ff.label :job_duration, "Length of time before a job expires"
+      .input-group
+        = ff.number_field :job_duration, as: :numeric, step: 1, min: 1, wrapper: false, label: false, class: "form-control"
+        .input-group-addon days
+      %span.help-block Number of days a job takes to expire after it has been posted
+
+    .form-group
+      = ff.label :job_token_title, "Name when buying a Credit"
+      = ff.text_field :job_token_title, placeholder: "e.g. 30 Day Job Posting Credit", class: "form-control"
+      %span.help-block When buying more credits, this is the name of this purchase as displayed to the user
+
+    .form-group
+      = ff.label :job_token_description, "Description when buying a Credit"
+      = ff.text_area :job_token_description, rows: 5, placeholder: "e.g. This will allow you to post a job", class: "form-control"
+      %span.help-block Description displayed on the checkout to give more information to the user
+
+
+.form-group
+  = f.label :posting_currencies
+  = f.select :posting_currencies, options_for_select([["GB Pounds", "GBP"], ["Euros", "EUR"], ["US Dollars", "USD"]], @job_board.posting_currencies), {}, {class: "form-control", multiple: true}

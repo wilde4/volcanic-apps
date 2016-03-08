@@ -6,7 +6,7 @@ class InventoryController < ApplicationController
   after_filter :setup_access_control_origin
 
   before_action :set_inventory_item, only: [:get_inventory]
-  before_action :set_key, only: [:index, :edit, :new, :post_purchase]
+  before_action :set_key, only: [:index, :edit, :new, :post_purchase, :delete]
 
   # GET /inventories/index
   # Outputs all Inventory Items in the system
@@ -14,7 +14,7 @@ class InventoryController < ApplicationController
     @items = Inventory.by_dataset(@key.app_dataset_id) || []
 
     respond_to do |format|
-      format.html
+      format.html { render layout: false }
       format.json { render json: {success: true, items: @items } }
     end
   end
@@ -31,7 +31,10 @@ class InventoryController < ApplicationController
     # logger.info "--- site_response = #{site_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     # logger.info "--- response_json = #{response_json.inspect}"
-    @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    # @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    @credit_types = Inventory.credit_types
+    
+
     if response_json["user_groups"].present? #legacy support
       @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
     else
@@ -48,7 +51,8 @@ class InventoryController < ApplicationController
     # logger.info "--- cr_response = #{cr_response.body.inspect}"
     response_json = JSON.parse(site_response.body)
     logger.info "--- response_json = #{response_json.inspect}"
-    @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    # @credit_types = response_json["credit_types"].present? ? response_json["credit_types"] : []
+    @credit_types = Inventory.credit_types
     
     if response_json["user_groups"].present? #legacy support
       @user_groups = response_json["user_groups"].present? ? response_json["user_groups"] : []
@@ -58,7 +62,7 @@ class InventoryController < ApplicationController
     # logger.info "--- @credit_types = #{@credit_types.inspect}"
   end
 
-   def update
+  def update
     @inventory = Inventory.find(params[:inventory][:id])
     respond_to do |format|
       if @inventory.update(inventory_params)
@@ -68,6 +72,24 @@ class InventoryController < ApplicationController
         format.html { render action: 'edit' }
         format.json { render json: {
           success: false, status: "Error: #{@inventory.errors.full_messages.join(', ')}"
+        }}
+      end
+    end
+  end
+
+  def delete
+    @inventory = Inventory.where(dataset_id: @key.app_dataset_id).find_by(id: params[:data][:inv_id])
+
+    respond_to do |format|
+      if @inventory && @inventory.delete
+        @items = Inventory.by_dataset(@key.app_dataset_id) || []
+        format.html { render action: 'index' }
+        format.json { render json: { success: true, item: @inventory }}
+      else
+        @items = Inventory.by_dataset(@key.app_dataset_id) || []
+        format.html { render action: 'index' }
+        format.json { render json: {
+          success: false, status: "Error: Could not delete item"
         }}
       end
     end
@@ -130,7 +152,7 @@ class InventoryController < ApplicationController
   def cheapest_price
     @inventory = Inventory.by_object(params[:type])
     @inventory = @inventory.where(dataset_id: params[:dataset_id])
-    @inventory = @inventory.where(user_role: params[:user_role]) if params[:user_role].present?
+    @inventory = @inventory.where(user_group: params[:user_group]) if params[:user_group].present?
     @inventory = @inventory.select{|iv| iv.within_date}.sort_by{|i| i.price }.first
     
     # logger.info "--- @inventory = #{@inventory.inspect}"
@@ -156,13 +178,37 @@ class InventoryController < ApplicationController
 
     available_actions.each do |action|
       if params[:user_group].present?
-        item = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price)#.first
       elsif params[:user_type].present?
-        item = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price)#.first
       else
-        item = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price).first
+        items = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price)#.first
       end
+      item = items.select{|x| x.within_date}.first
       final_hash[item.credit_type] = item.attributes if item.present?
+    end
+    
+    respond_to do |format|
+      format.json { render json: { success: true, items: final_hash } }
+    end
+  end
+
+  def best_options_by_action
+    final_hash = {} #Hash.new{ |h,k| h[k] = [] } #new hash of empty arrays
+
+    available_actions = Inventory.where(dataset_id: params[:dataset_id]).where("credit_type IN (?)", Inventory.credit_types).pluck(:object_action)
+
+    available_actions.each do |action|
+
+      if params[:user_group].present?
+        items = Inventory.where(object_action: action, user_group: params[:user_group], dataset_id: params[:dataset_id]).order(:price)#.first
+      elsif params[:user_type].present?
+        items = Inventory.where(object_action: action, user_group: params[:user_type], dataset_id: params[:dataset_id]).order(:price)#.first
+      else
+        items = Inventory.where(object_action: action, dataset_id: params[:dataset_id]).order(:price)#.first
+      end
+      item = items.select{|x| x.within_date}.first
+      final_hash[action] = item.attributes if item.present?
     end
     
     respond_to do |format|
@@ -189,7 +235,7 @@ class InventoryController < ApplicationController
   #   * data - An array of data that will help the action comm. with the API
   # json: {"data"=>{"dataset_id"=>55, "inventory_id"=>"8", "user_id"=>42176, "job_id"=>35927}
   def post_purchase
-    inventory_item = Inventory.find(params[:data][:inventory_id])
+    inventory_item = Inventory.where(dataset_id: @key.app_dataset_id).find(params[:data][:inventory_id])
 
     # Work out the field to be edited, will be a record in future
     case inventory_item.object_action
@@ -199,7 +245,7 @@ class InventoryController < ApplicationController
       hot = true if inventory_item.object_action == 'Activate Featured Job Listing for 7 days' or inventory_item.object_action == 'Activate Featured Job Listing for 30 days'
       hot = false if inventory_item.object_action == 'Activate Job Listing for 7 days' or inventory_item.object_action == 'Activate Job Listing for 30 days'
 
-      if params[:data][:payment_id].present?
+      if params[:data][:payment_id].present? || inventory_item.credit_type == "Free"
         # HAVE JUST PAID THROUGH STRIPE
         response = create_and_charge_credit(params, 1, inventory_item.credit_type)
       else
@@ -308,7 +354,8 @@ private
       payment_id: params[:data][:payment_id],
       value: credit_value,
       api_key: @key.api_key,
-      credit_type: credit_type
+      credit_type: credit_type,
+      creditable_type: params[:data][:creditable_type]
     }
     # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)
@@ -321,7 +368,8 @@ private
       user_token: params[:data][:user_token],
       value: credit_value,
       api_key: @key.api_key,
-      credit_type: credit_type
+      credit_type: credit_type,
+      creditable_type: params[:data][:creditable_type]
     }
     # logger.info("==++++=== api_key = #{@key.api_key}")
     post_to_api(resource_action, attribute_key, attributes)

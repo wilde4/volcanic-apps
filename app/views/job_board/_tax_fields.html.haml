@@ -1,0 +1,14 @@
+.section.mb30
+  %h3 Tax Settings
+
+  .checkbox.mt30
+    = f.label :charge_vat do 
+      = f.check_box :charge_vat
+      Add VAT to purchases at the checkout
+
+  .form-group
+    = f.label :default_vat_rate, "Default VAT Rate"
+    .input-group
+      = f.number_field :default_vat_rate, as: :numeric, max: 100, min: 0, step: 0.01, wrapper: false, label: false, class: "form-control"
+      .input-group-addon %
+      

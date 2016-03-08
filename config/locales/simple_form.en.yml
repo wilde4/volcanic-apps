@@ -1,4 +1,8 @@
 en:
+  helpers:
+    submit:
+      bullhorn_app_setting:
+        update: Save App Settings
   simple_form:
     "yes": 'Yes'
     "no": 'No'
@@ -10,6 +14,27 @@ en:
       # html: '<abbr title="required">*</abbr>'
     error_notification:
       default_message: "Please review the problems below:"
+    labels:
+      bullhorn_app_setting:
+        bh_username: Bullhorn Username
+        bh_password: Bullhorn Password
+        bh_client_id: Bullhorn Client ID
+        bh_client_secret: Bullhorn Client Secret
+        import_jobs: Import Jobs from Bullhorn
+        linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
+        source_text: Bullhorn Source text for Candidate records
+        always_create: Always create a new Bullhorn record when a Candidate registers
+        status_text: Bullhorn Status text for Candidate records
+        cv_type_text: Bullhorn CV Type text for Candidate CV files
+      bullhorn_field_mappings:
+        bullhorn_field_name: Bullhorn Field Name
+        registration_question_reference: Registration Question Reference
+        sync_from_bullhorn: Sync from Bullhorn
+    hints:
+      bullhorn_app_setting:
+        source_text: 'Default if left empty: Company Website'
+        status_text: 'Default if left empty: New Lead'
+        cv_type_text: 'Default if left empty: CV'
     # Examples
     # labels:
     #   defaults:

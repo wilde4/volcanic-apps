@@ -20,4 +20,16 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
+  bullhorn:
+    settings_form:
+      add_another_field_mapping: '+ Add Another Field Mapping'
+    bullhorn_field_mapping_fields:
+      delete: 'Delete this Field Mapping'
+      really_delete: Do you really mean to Delete this Field Mapping?
   hello: "Hello world"
+  activerecord:
+    attributes:
+      job_token_settings:
+        job_token_price: "Price per Job Listing"
+      cv_search_settings:
+        cv_search_price: "Price per CV Search Interval"

@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  dataset_id: 1
+  bh_username_hash: MyString
+  bh_password_hash: MyString
+  bh_client_id_hash: MyString
+  bh_client_secret_hash: MyString
+  import_jobs: false
+
+two:
+  dataset_id: 1
+  bh_username_hash: MyString
+  bh_password_hash: MyString
+  bh_client_id_hash: MyString
+  bh_client_secret_hash: MyString
+  import_jobs: false

@@ -23,6 +23,7 @@ class ApplicationController < ActionController::Base
     key.host = params[:data][:host]
     key.app_dataset_id = params[:data][:app_dataset_id]
     key.api_key = params[:data][:api_key]
+    key.protocol = params[:data][:protocol]
     key.app_name = params[:controller]
 
     respond_to do |format|
@@ -71,7 +72,7 @@ protected
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
     end
-
+    Rails.logger.info(app_dataset_id)
     @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])
     render nothing: true, status: 401 and return if @key.blank?
   end

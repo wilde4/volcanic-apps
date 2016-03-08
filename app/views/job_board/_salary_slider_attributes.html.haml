@@ -1,0 +1,23 @@
+.section.mb30
+  %h3 Salary Slider attributes
+  %h4 Manage the values of the salary slider displayed when recruiters add jobs
+  .form-group
+    = f.label :salary_min
+    = f.number_field :salary_min, class: "form-control", placeholder: 0
+    %span.help-block The lowest value on the slider
+  .form-group
+    = f.label :salary_max
+    = f.number_field :salary_max, class: "form-control", placeholder: 200000
+    %span.help-block The highest value on the slider
+  .form-group
+    = f.label :salary_step
+    = f.number_field :salary_step, class: "form-control", placeholder: 1000
+    %span.help-block The amount the slider increments by
+  .form-group
+    = f.label :salary_from
+    = f.number_field :salary_from, class: "form-control", placeholder: 20000
+    %span.help-block The default lower selected bound on the slider
+  .form-group
+    = f.label :salary_to
+    = f.number_field :salary_to, class: "form-control", placeholder: 50000
+    %span.help-block The default higher selected bound on the slider

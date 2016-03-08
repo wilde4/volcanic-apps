@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150716114445) do
+ActiveRecord::Schema.define(version: 20160215143333) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,6 +27,14 @@ ActiveRecord::Schema.define(version: 20150716114445) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "arithon_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "api_key"
+    t.string   "company_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -64,6 +72,35 @@ ActiveRecord::Schema.define(version: 20150716114445) do
     t.datetime "updated_at"
   end
 
+  create_table "bullhorn_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "encrypted_bh_username"
+    t.string   "encrypted_bh_password"
+    t.string   "encrypted_bh_client_id"
+    t.string   "encrypted_bh_client_secret"
+    t.boolean  "import_jobs",                default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "linkedin_bullhorn_field"
+    t.string   "source_text"
+    t.boolean  "always_create",              default: false
+    t.boolean  "authorised",                 default: false
+    t.string   "status_text"
+    t.string   "cv_type_text"
+  end
+
+  create_table "bullhorn_field_mappings", force: true do |t|
+    t.integer  "bullhorn_app_setting_id"
+    t.string   "bullhorn_field_name"
+    t.string   "registration_question_reference"
+    t.boolean  "sync_from_bullhorn",              default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "job_attribute"
+  end
+
+  add_index "bullhorn_field_mappings", ["bullhorn_app_setting_id"], name: "index_bullhorn_field_mappings_on_bullhorn_app_setting_id", using: :btree
+
   create_table "bullhorn_users", force: true do |t|
     t.integer  "user_id"
     t.string   "email"
@@ -76,6 +113,69 @@ ActiveRecord::Schema.define(version: 20150716114445) do
     t.text     "linkedin_profile"
   end
 
+  create_table "client_vat_rates", force: true do |t|
+    t.string  "client_token"
+    t.decimal "vat_rate",     precision: 8, scale: 2
+  end
+
+  create_table "cv_credits", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "client_token"
+    t.integer  "credits_added"
+    t.integer  "credits_spent"
+    t.boolean  "expired"
+    t.datetime "expiry_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "cv_search_access_durations", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "user_token"
+    t.integer  "duration_added"
+    t.datetime "expiry_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "client_token"
+  end
+
+  add_index "cv_search_access_durations", ["app_dataset_id"], name: "index_cv_search_access_durations_on_app_dataset_id", using: :btree
+  add_index "cv_search_access_durations", ["client_token"], name: "index_cv_search_access_durations_on_client_token", using: :btree
+  add_index "cv_search_access_durations", ["user_token"], name: "index_cv_search_access_durations_on_user_token", using: :btree
+
+  create_table "cv_search_settings", force: true do |t|
+    t.integer "job_board_id"
+    t.boolean "charge_for_cv_search"
+    t.boolean "require_access_for_cv_search"
+    t.decimal "cv_search_price",              precision: 8, scale: 2
+    t.integer "cv_search_duration"
+    t.string  "cv_search_title"
+    t.text    "cv_search_description"
+    t.boolean "cv_search_enabled",                                    default: true
+    t.string  "access_control_type"
+    t.decimal "cv_credit_price",              precision: 8, scale: 2
+    t.integer "cv_credit_expiry_duration"
+    t.string  "cv_credit_title"
+    t.text    "cv_credit_description"
+  end
+
+  create_table "eventbrite_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "access_token"
+  end
+
+  create_table "extra_form_fields", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.string   "form"
+    t.string   "param_key"
+    t.string   "label"
+    t.string   "hint"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "featured_jobs", force: true do |t|
     t.integer "job_id"
     t.integer "user_id"
@@ -85,6 +185,13 @@ ActiveRecord::Schema.define(version: 20150716114445) do
     t.text    "extra"
     t.date    "feature_start"
     t.date    "feature_end"
+  end
+
+  create_table "filtered_notification_sendings", force: true do |t|
+    t.integer  "job_id"
+    t.text     "client_ids"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "inventories", force: true do |t|
@@ -101,11 +208,46 @@ ActiveRecord::Schema.define(version: 20150716114445) do
     t.string   "currency",                              default: "GBP"
   end
 
+  create_table "job_boards", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "currency"
+    t.string   "company_number"
+    t.string   "vat_number"
+    t.string   "phone_number"
+    t.text     "address"
+    t.boolean  "charge_vat"
+    t.decimal  "default_vat_rate",    precision: 8, scale: 2
+    t.integer  "salary_min"
+    t.integer  "salary_max"
+    t.integer  "salary_step"
+    t.integer  "salary_from"
+    t.integer  "salary_to"
+    t.integer  "disciplines_limit",                           default: 0
+    t.integer  "job_functions_limit",                         default: 0
+    t.integer  "key_locations_limit",                         default: 0
+    t.text     "posting_currencies"
+  end
+
+  add_index "job_boards", ["app_dataset_id"], name: "index_job_boards_on_app_dataset_id", using: :btree
+
+  create_table "job_token_settings", force: true do |t|
+    t.integer "job_board_id"
+    t.boolean "charge_for_jobs"
+    t.boolean "require_tokens_for_jobs"
+    t.decimal "job_token_price",         precision: 8, scale: 2
+    t.string  "job_token_title"
+    t.text    "job_token_description"
+    t.integer "job_duration"
+  end
+
   create_table "keys", force: true do |t|
     t.string  "host"
     t.integer "app_dataset_id"
     t.string  "api_key"
     t.string  "app_name"
+    t.string  "protocol",       default: "http://"
   end
 
   create_table "likes_jobs", force: true do |t|
@@ -190,6 +332,26 @@ ActiveRecord::Schema.define(version: 20150716114445) do
     t.string   "user_type"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "split_fee_settings", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.text     "salary_bands"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "details"
+  end
+
+  create_table "split_fees", force: true do |t|
+    t.integer  "app_dataset_id"
+    t.integer  "job_id"
+    t.text     "salary_band"
+    t.integer  "fee_percentage"
+    t.text     "terms_of_fee"
+    t.datetime "expiry_date"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "split_fee_value"
   end
 
   create_table "text_local_logs", force: true do |t|

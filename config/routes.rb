@@ -3,7 +3,6 @@ Apps::Application.routes.draw do
 
   get 'send_sms', :to => "text_local#send_sms", :as => :send_sms
   post 'send_sms', :to => "text_local#send_sms", :as => :post_sms
-  get 'related-events', :to => "event_brite#related_events", :as => :related_events
   get 'skype', :to => "skype#consultant", :as => :skype
   get 'export-list', :to => "mail_chimp#export_list", :as => :export_list
   get 'related-videos', :to => "youtube#related_videos", :as => :related_videos
@@ -43,11 +42,13 @@ Apps::Application.routes.draw do
     get "edit"              => 'inventory#edit',           as: :inventory_edit
     get "cheapest_price"    => 'inventory#cheapest_price', as: :inventory_cheapest_price
     get "best_options"      => 'inventory#best_options',   as: :inventory_best_options
+    get "best_options_by_action"      => 'inventory#best_options_by_action',   as: :inventory_best_options_by_action
     get "available_actions" => 'inventory#available_actions', as: :inventory_available_actions
     patch "create_item"     => 'inventory#update',         as: :inventory_update
     post "activate_app"     => 'inventory#activate_app',   as: :inventory_activate_app
     post "deactivate_app"   => 'inventory#deactivate_app', as: :inventory_deactivate_app
     post "post_purchase"    => 'inventory#post_purchase',  as: :inventory_post_purchase
+    get "delete"            => 'inventory#delete',         as: :inventory_delete
   end
 
   scope :evergrad_gaming do
@@ -157,10 +158,24 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'zapier#activate_app'
     post "deactivate_app"   => 'zapier#deactivate_app'
   end
-
+  
+  scope :eventbrite do
+    get  'index'            => 'eventbrite#index'
+    # get  'check_access'     => 'eventbrite#check_access'
+    get  'search'           => 'eventbrite#search'
+    get  'import'           => 'eventbrite#import'
+    post 'activate_app'     => 'eventbrite#activate_app'
+    post 'deactivate_app'   => 'eventbrite#deactivate_app'
+    post 'update_settings'  => 'eventbrite#update_settings'
+    post "update_eventbrite_settings"  => 'eventbrite#update_eventbrite_settings', as: :eventbrite_settings_update
+  end
+  
   scope :bullhorn do
     get 'index'             => 'bullhorn#index'
     get 'jobs'              => 'bullhorn#jobs'
+    get 'add_file_mapping_field' => 'bullhorn#add_file_mapping_field'
+    get 'get_user'          => 'bullhorn#get_user'
+    post "save_settings"    => 'bullhorn#save_settings'
     post 'save_user'        => 'bullhorn#save_user'
     post 'upload_cv'        => 'bullhorn#upload_cv'
     post 'job_application'  => 'bullhorn#job_application'
@@ -209,5 +224,73 @@ Apps::Application.routes.draw do
     post 'upload_cv'        => 'bond_adapt#upload_cv'
   end
 
+  scope :job_board do
+    post "activate_app"     => 'job_board#activate_app'
+    post "deactivate_app"   => 'job_board#deactivate_app'
+    get  "index"            => 'job_board#index'
+    get  "new"              => 'job_board#new', as: :new_job_board
+    post "create"           => 'job_board#create'
+    get  "edit"             => 'job_board#edit', as: :edit_job_board
+    patch "update"          => 'job_board#update'
+    get  "purchasable"      => 'job_board#purchasable'
+    get  "require_tokens_for_jobs" => 'job_board#require_tokens_for_jobs'
+    get  "access_for_cv_search"    => 'job_board#access_for_cv_search'
+    post "increase_cv_access_time" => 'job_board#increase_cv_access_time'
+
+    get  "form_attributes" => 'job_board#form_attributes'
+
+    get  "salary_slider_attributes" => 'job_board#salary_slider_attributes'
+    get  "deduct_cv_credit" => 'job_board#deduct_cv_credit'
+
+
+    get  "client_form"      => 'job_board#client_form'
+    post "client_create"    => 'job_board#client_create'
+
+    get  "user_form"      => 'job_board#user_form'
+    post "user_update"    => 'job_board#user_update'
+  end
+
+  scope :extra_form_fields do
+    post "activate_app"     => 'extra_form_fields#activate_app'
+    post "deactivate_app"   => 'extra_form_fields#deactivate_app'
+    get 'index'             => 'extra_form_fields#index'
+    get  "new"              => 'extra_form_fields#new', as: :new_form_field
+    post "create"           => 'extra_form_fields#create'
+    get "edit"              => 'extra_form_fields#edit'
+    patch "update"          => 'extra_form_fields#update'
+
+    get 'job_form'          => 'extra_form_fields#job_form'
+  end
+
+  scope :split_fee do
+    post "activate_app"     => 'split_fee#activate_app'
+    post "deactivate_app"   => 'split_fee#deactivate_app'
+    get 'index'             => 'split_fee#index'
+    get 'edit'              => 'split_fee#edit'
+    patch 'update'          => 'split_fee#update'
+
+    get 'job_form'          => 'split_fee#job_form'
+    post 'job_create'       => 'split_fee#job_create'
+
+    get 'current_split_fee' => 'split_fee#current_split_fee'
+    get 'get_split_fee'     => 'split_fee#get_split_fee'
+  end
+
+  scope :filtered_notifications do
+    post "activate_app"     => 'filtered_notifications#activate_app'
+    post "deactivate_app"   => 'filtered_notifications#deactivate_app'
+    get "app_notifications" => 'filtered_notifications#app_notifications'
+    post "send_notification" => 'filtered_notifications#send_notification'
+    get "job_form"          => 'filtered_notifications#job_form'
+    post "modal_content"    => 'filtered_notifications#modal_content'
+    patch "modal_content"    => 'filtered_notifications#modal_content'
+  end
+
+  scope :servicedott do
+    get "email_data"     => 'servicedott#email_data'
+    post "email_data"     => 'servicedott#email_data'
+    post "activate_app"     => 'servicedott#activate_app'
+    post "deactivate_app"   => 'servicedott#deactivate_app'
+  end
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
 end

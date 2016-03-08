@@ -17,6 +17,7 @@ class ReferralController < ApplicationController
     :referrals_for_period]
 
   def index
+    render layout: false
   end
 
   # POST /referrals/create_referral

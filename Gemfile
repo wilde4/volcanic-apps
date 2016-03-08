@@ -43,6 +43,8 @@ gem 'hashie'
 gem 'htmlentities', '~> 4.3.2'
 
 gem 'savon', '~> 2.0'
+gem 'attr_encrypted', '~> 1.3.4'
+gem 'sanitize', '3.0.0'
 
 group :development do
   gem 'sqlite3'

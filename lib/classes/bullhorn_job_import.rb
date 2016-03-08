@@ -10,14 +10,21 @@ class BullhornJobImport
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
-      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
-      parse_jobs(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'] == true
+        client =  Bullhorn::Rest::Client.new(
+          username: settings.bh_username,
+          password: settings.bh_password,
+          client_id: settings.bh_client_id,
+          client_secret: settings.bh_client_secret
+        )
+        parse_jobs(client)
+        # @job_data = query_job_orders(client, false)
+        # @job_data.each do |j|
+        #   puts "--- #{j.id}"
+        # end
+        # puts "--- @job_data.size = #{@job_data.size}"
+      end
     end
 
     puts '- END import_jobs'
@@ -32,21 +39,26 @@ class BullhornJobImport
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
-      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-      client = Bullhorn::Rest::Client.new(
-        username: settings['username'],
-        password: settings['password'],
-        client_id: settings['client_id'],
-        client_secret: settings['client_secret']
-      )
-      parse_jobs_for_delete(client) if settings['import_jobs'].present? && settings['import_jobs'].downcase == 'yes'
+      settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'] == true
+        client =  Bullhorn::Rest::Client.new(
+          username: settings.bh_username,
+          password: settings.bh_password,
+          client_id: settings.bh_client_id,
+          client_secret: settings.bh_client_secret
+        )
+        parse_jobs_for_delete(client)
+      end
     end
 
     puts '- END delete_jobs'
   end
 
   def self.parse_jobs(client)
-    @job_data = query_job_orders(client)
+    settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+    field_mappings = settings.bullhorn_field_mappings.job
+    
+    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
     # jobs = @job_data.xpath("//item")
     
     @job_data.each do |job|
@@ -84,18 +96,27 @@ class BullhornJobImport
         @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
         @job_payload['job[job_type]'] = job.employmentType
 
-        # NEED TO USE job.customFloat1 FOR MAX SALARY
-        # NEED TO USE job.customText3 FOR SALARY FREE
-        puts "--- job.customText3 = #{job.customText3}"
-        puts "--- job.customFloat1 = #{job.customFloat1}"
-        @job_payload['job[salary_free]'] = job.customText3
         salary_val = job.salary > 0 ? job.salary : nil
         @job_payload['job[salary_low]'] = salary_val
-        if job.customFloat1.present? && job.customFloat1 != '0.0'
-          @job_payload['job[salary_high]'] = job.customFloat1
-        else
-          @job_payload['job[salary_high]'] = salary_val
+
+        # MAX SALARY and SALARY FREE are set to configurable custom fields:
+
+        field_mappings.each do |fm|
+
+          puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
+          
+          case fm.job_attribute
+          when 'salary_free'
+            @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
+          when 'salary_high'
+            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
+              @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
+            else
+              @job_payload['job[salary_high]'] = salary_val
+            end
+          end
         end
+        
         salary_per = 'hour' if job.salaryUnit == 'Per Hour'
         salary_per = 'day' if job.salaryUnit == 'Per Day'
         @job_payload['job[salary_per]'] = salary_per
@@ -124,39 +145,60 @@ class BullhornJobImport
         puts "--- #{job.title} has been Deleted"
       end
     end
+
+    puts "Total data size = #{@job_data.length} jobs"
   end
 
   def self.parse_jobs_for_delete(client)
-    @job_data = query_job_orders(client)
+    @job_data = query_job_orders(client, true)
     # jobs = @job_data.xpath("//item")
     
+    
+
+    
+
     @job_data.each do |job|
-      if job.isDeleted
+      if job.isDeleted || job.status == 'Archive'
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
         @job_payload['job[job_reference]'] = job.id
 
-        puts "--- @job_payload = #{@job_payload.inspect}"
+        # puts "--- @job_payload = #{@job_payload.inspect}"
         post_payload_for_delete(@job_payload)
       end
     end
+
+    puts "Total data size = #{@job_data.length} jobs"
   end
 
   private
 
-  def self.query_job_orders(client)
-    # settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
-    # doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
-    # settings = AppSetting.find_by(dataset_id: @key.app_dataset_id).settings
-    # logger.info "--- settings = #{settings.inspect}"
-    # client = Bullhorn::Rest::Client.new(
-    #   username: settings['username'],
-    #   password: settings['password'],
-    #   client_id: settings['client_id'],
-    #   client_secret: settings['client_secret']
-    # )
-    jobs = client.query_job_orders(where: 'id IS NOT NULL', fields: 'id,title,owner,businessSectors,dateAdded,externalID,address,employmentType,benefits,salary,description,isOpen,isDeleted,customFloat1,customText3,salaryUnit')
-    jobs.data
+  def self.query_job_orders(client, is_deleted, custom_fields = [])
+    # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
+    # Stop when less than 200 received in a query, and return concatenated results
+
+    offset = 0
+    results = 200 # prime the loop
+
+    complete_data = []
+
+    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description isOpen isDeleted status salaryUnit) + custom_fields).join(',')
+    
+    while results == 200
+      if is_deleted
+        jobs = client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
+      else
+        jobs = client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
+      end
+      
+      puts "Received #{jobs["count"]}"
+      puts "Received 200 - possibly another page" if jobs["count"] >= 200
+
+      results = jobs["count"]
+      offset += 200
+      complete_data.concat jobs.data
+    end
+    complete_data
   end
 
   def self.post_payload(payload)
@@ -171,7 +213,7 @@ class BullhornJobImport
       #   http.request(request)
       # end
 
-      response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
+      response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
@@ -183,7 +225,7 @@ class BullhornJobImport
   def self.post_payload_for_delete(payload)
 
     begin
-      response = HTTParty.post("http://#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+      response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200

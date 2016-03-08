@@ -10,6 +10,7 @@ class YuTalentController < ApplicationController
     @app_id = params[:data][:id]
     @auth_url = YuTalent::AuthenticationService.auth_url(@app_id, @host)
     @settings = YuTalentAppSetting.find_by(dataset_id: params[:data][:dataset_id])
+    render layout: false
   end
 
 
