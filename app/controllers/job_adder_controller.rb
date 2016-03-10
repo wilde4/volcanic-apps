@@ -6,7 +6,7 @@ class JobAdderController < ApplicationController
 
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index]
-  before_action :check_api_access, only: [:capture_jobs]
+  before_action :set_xml, :set_key_jobs, :check_api_access, only: [:capture_jobs]
 
   def index
     @host = @key.host
@@ -15,15 +15,6 @@ class JobAdderController < ApplicationController
   end
 
   def capture_jobs
-    # If we're getting posted a file check for the api key wihthin the file
-    if params["jobadder.xml"].present?
-      @xml = Nokogiri::XML(params["jobadder.xml"])
-      token = @xml.search('/Jobs/@account').text
-      restrict_access(token)
-      return unless @key
-    else
-      @xml = Nokogiri::XML(request.body)
-    end
     @xml.search('//Job').each do |job|
       disciplines_ids_arr = find_disciplines(job.search('Classification[name="Category"]')).concat(find_disciplines(job.search('Classification[name="Sub Category"]')))
       @options = {
@@ -50,8 +41,6 @@ class JobAdderController < ApplicationController
         @jobs_responce = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: @options })
       end
     end
-    
-    
   end
 
   private
@@ -106,20 +95,26 @@ class JobAdderController < ApplicationController
     end
     arr
   end
-
-  def check_api_access
-    return if params["jobadder.xml"].present? # Don't check for auth via headers if we're getting sent a file, API key ahould be in xml in file
-    authenticate_or_request_with_http_token do |token, options|
-      if Key.find_by(api_key: token)
-        @key = Key.find_by(api_key: token)
-      end
+  
+  
+  def set_xml
+    if params["jobadder.xml"].present?
+      @xml = Nokogiri::XML(params["jobadder.xml"])
+    else
+      @xml =  Nokogiri::XML(request.body)
     end
   end
-
-  def restrict_access(token)
-    @key = Key.find_by(api_key: token)
-    head :unauthorized unless @key
+  
+  def check_api_access
+    head :unauthorized unless @key.present?
   end
+  
+  
+  def set_key_jobs
+    @token = @xml.search('/Jobs/@account').text 
+    @key = Key.find_by(api_key: @token)
+  end
+  
 
 end
   
