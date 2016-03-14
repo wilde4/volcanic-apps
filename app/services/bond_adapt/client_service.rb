@@ -1,58 +1,33 @@
 class BondAdapt::ClientService < BaseService
-  attr_reader :dataset_id, :user_name, :user_url, :user_phone, :user_email
-  private :dataset_id, :user_name, :user_url, :user_phone, :user_email
+  attr_reader :dataset_id, :user_name, :user_url, :user_phone, :user_email, :user_url, :user_location, :user_sector,:user_permanent, :user_contract
+  private :dataset_id, :user_name, :user_url, :user_phone, :user_email, :user_url, :user_location, :user_sector, :user_permanent, :user_contract
   
-  def initialize(dataset_id, user_name = nil, user_email = nil, user_phone = nil, user_url = nil)
-    @dataset_id = dataset_id
-    @user_name = user_name
-    @user_email = user_email
-    @user_phone = user_phone
-    @user_url = user_url
+  def initialize(args)
+    @dataset_id = args[:dataset_id]
+    @user_name = args[:user_name]
+    @user_email = args[:user_email]
+    @user_phone = args[:user_phone]
+    @user_url = args[:user_url]
+    @user_location = args[:user_location]
+    @user_sector = args[:user_sector]
+    @user_permanent = args[:user_permanent]
+    @user_contract = args[:user_contract]
   end
   
   def send_to_bond_adapt(method_name)
+    @method_name = method_name
     begin
-      get_session_id
-      send(method_name)
+      if @method_name.include?("create_user")
+        get_session_id
+        create_user
+      end
     rescue => e
       Rails.logger.info "--- Bond Adapt client exception ----- : #{e.message}"
     end
   end
   
-  def create_user_request_hash      
-    @create_user_request_hash_var ||= {
-      'long_1' => @session_id,
-      'String_2' => 'API_OJA_BasicRegistration',
-      'String_3' => raw(create_user_xml)
-    }
-  end
-  
-  def raw_create_xml
-    "<soapenv:Envelope xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://webservice.bis.com/' xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:ins0='http://webservice.bis.com/types'>
-          <soapenv:Body>
-            <ins0:executeBO>
-              <long_1>#{@session_id}</long_1>
-              <String_2>API_OJA_BasicRegistration</String_2>
-              <String_3>
-                #{create_user_xml}
-              </String_3>
-            </ins0:executeBO>
-          </soapenv:Body>
-      </soapenv:Envelope>"
-  end
-  
-  def create_user_xml
-    "<![CDATA[
-          <OJABasicReg>
-            <PersonName>#{user_name}</PersonName>
-            <PersonEmail>#{user_email}</PersonEmail>
-            <PersonMobile>#{user_phone}</PersonMobile>
-            <PersonLinkedIn>#{user_url}</PersonLinkedIn>
-          </OJABasicReg>
-    ]]>"
-  end
-  
   private
+  
   
     def create_user
       if create_user_response_body.present?
@@ -72,6 +47,65 @@ class BondAdapt::ClientService < BaseService
     
     def create_user_response
       @create_user_response_var ||= create_user_client.call(:execute_bo, xml: raw_create_xml)
+    end
+    
+    def raw_create_xml
+      "<soapenv:Envelope xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:ns2='http://webservice.bis.com/' xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:ins0='http://webservice.bis.com/types'>
+            <soapenv:Body>
+              <ins0:executeBO>
+                <long_1>#{@session_id}</long_1>
+                <String_2>#{choose_end_point}</String_2>
+                <String_3>
+                  #{create_user_xml}
+                </String_3>
+                #{add_full_reg_stuff?}
+              </ins0:executeBO>
+            </soapenv:Body>
+        </soapenv:Envelope>"
+    end
+  
+    def create_user_xml
+      "<![CDATA[
+          <OJABasicReg>
+            <PersonName>#{user_name}</PersonName>
+            <PersonEmail>#{user_email}</PersonEmail>
+            <PersonMobile>#{user_phone}</PersonMobile>
+            <PersonLinkedIn>#{user_url}</PersonLinkedIn>
+            #{add_full_feilds?}
+          </OJABasicReg>
+      ]]>"
+    end
+  
+    def add_full_feilds?
+      if @method_name == "create_user_full_reg"
+        "<PersonLocation>#{user_location}</PersonLocation>
+        <PersonSector>#{user_sector}</PersonSector>
+        <PersonPermanent>#{user_permanent}</PersonPermanent>
+        <PersonContract>#{user_contract}</PersonContract>"
+      else
+        ""
+      end
+    end
+    
+    def add_full_reg_stuff?
+      if @method_name == "create_user_full_reg"
+        "<arrayOfControlValue_4>
+              <controlPath>?</controlPath>
+              <dataType>?</dataType>
+              <name>?</name>
+              <value>?</value>
+           </arrayOfControlValue_4>"
+      else
+        ""
+      end
+    end
+    
+    def choose_end_point
+      if @method_name == "create_user" 
+        "API_OJA_BasicRegistration"
+      elsif @method_name == "create_user_full_reg" 
+        "API_OJA_CandidateRegistration"
+      end
     end
     
     def create_user_client
@@ -102,39 +136,6 @@ class BondAdapt::ClientService < BaseService
       Rails.logger.info "--- Bond Adapt get_session_id exception ----- : #{e.message}"
     end
     
-    def find_user_id(email)
-      client = Savon.client(
-        log_level: :debug,
-        log: true,
-        logger: Rails.logger,
-        env_namespace: :soapenv,
-        pretty_print_xml: true,
-        endpoint: "#{settings.endpoint}/SearchServiceV1",
-        wsdl: "#{settings.endpoint}/SearchServiceV1?wsdl")
-    
-      request_hash = {
-        'long_1' => @session_id,
-        'String_2' => 'ContactSearch',
-        'arrayOfSearchParameter_3' => {
-          'dataType' => 1,
-          'dateValue' => '',
-          'longValue' => '',
-          'name' => 'EMAIL',
-          'stringValue' => email },
-        'long_4' => 1,
-        'long_5' => 5,
-        'boolean_6' => 0,
-        'String_7' => ''
-      }
-      response = client.call(:run_query, message: request_hash)
-      response.body[:run_query_response][:result][:found_entities].present? ? response.body[:run_query_response][:result][:found_entities].first : nil
-    end
-
-
-
-    def update_user(uid, attributes)
-    end
-
     def auth_hash
       {
         'String_1' => settings.username,
@@ -147,5 +148,44 @@ class BondAdapt::ClientService < BaseService
         'int_8' => 0 
       }
     end
+    
+    # def find_user_id(email)
+    #   client = Savon.client(
+    #     log_level: :debug,
+    #     log: true,
+    #     logger: Rails.logger,
+    #     env_namespace: :soapenv,
+    #     pretty_print_xml: true,
+    #     endpoint: "#{settings.endpoint}/SearchServiceV1",
+    #     wsdl: "#{settings.endpoint}/SearchServiceV1?wsdl")
+    #
+    #   request_hash = {
+    #     'long_1' => @session_id,
+    #     'String_2' => 'ContactSearch',
+    #     'arrayOfSearchParameter_3' => {
+    #       'dataType' => 1,
+    #       'dateValue' => '',
+    #       'longValue' => '',
+    #       'name' => 'EMAIL',
+    #       'stringValue' => email },
+    #     'long_4' => 1,
+    #     'long_5' => 5,
+    #     'boolean_6' => 0,
+    #     'String_7' => ''
+    #   }
+    #   response = client.call(:run_query, message: request_hash)
+    #   response.body[:run_query_response][:result][:found_entities].present? ? response.body[:run_query_response][:result][:found_entities].first : nil
+    # end
+
+    # def create_user_request_hash
+    #   @create_user_request_hash_var ||= {
+    #     'long_1' => @session_id,
+    #     'String_2' => 'API_OJA_BasicRegistration',
+    #     'String_3' => raw(create_user_xml)
+    #   }
+    # end
+
+    # def update_user(uid, attributes)
+    # end
 
 end
