@@ -16,7 +16,7 @@ class JobAdderController < ApplicationController
 
   def capture_jobs
     @xml.search('//Job').each do |job|
-      disciplines_ids_arr = find_disciplines(job.search('Classification[name="Category"]')).concat(find_disciplines(job.search('Classification[name="Sub Category"]')))
+      disciplines_ids_arr = find_disciplines(job.search('Classification[name="Categories"]'))
       @options = {
         job: 
           { api_key: @key.api_key, 
