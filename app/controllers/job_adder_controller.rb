@@ -82,15 +82,15 @@ class JobAdderController < ApplicationController
   def find_disciplines(job_adder_categories)
     arr = []
     if Rails.env.development?
-      disciplines_responce =  HTTParty.get("http://workmates.localhost.volcanic.co:3000/api/v1/disciplines.json?", { body: { api_key: @key.api_key } })
+      disciplines_response =  HTTParty.get("http://workmates.localhost.volcanic.co:3000/api/v1/disciplines.json?")
     else
-      disciplines_responce =  HTTParty.get("http://#{@key.host}/api/v1/disciplines.json?", { body: { api_key: @key.api_key } })
+      disciplines_response =  HTTParty.get("http://#{@key.host}/api/v1/disciplines.json?")
     end
     
-    parsed_disciplines_responce = JSON.parse(disciplines_responce.body)
+    parsed_disciplines_response = JSON.parse(disciplines_response.body)
     job_adder_categories.each do |category|
-      if parsed_disciplines_responce.find { |discipline| discipline['name'] == category.text }
-        arr << parsed_disciplines_responce.find { |discipline| discipline['name'] == category.text }['id']
+      if parsed_disciplines_response.find { |discipline| discipline['name'] == category.text }
+        arr << parsed_disciplines_response.find { |discipline| discipline['name'] == category.text }['id']
       end
     end
     arr
