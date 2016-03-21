@@ -11,7 +11,7 @@ class BondAdaptController < ApplicationController
   end
   
   def save_user 
-    BondAdapt::ClientService.new({dataset_id: dataset_id_finder, 
+    BondAdapt::ClientService.new({dataset_id: params["dataset_id"], 
       user_name: set_user_name, 
       user_email: set_user_email, 
       user_phone: req_quest_finder("mobile-number"), 
@@ -23,13 +23,7 @@ class BondAdaptController < ApplicationController
   end
   
   private
-    
-    def dataset_id_finder
-      if params["api_key"].present? && params["api_key"]["dataset_id"].present?
-        params["api_key"]["dataset_id"]
-      end
-    end
-    
+     
     def choose_reg_type
       if user_reg_qus.present? && any_full_reg_feilds?
         'create_user_full_reg'
@@ -39,7 +33,7 @@ class BondAdaptController < ApplicationController
     end
     
     def any_full_reg_feilds?
-      cortact_array.present? || user_reg_qus["preferred-sector"].present?  || user_reg_qus["preferred-location"].present? 
+      cortact_array.present? || user_reg_qus["preferred-sector"].present? || user_reg_qus["preferred-location"].present? 
     end
     
     def req_quest_finder(question)

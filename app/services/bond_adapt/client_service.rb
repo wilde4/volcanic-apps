@@ -26,8 +26,27 @@ class BondAdapt::ClientService < BaseService
     end
   end
   
-  private
+  def get_session_id
+    client = Savon.client(
+      log_level: :debug,
+      log: true,
+      logger: Rails.logger,
+      env_namespace: :soapenv,
+      pretty_print_xml: true,
+      endpoint: "#{settings.endpoint}/LogonServiceV1",
+      wsdl: "#{settings.endpoint}/LogonServiceV1?wsdl")
+    response = client.call(:logon, message: auth_hash)
+    Rails.logger.info "--- Savon response: #{response.to_xml}"
+    @session_id = response.body[:logon_response][:result]
+  rescue => e
+    Rails.logger.info "--- Bond Adapt get_session_id exception ----- : #{e.message}"
+  end
   
+  def settings
+    @settings_var ||= BondAdaptAppSetting.find_by(dataset_id: dataset_id)
+  end
+  
+  private
   
     def create_user
       if create_user_response_body.present?
@@ -36,10 +55,6 @@ class BondAdapt::ClientService < BaseService
         nil
       end
     end 
-    
-    def settings
-      @settings_var ||= BondAdaptAppSetting.find_by(dataset_id: dataset_id)
-    end
     
     def create_user_response_body
       @create_response_body_var ||= create_user_response.body[:execute_bo_response][:result][:found_entities]
@@ -66,14 +81,22 @@ class BondAdapt::ClientService < BaseService
   
     def create_user_xml
       "<![CDATA[
-          <OJABasicReg>
+          <#{set_tag_type}>
             <PersonName>#{user_name}</PersonName>
             <PersonEmail>#{user_email}</PersonEmail>
             <PersonMobile>#{user_phone}</PersonMobile>
             <PersonLinkedIn>#{user_url}</PersonLinkedIn>
             #{add_full_feilds?}
-          </OJABasicReg>
+          </#{set_tag_type}>
       ]]>"
+    end
+    
+    def set_tag_type
+      if @method_name == "create_user_full_reg"
+        "OJAFullCandReg"
+      else
+        "OJABasicReg"
+      end
     end
   
     def add_full_feilds?
@@ -118,22 +141,6 @@ class BondAdapt::ClientService < BaseService
         endpoint: "#{settings.endpoint}/BOExecServiceV1",
         wsdl: "#{settings.endpoint}/BOExecServiceV1?wsdl"
       )
-    end
-    
-    def get_session_id
-      client = Savon.client(
-        log_level: :debug,
-        log: true,
-        logger: Rails.logger,
-        env_namespace: :soapenv,
-        pretty_print_xml: true,
-        endpoint: "#{settings.endpoint}/LogonServiceV1",
-        wsdl: "#{settings.endpoint}/LogonServiceV1?wsdl")
-      response = client.call(:logon, message: auth_hash)
-      Rails.logger.info "--- Savon response: #{response.to_xml}"
-      @session_id = response.body[:logon_response][:result]
-    rescue => e
-      Rails.logger.info "--- Bond Adapt get_session_id exception ----- : #{e.message}"
     end
     
     def auth_hash
