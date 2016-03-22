@@ -31,6 +31,8 @@ class BondAdapt::ClientService < BaseService
       log_level: :debug,
       log: true,
       logger: Rails.logger,
+      open_timeout: 25,
+      read_timeout: 25,
       env_namespace: :soapenv,
       pretty_print_xml: true,
       endpoint: "#{settings.endpoint}/LogonServiceV1",
@@ -50,7 +52,7 @@ class BondAdapt::ClientService < BaseService
   
     def create_user
       if create_user_response_body.present?
-       create_user_response_body.inspect
+        Rails.logger.info "--- Savon create_user response: #{create_user_response_body.inspect.to_xml}"
       else 
         nil
       end
@@ -136,11 +138,15 @@ class BondAdapt::ClientService < BaseService
         log_level: :debug,
         log: true,
         logger: Rails.logger,
+        open_timeout: 25,
+        read_timeout: 25,
         env_namespace: :soapenv,
         pretty_print_xml: true,
         endpoint: "#{settings.endpoint}/BOExecServiceV1",
         wsdl: "#{settings.endpoint}/BOExecServiceV1?wsdl"
       )
+    rescue => e
+      Rails.logger.info "--- Bond Adapt create_user exception ----- : #{e.message}"
     end
     
     def auth_hash
@@ -156,43 +162,4 @@ class BondAdapt::ClientService < BaseService
       }
     end
     
-    # def find_user_id(email)
-    #   client = Savon.client(
-    #     log_level: :debug,
-    #     log: true,
-    #     logger: Rails.logger,
-    #     env_namespace: :soapenv,
-    #     pretty_print_xml: true,
-    #     endpoint: "#{settings.endpoint}/SearchServiceV1",
-    #     wsdl: "#{settings.endpoint}/SearchServiceV1?wsdl")
-    #
-    #   request_hash = {
-    #     'long_1' => @session_id,
-    #     'String_2' => 'ContactSearch',
-    #     'arrayOfSearchParameter_3' => {
-    #       'dataType' => 1,
-    #       'dateValue' => '',
-    #       'longValue' => '',
-    #       'name' => 'EMAIL',
-    #       'stringValue' => email },
-    #     'long_4' => 1,
-    #     'long_5' => 5,
-    #     'boolean_6' => 0,
-    #     'String_7' => ''
-    #   }
-    #   response = client.call(:run_query, message: request_hash)
-    #   response.body[:run_query_response][:result][:found_entities].present? ? response.body[:run_query_response][:result][:found_entities].first : nil
-    # end
-
-    # def create_user_request_hash
-    #   @create_user_request_hash_var ||= {
-    #     'long_1' => @session_id,
-    #     'String_2' => 'API_OJA_BasicRegistration',
-    #     'String_3' => raw(create_user_xml)
-    #   }
-    # end
-
-    # def update_user(uid, attributes)
-    # end
-
 end
