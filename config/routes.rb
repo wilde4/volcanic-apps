@@ -215,13 +215,8 @@ Apps::Application.routes.draw do
   end
 
   scope :bond_adapt do
-    post "activate_app"     => 'bond_adapt#activate_app'
-    post "deactivate_app"   => 'bond_adapt#deactivate_app'
-    post "update_settings"  => 'bond_adapt#update_settings'
     get  "index"            => 'bond_adapt#index'
     post "save_user"        => 'bond_adapt#save_user'
-    post "save_settings"    => 'bond_adapt#save_settings'
-    post 'upload_cv'        => 'bond_adapt#upload_cv'
   end
 
   scope :job_board do
