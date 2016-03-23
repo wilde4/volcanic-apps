@@ -29,7 +29,7 @@ class JobAdderController < ApplicationController
             job_reference: job.attr('reference'), 
             job_description: build_description(job), 
             job_title: job.search('Title').text, 
-            job_type: build_job_type(job.search('Classification[name="Work Type"]').text),
+            job_type: find_job_type(job.search('Classification[name="Work Type"]').text),
             application_email: job.search('EmailTo').text,
             application_url: job.search('Url').text,
             discipline: disciplines_ids_arr.join(",") 
@@ -62,22 +62,6 @@ class JobAdderController < ApplicationController
     end
     description
   end
-
-  def build_job_type(work_type)
-    logger.info "=== #{work_type}"
-    case work_type
-    when "Permanent / Full Time"
-      "permanent"
-    when "Contract or Temp"
-      "contract"
-    when "Part-time"
-      "part-time"
-    when "Casual"
-      "part-time"
-    else
-      "permanent"
-    end
-  end
   
   def find_disciplines(job_adder_categories)
     arr = []
@@ -94,6 +78,19 @@ class JobAdderController < ApplicationController
       end
     end
     arr
+  end
+
+  def find_job_type(work_type)
+    if Rails.env.development?
+      job_types_response =  HTTParty.get("http://workmates.localhost.volcanic.co:3000/api/v1/job_types.json?")
+    else
+      job_types_response =  HTTParty.get("http://#{@key.host}/api/v1/job_types.json?")
+    end
+    
+    parsed_job_types_response = JSON.parse(job_types_response.body)
+    job_type = parsed_job_types_response.find { |job_type| job_type['reference'] == work_type }
+    job_type ||= parsed_job_types_response.find { |job_type| job_type['name'] == work_type }
+    job_type['reference'] unless job_type.nil?
   end
   
   
