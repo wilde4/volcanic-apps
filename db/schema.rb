@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160215143333) do
+ActiveRecord::Schema.define(version: 20160323094034) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -48,18 +48,6 @@ ActiveRecord::Schema.define(version: 20160215143333) do
     t.string   "domain"
     t.string   "domain_profile"
     t.string   "endpoint"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "bond_adapt_users", force: true do |t|
-    t.integer  "user_id"
-    t.string   "email"
-    t.text     "user_data"
-    t.text     "user_profile"
-    t.text     "registration_answers"
-    t.text     "linkedin_profile"
-    t.integer  "bond_adapt_uid"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
