@@ -8,7 +8,7 @@ class BondAdapt::ActiveUserService < BaseService
     @app_name = 'bond_adapt'
   end
   
-  def send_activity_logs_for_active_user
+  def send_activity_logs_for_active_users
     active_users_arr.each do |user_array|
       BondAdapt::ActivityService.new({user_email: user_array[0], user_name: user_array[1], user_id: user_array[2], dataset_id: dataset_id }).send_activity_log
     end
