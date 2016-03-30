@@ -11,7 +11,7 @@ class BondAdaptController < ApplicationController
   end
   
   def save_user 
-    BondAdapt::ClientService.new({dataset_id: params["dataset_id"], 
+    BondAdapt::UserService.new({dataset_id: params["dataset_id"], 
       user_name: set_user_name, 
       user_email: set_user_email, 
       user_phone: req_quest_finder("mobile-number"), 
