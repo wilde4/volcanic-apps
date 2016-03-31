@@ -24,8 +24,8 @@ class JobAdderController < ApplicationController
             salary_high:  job.search('MaxValue').text,
             salary_benefits: job.search('Text').text,
             salary_free: build_salary_free(job),
-            salary_currency: "AUD",
-            job_location: job.search('Classification[name="Location"]').text, 
+            salary_currency: job.search('Classification[name="Currency"]').text,
+            job_location: build_location(job), 
             job_reference: job.attr('reference'), 
             job_description: build_description(job), 
             job_title: job.search('Title').text, 
@@ -44,6 +44,12 @@ class JobAdderController < ApplicationController
   end
 
   private
+
+  def build_location(job)
+    location = [job.search('Classification[name="Location"]').text]
+    location << job.search('Classification[name="Sub-Location"]').text
+    location.reject { |l| l.blank? }.join(', ')
+  end
   
   def build_salary_free(job)
     if job.search('Salary').present?
