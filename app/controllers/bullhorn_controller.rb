@@ -51,7 +51,7 @@ class BullhornController < ApplicationController
         user_data: params[:user],
         user_profile: params[:user_profile],
         linkedin_profile: params[:linkedin_profile],
-        registration_answers: params[:registration_answer_hash]
+        registration_answers: format_reg_answer(params[:registration_answer_hash])
       )
         logger.info "--- params = #{params.inspect}"
         post_user_to_bullhorn_2(@user, client, params)
@@ -67,8 +67,7 @@ class BullhornController < ApplicationController
       @user.user_data = params[:user]
       @user.user_profile = params[:user_profile]
       @user.linkedin_profile = params[:linkedin_profile]
-      @user.registration_answers = params[:registration_answer_hash]
-
+      @user.registration_answers = format_reg_answer(params[:registration_answer_hash])
       if @user.save
         post_user_to_bullhorn_2(@user, client, params)
         upload_cv_to_bullhorn_2(@user, client, params)
@@ -283,6 +282,31 @@ class BullhornController < ApplicationController
 
   private
 
+    def format_reg_answer(registration_answers = nil)
+      if registration_answers.present?
+        if registration_answers.is_a?(Hash)
+          registration_answers.keys.each do |key|
+            if registration_answers[key].is_a?(Array)
+              reg_answer_arr_looper(registration_answers[key])
+            else
+              registration_answers[key] = CGI.unescapeHTML(registration_answers[key].to_s)
+            end
+          end
+        else
+          CGI.unescapeHTML(registration_answers.to_s)
+        end	
+        registration_answers
+      end
+    end
+    
+    
+    def reg_answer_arr_looper(registration_answers)
+      registration_answers.map! do |slot|
+          slot = CGI.unescapeHTML(slot.to_s)
+      end
+      registration_answers
+    end
+    
     def authenticate_client(dataset_id)
       settings = BullhornAppSetting.find_by(dataset_id: dataset_id)
       return Bullhorn::Rest::Client.new(
@@ -340,7 +364,7 @@ class BullhornController < ApplicationController
         case fm.bullhorn_field_name
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
-          answer = (Date.parse(answer).to_time.to_i.to_f * 1000.0).to_i rescue nil
+          answer = ((Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
           # logger.info "--- processed answer = #{answer}"
           attributes[fm.bullhorn_field_name] = answer if answer.present?
         when 'address1', 'address2', 'city', 'state', 'zip'
