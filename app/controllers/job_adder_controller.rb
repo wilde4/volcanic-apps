@@ -29,7 +29,7 @@ class JobAdderController < ApplicationController
             job_reference: job.attr('reference'), 
             job_description: build_description(job), 
             job_title: job.search('Title').text, 
-            job_type: find_job_type(job.search('Classification[name="Work Type"]').text),
+            job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
             application_email: job.search('EmailTo').text,
             application_url: job.search('Url').text,
             discipline: disciplines_ids_arr.join(",") 
