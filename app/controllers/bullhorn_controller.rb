@@ -364,7 +364,7 @@ class BullhornController < ApplicationController
         case fm.bullhorn_field_name
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
-          answer = ((Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
+          answer = (( Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
           # logger.info "--- processed answer = #{answer}"
           attributes[fm.bullhorn_field_name] = answer if answer.present?
         when 'address1', 'address2', 'city', 'state', 'zip'
