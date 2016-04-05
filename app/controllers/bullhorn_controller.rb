@@ -383,8 +383,9 @@ class BullhornController < ApplicationController
           category = categories.data.select{ |c| c.name == answer }.first
           # logger.info "--- category = #{category.inspect}"
           if category.present?
-            attributes['category'] = {}
-            attributes['category']['id'] = category.id
+             attributes['category'] = {}
+             attributes['category']['id'] = category.id
+             @category_id = category.id
           end
         when 'businessSectors'
           # UPDATE CANDIDATE AFTER CREATION
@@ -449,11 +450,13 @@ class BullhornController < ApplicationController
           end
         end
       end
-
-      # 'businessSectors'      
+      
       if bullhorn_id.present?
+        #categoies
+        send_category(bullhorn_id, client)
         # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
         # FIND businessSector ID
+        # 'businessSectors'
         business_sectors = client.business_sectors
         # logger.info "--- business_sectors = #{business_sectors.inspect}"
         answer = user.registration_answers['businessSectors']
@@ -466,10 +469,17 @@ class BullhornController < ApplicationController
             logger.info "--- bs_response = #{bs_response.inspect}"
           end
         end
+
       end
       
     end
-
+    
+    def send_category(bullhorn_id, client)
+      if @category_id.present?
+        Bullhorn::SendCategoryService.new(bullhorn_id, client, @category_id).send_category_to_bullhorn
+      end
+    end
+    
     def post_user_to_bullhorn(user, params)
       settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
       logger.info "--- settings = #{settings.inspect}"
