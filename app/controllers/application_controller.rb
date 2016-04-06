@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
+  before_action :set_env_vars_locally
   protect_from_forgery with: :exception
 
   require "rubygems"
@@ -61,6 +62,16 @@ class ApplicationController < ActionController::Base
   end
 
 protected
+
+  def set_env_vars_locally
+    if Rails.env.development?
+      if LocalEnvVar.where(name: 'ENCRYPT_KEY').present?
+        ENV['ENCRYPT_KEY'] = LocalEnvVar.where(name: 'ENCRYPT_KEY').first.value
+      else
+        raise "You need to add a local_env_vars record with the name 'ENCRYPT_KEY' and value of the key to the local_env_vars table in your local apps_development database. Andy or Mark can provide you with the value"
+      end
+    end 
+  end
 
   def set_key
     if params[:data].present?

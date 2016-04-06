@@ -355,12 +355,13 @@ class BullhornController < ApplicationController
       attributes['address'] = {}
 
       # MAP FIELDS TO FIELDS
+     
       field_mappings.each do |fm|
         # logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
         # TIMESTAMPS
         answer = user.registration_answers[fm.registration_question_reference] rescue nil
         # logger.info "--- raw answer = #{answer}"
-
+      
         case fm.bullhorn_field_name
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
@@ -376,7 +377,7 @@ class BullhornController < ApplicationController
         when 'countryID'
           # ADDRESS COUNTRY
           attributes['address']['countryID'] = get_country_id(answer) if answer.present?
-        when 'category'
+        when 'category', 'categoryID'
           # FIND category ID
           categories = client.categories
           # logger.info "--- categories = #{categories.inspect}"

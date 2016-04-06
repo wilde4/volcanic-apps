@@ -15,10 +15,11 @@ class Bullhorn::SendCategoryService < BaseService
   private
   
     def category_request
-      client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'categories', association_ids: "#{category_id}" }
+      binding.pry
+      client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'categories', association_ids: "#{category_id}" })
     end
     
     def log_response(response)
-      logger.info "--- categories_response = #{response.inspect}" 
+      Rails.logger.info "--- categories_response = #{response.inspect}" 
     end
 end
