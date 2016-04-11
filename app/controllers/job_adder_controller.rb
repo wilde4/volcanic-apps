@@ -17,43 +17,45 @@ class JobAdderController < ApplicationController
   def capture_jobs
     @disciplines = HTTParty.get("#{host_endpoint}/api/v1/disciplines.json?").parsed_response
     @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json").parsed_response['consultants']
-
-    @xml.search('//Job').each do |job|
-      disciplines_ids_arr = find_disciplines(job.search('Classification[name="Categories"]'))
+    Thread.new {
+      @xml.search('//Job').each do |job|
+        disciplines_ids_arr = find_disciplines(job.search('Classification[name="Categories"]'))
       
-      consultant = @consultants.find { |c| c['email_address'] == job.search('EmailTo').text }
-      if consultant.present?
-        contact_hash = {
-          contact_name: consultant['name'],
-          contact_email: consultant['email_address'],
-          contact_telephone: consultant['phone_number']
+        consultant = @consultants.find { |c| c['email_address'] == job.search('EmailTo').text }
+        if consultant.present?
+          contact_hash = {
+            contact_name: consultant['name'],
+            contact_email: consultant['email_address'],
+            contact_telephone: consultant['phone_number']
+          }
+        else
+          contact_hash = {}
+        end
+
+        puts contact_hash
+
+        @options = {
+          job: 
+            { api_key: @key.api_key, 
+              salary_low:  job.search('MinValue').text,
+              salary_high:  job.search('MaxValue').text,
+              salary_free: build_salary_free(job),
+              salary_currency: job.search('Classification[name="Currency"]').text,
+              job_location: build_location(job), 
+              job_reference: job.attr('reference'), 
+              job_description: build_description(job), 
+              job_title: job.search('Title').text, 
+              job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
+              application_email: job.search('EmailTo').text,
+              application_url: job.search('Url').text,
+              discipline: disciplines_ids_arr.join(",")
+            }.merge(contact_hash)
         }
-      else
-        contact_hash = {}
+        @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
+         logger.info "--- Job Adder Volcanic responce = #{job.present? ? job.search('Title').try(:text) : 'No Job Found'}: #{@jobs_responce.body}"
       end
-
-      puts contact_hash
-
-      @options = {
-        job: 
-          { api_key: @key.api_key, 
-            salary_low:  job.search('MinValue').text,
-            salary_high:  job.search('MaxValue').text,
-            salary_benefits: job.search('Text').text,
-            salary_free: build_salary_free(job),
-            salary_currency: job.search('Classification[name="Currency"]').text,
-            job_location: build_location(job), 
-            job_reference: job.attr('reference'), 
-            job_description: build_description(job), 
-            job_title: job.search('Title').text, 
-            job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
-            application_email: job.search('EmailTo').text,
-            application_url: job.search('Url').text,
-            discipline: disciplines_ids_arr.join(",")
-          }.merge(contact_hash)
-      }
-      @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
-    end
+    }
+    render status: 200
   end
 
   private
