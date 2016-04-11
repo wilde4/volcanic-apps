@@ -52,7 +52,7 @@ class JobAdderController < ApplicationController
             }.merge(contact_hash)
         }
         @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
-         logger.info "--- Job Adder Volcanic responce = #{job.present? ? job.search('Title').try(:text) : 'No Job Found'}: #{@jobs_responce.body}"
+        logger.info "--- Job Adder Volcanic responce = #{job.present? ? job.search('Title').try(:text) : 'No Job Found'}: #{@jobs_responce.body}"
       end
     }
     render status: 200
