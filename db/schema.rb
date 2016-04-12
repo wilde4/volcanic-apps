@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160406090645) do
+ActiveRecord::Schema.define(version: 20160406123739) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -166,6 +166,8 @@ ActiveRecord::Schema.define(version: 20160406090645) do
     t.date    "feature_start"
     t.date    "feature_end"
   end
+
+  add_index "featured_jobs", ["job_id"], name: "index_featured_jobs_on_job_id", using: :btree
 
   create_table "filtered_notification_sendings", force: true do |t|
     t.integer  "job_id"
