@@ -458,16 +458,18 @@ class BullhornController < ApplicationController
         # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
         # FIND businessSector ID
         # 'businessSectors'
-        business_sectors = client.business_sectors
-        # logger.info "--- business_sectors = #{business_sectors.inspect}"
-        answer = user.registration_answers['businessSectors']
-        bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
-        if bs_mapping.present?
-          business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
-          # logger.info "--- business_sector = #{business_sector.inspect}"
-          if business_sector.present?
-            bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-            logger.info "--- bs_response = #{bs_response.inspect}"
+        if user.registration_answers.present?
+          business_sectors = client.business_sectors
+          # logger.info "--- business_sectors = #{business_sectors.inspect}"
+          answer = user.registration_answers['businessSectors']
+          bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
+          if bs_mapping.present?
+            business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
+            # logger.info "--- business_sector = #{business_sector.inspect}"
+            if business_sector.present?
+              bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+              logger.info "--- bs_response = #{bs_response.inspect}"
+            end
           end
         end
 
