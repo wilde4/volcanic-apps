@@ -17,6 +17,7 @@ gem 'flickraw'
 gem 'youtube_it'
 gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
+gem 'rest-client', '~> 1.8' #enables sending files with httparty
 gem 'oauth2'
 
 gem 'gibberish' # For referral payment data

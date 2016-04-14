@@ -2,13 +2,19 @@ require 'uri'
 require 'open-uri'
 require 'base64'
 require 'oauth2'
+require 'rest-client'
 
 class Arithon::UserService < BaseService
+  
+  if Rails.env.development?
+    API_ENDPOINT = "http://requestb.in/1emt2rm1" 
+  else
+    API_ENDPOINT =  "http://eu-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php"
+  end
 
-  API_ENDPOINT = "http://eu-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php"
-
-  def initialize(user, settings)
+  def initialize(user, settings, key)
     @user         = user
+    @key = key
     if @user.user_data['user_group_name'].present?
       @user_group_name    = @user.user_data['user_group_name']
     else
@@ -18,7 +24,6 @@ class Arithon::UserService < BaseService
     @api_key = settings["authorization_code"]
     @company_name = settings["company_name"]
   end
-
 
   def save_user
     begin
@@ -94,13 +99,77 @@ class Arithon::UserService < BaseService
 
 
   private
-
+    
+    def add_cv_file(attr_hash)
+      if cv_up_loads_checks?
+        attr_hash.merge!({file: { name: upload_name, type: upload_name.split('.').last }})
+      else
+        attr_hash
+      end
+    end
+    
+    def build_tmp_cv_file
+      make_dir
+      File.open(tmp_cv_path, "wb") do |file|
+        file.write(open(cv_path).read)
+      end
+    end
+    
+    def cv_tmp_folder
+      @cv_tmp_folder ||= "#{Rails.root}/tmp/arithon_cvs"
+    end
+    
+    def make_dir
+      FileUtils.mkdir_p(user_id_tmp_folder_path) unless File.directory?(user_id_tmp_folder_path)
+    end
+    
+    
+    def tmp_cv_path
+      @tmp_cv_path ||= "#{user_id_tmp_folder_path}/#{upload_name}"
+    end
+    
+    def user_id_tmp_folder_path
+     @user_id_tmp_folder_path ||= "#{cv_tmp_folder}/#{@user.user_data['id']}"
+    end
+    
+    def cv_path
+      if Rails.env.development?
+        @cv_path ||= 'http://' + @key.host + upload_path
+      else
+        # UPLOAD PATHS USE CLOUDFRONT URL
+        @cv_path ||= upload_path
+      end
+    end
+    
+    def upload_name
+      @upload_name ||= @user["user_profile"]["upload_name"]
+    end
+    
+    def upload_path
+      @upload_path ||= @user["user_profile"]["upload_path"]
+    end
+    
+    def cv_up_loads_checks?
+      @user["user_profile"].present? && upload_name.present? && upload_path.present?
+    end
+    
+    def delete_tmp_cv_file
+      File.delete(tmp_cv_path) if File.exist?(tmp_cv_path)
+      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path)
+    end
+    
     def send_request(command, data=nil)
       request = Hash.new
       request[:authorise] = { key: @api_key, company: @company_name }
       request[:request] = { command: command }
       request[:request][:data] = data if data.present?
-      @response = HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
+      if command == "PushCandidate" && cv_up_loads_checks?  
+        build_tmp_cv_file
+        @response =  RestClient.post(API_ENDPOINT, { body: request, attachedFile: File.open(tmp_cv_path) }) # All responses from API return a 200, even those that fail, actual response code is sent in body
+      else
+        @response =  HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
+      end      
+      delete_tmp_cv_file
     end
 
     def map_contact_attributes
@@ -108,10 +177,10 @@ class Arithon::UserService < BaseService
       @attributes                 = Hash.new
       @attributes[:candidateName] = candidate_name
       @attributes[:email]         = @user.email
+      @attributes = add_cv_file(@attributes)
       # Rails.logger.info "--- FINISHED map_contact_attributes: #{@attributes.inspect}"
       return @attributes
     end
-
 
     def candidate_name
       # format candidate name
