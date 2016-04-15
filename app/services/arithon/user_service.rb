@@ -155,7 +155,7 @@ class Arithon::UserService < BaseService
     
     def delete_tmp_cv_file
       File.delete(tmp_cv_path) if File.exist?(tmp_cv_path)
-      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path)
+      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path) && user_id_tmp_folder_path.inculde?("/tmp/arithon_cvs")
     end
     
     def send_request(command, data=nil)
