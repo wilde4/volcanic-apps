@@ -19,7 +19,6 @@ class JobAdderController < ApplicationController
     @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json").parsed_response['consultants']
     Thread.new {
       @xml.search('//Job').each do |job|
-        disciplines_ids_arr = find_disciplines(job.search('Classification[name="Categories"]'))
       
         consultant = @consultants.find { |c| c['email_address'] == job.search('EmailTo').text }
         if consultant.present?
@@ -31,8 +30,6 @@ class JobAdderController < ApplicationController
         else
           contact_hash = {}
         end
-
-        puts contact_hash
 
         @options = {
           job: 
@@ -48,7 +45,7 @@ class JobAdderController < ApplicationController
               job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
               application_email: job.search('EmailTo').text,
               application_url: job.search('Url').text,
-              discipline: disciplines_ids_arr.join(",")
+              discipline: find_disciplines(job).join(",")
             }.merge(contact_hash)
         }
         @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
@@ -84,11 +81,13 @@ class JobAdderController < ApplicationController
     description
   end
   
-  def find_disciplines(job_adder_categories)
+  def find_disciplines(job)
+    job_adder_categories = [job.search('Classification[name="Categories"]').text]
+    job_adder_categories << job.search('Classification[name="Sub-Categories"]').text
     arr = []
     job_adder_categories.each do |category|
-      if @disciplines.find { |discipline| discipline['name'] == category.text }
-        arr << @disciplines.find { |discipline| discipline['name'] == category.text }['id']
+      if @disciplines.find { |discipline| discipline['name'] == category }
+        arr << @disciplines.find { |discipline| discipline['name'] == category }['id']
       end
     end
     arr
