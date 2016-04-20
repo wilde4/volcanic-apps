@@ -5,12 +5,9 @@ require 'oauth2'
 require 'rest-client'
 
 class Arithon::UserService < BaseService
-  
-  if Rails.env.development?
-    API_ENDPOINT = "http://requestb.in/1emt2rm1" 
-  else
     API_ENDPOINT =  "http://eu-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php"
-  end
+    # API_ENDPOINT = "http://requestb.in/1doqnnf1"
+
 
   def initialize(user, settings, key)
     @user         = user
@@ -21,8 +18,13 @@ class Arithon::UserService < BaseService
       @user_group_name    = @user.user_data['user_type']
     end
     @dataset_id   = @user.user_data['dataset_id']
-    @api_key = settings["authorization_code"]
-    @company_name = settings["company_name"]
+    if Rails.env.development?
+        @company_name = "API Test"        
+        @api_key = "ask_mark_for_api_key"
+    else
+      @api_key = settings["authorization_code"]
+      @company_name = settings["company_name"]
+    end
   end
 
   def save_user
@@ -33,9 +35,10 @@ class Arithon::UserService < BaseService
       @contact_attributes               = map_contact_attributes
       # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
       @response = send_request("PushCandidate", @contact_attributes)
-      # Rails.logger.info "--- @response: #{@response.inspect}"
+      delete_tmp_cv_file
+      Rails.logger.info "--- @response: #{@response.inspect}"
       # update user details
-      if @response['code'] == 200
+      if @response.present? && @response['code'].present? && @response['code'] == 200
         # API doesn't return ID of new record so we have to fetch it
         @attrs = Hash.new
         @attrs[:email] = @user.email
@@ -63,6 +66,7 @@ class Arithon::UserService < BaseService
       Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
       # post contact attributes
       @response = send_request("PushCandidate", @contact_attributes)
+      delete_tmp_cv_file
       Rails.logger.info "--- @response = #{@response.inspect}"
       # update user details
     rescue => e
@@ -81,9 +85,9 @@ class Arithon::UserService < BaseService
         @dup_attributes[:candidateName] = candidate_name
         # Rails.logger.info "--- @dup_attributes: #{@dup_attributes.inspect}"
         @response = send_request("CandidateDetails", @dup_attributes)
-        # Rails.logger.info "--- @response: #{@response.inspect}"
-        if @response["count"] > 0
-          Rails.logger.info '--- arithon DUPLICATE CANDIDATE RECORD FOUND'
+        # Rails.logger.info "--- @response: #{@response.present? ? @response.inspect : ''}"
+        if @response.present? && @response["count"].present? && @response["count"] > 0
+          # Rails.logger.info '--- arithon DUPLICATE CANDIDATE RECORD FOUND'
           @last_candidate = @response["records"].last
           # Rails.logger.info "--- @last_candidate: #{@last_candidate.inspect}"
           arithon_id     = @last_candidate["candidateID"]
@@ -155,7 +159,7 @@ class Arithon::UserService < BaseService
     
     def delete_tmp_cv_file
       File.delete(tmp_cv_path) if File.exist?(tmp_cv_path)
-      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path) && user_id_tmp_folder_path.inculde?("/tmp/arithon_cvs")
+      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path) && user_id_tmp_folder_path.include?("/tmp/arithon_cvs")
     end
     
     def send_request(command, data=nil)
@@ -165,11 +169,11 @@ class Arithon::UserService < BaseService
       request[:request][:data] = data if data.present?
       if command == "PushCandidate" && cv_up_loads_checks?  
         build_tmp_cv_file
-        @response =  RestClient.post(API_ENDPOINT, { body: request, attachedFile: File.open(tmp_cv_path) }) # All responses from API return a 200, even those that fail, actual response code is sent in body
+        @response =  RestClient.post(API_ENDPOINT, { authorise: request[:authorise], request: request[:request], attachedFile: File.open(tmp_cv_path) }) # All responses from API return a 200, even those that fail, actual response code is sent in body
       else
         @response =  HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
       end      
-      delete_tmp_cv_file
+      @response
     end
 
     def map_contact_attributes
