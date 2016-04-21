@@ -117,6 +117,7 @@ GEM
       json (>= 1.7.7, < 2.0)
     method_source (0.8.2)
     mime-types (1.25.1)
+    mimemagic (0.3.1)
     minitest (4.7.5)
     multi_json (1.10.1)
     multi_xml (0.5.5)
@@ -250,6 +251,7 @@ DEPENDENCIES
   jbuilder (~> 1.2)
   jquery-rails
   mandrill-api (~> 1.0.51)
+  mimemagic (~> 0.3.1)
   mysql2
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
