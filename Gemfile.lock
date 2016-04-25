@@ -122,7 +122,7 @@ GEM
     multi_json (1.10.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
-    mysql2 (0.3.15)
+    mysql2 (0.3.18)
     netrc (0.11.0)
     newrelic_rpm (3.7.2.195)
     nokogiri (1.5.11)
@@ -252,7 +252,7 @@ DEPENDENCIES
   jquery-rails
   mandrill-api (~> 1.0.51)
   mimemagic (~> 0.3.1)
-  mysql2
+  mysql2 (= 0.3.18)
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
   oauth2
@@ -269,3 +269,6 @@ DEPENDENCIES
   unicorn
   unicorn-worker-killer
   youtube_it
+
+BUNDLED WITH
+   1.11.2

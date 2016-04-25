@@ -1,15 +1,18 @@
 development:
   adapter: mysql2
   encoding: utf8
+  host: 127.0.0.1
   database: apps_development
+  pool: 5
+  host: 127.0.0.1
   username: root
   password:
-  pool: 5
   socket: /tmp/mysql.sock
 
 test:
   adapter: mysql2
   encoding: utf8
+  host: 127.0.0.1
   database: apps_test
   username: root
   password:
