@@ -60,94 +60,102 @@ class BullhornJobImport
     
     @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
     # jobs = @job_data.xpath("//item")
-    
+    @non_public_jobs_count = 0
     @job_data.each do |job|
-      if job.isPublic
-        unless job.isDeleted
-          @job_payload = Hash.new
-          @job_payload["job[api_key]"] = @key.api_key
-
-          puts "--- job.title = #{job.title}"
-          @job_payload['job[job_title]'] = job.title
-          # CORPORATE USER?
-          puts "--- job.owner = #{job.owner}"
-          c_user = client.corporate_user(job.owner.id)
-          # app_email = job.xpath('author').text.strip.split.first.strip
-          @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
-          @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
-
-          # puts "--- job.businessSectors = #{job.businessSectors}"
-          disciplines = []
-          job.businessSectors.data.each do |bs|
-            # puts "--- bs[:id] = #{bs[:id]}"
-            b_sector = client.business_sector(bs[:id])
-            # puts "--- b_sector = #{b_sector.inspect}"
-            disciplines << b_sector.data.name.strip
-          end
-          discipline_list = disciplines.join(', ')
-          @job_payload['job[discipline]'] = discipline_list.strip
-
-          @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
-
-          # @job_payload['job[job_reference]'] = job.externalID
-          @job_payload['job[job_reference]'] = job.id
-          # address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
-          city = job.address.city
-          country = get_country(job.address.countryID.to_s)
-          @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
-          @job_payload['job[job_type]'] = job.employmentType
-
-          salary_val = job.salary > 0 ? job.salary : nil
-          @job_payload['job[salary_low]'] = salary_val
-
-          # MAX SALARY and SALARY FREE are set to configurable custom fields:
-
-          field_mappings.each do |fm|
-
-            puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
-          
-            case fm.job_attribute
-            when 'salary_free'
-              @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
-            when 'salary_high'
-              if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
-                @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
-              else
-                @job_payload['job[salary_high]'] = salary_val
-              end
-            end
-          end
-        
-          salary_per = 'hour' if job.salaryUnit == 'Per Hour'
-          salary_per = 'day' if job.salaryUnit == 'Per Day'
-          @job_payload['job[salary_per]'] = salary_per
-
-          @job_payload['job[job_description]'] = job.description
-
-          puts "--- job.isOpen = #{job.isOpen}"
-          if job.isOpen
-            puts '--- JOB IS OPEN'
-            # Expiry = date + 365 days
-            begin
-              date = Date.parse(@job_payload['job[created_at]'])
-              @job_payload['job[expiry_date]'] = (date + 365.days).to_s
-            rescue Exception => e
-              puts "[WARN] #{e}"
-              @job_payload['job[expiry_date]'] = (Date.today + 365.days).to_s
-            end
-          else
-            puts '--- JOB IS CLOSED'
-            @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
-          end
-
-          puts "--- @job_payload = #{@job_payload.inspect}"
-          post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
-        else
-          puts "--- #{job.title} has been Deleted"
+      
+      if settings.uses_public_filter?
+        unless job.isPublic
+          @non_public_jobs_count = (@non_public_jobs_count + 1) 
+          next 
         end
       end
+      
+      unless job.isDeleted
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
+
+        puts "--- job.title = #{job.title}"
+        @job_payload['job[job_title]'] = job.title
+        # CORPORATE USER?
+        puts "--- job.owner = #{job.owner}"
+        c_user = client.corporate_user(job.owner.id)
+        # app_email = job.xpath('author').text.strip.split.first.strip
+        @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
+        @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
+
+        # puts "--- job.businessSectors = #{job.businessSectors}"
+        disciplines = []
+        job.businessSectors.data.each do |bs|
+          # puts "--- bs[:id] = #{bs[:id]}"
+          b_sector = client.business_sector(bs[:id])
+          # puts "--- b_sector = #{b_sector.inspect}"
+          disciplines << b_sector.data.name.strip
+        end
+        discipline_list = disciplines.join(', ')
+        @job_payload['job[discipline]'] = discipline_list.strip
+
+        @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
+
+        # @job_payload['job[job_reference]'] = job.externalID
+        @job_payload['job[job_reference]'] = job.id
+        # address = job.address.map{ |a| a[0] == 'countryID' ? get_country(a[1].to_s) : a[1] }.reject{ |a| a.blank? }.join(', ')
+        city = job.address.city
+        country = get_country(job.address.countryID.to_s)
+        @job_payload['job[job_location]'] = [city, country].reject{ |a| a.blank? }.join(', ')
+        @job_payload['job[job_type]'] = job.employmentType
+
+        salary_val = job.salary > 0 ? job.salary : nil
+        @job_payload['job[salary_low]'] = salary_val
+
+        # MAX SALARY and SALARY FREE are set to configurable custom fields:
+
+        field_mappings.each do |fm|
+
+          puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
+          
+          case fm.job_attribute
+          when 'salary_free'
+            @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
+          when 'salary_high'
+            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
+              @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
+            else
+              @job_payload['job[salary_high]'] = salary_val
+            end
+          end
+        end
+        
+        salary_per = 'hour' if job.salaryUnit == 'Per Hour'
+        salary_per = 'day' if job.salaryUnit == 'Per Day'
+        @job_payload['job[salary_per]'] = salary_per
+
+        @job_payload['job[job_description]'] = job.description
+
+        puts "--- job.isOpen = #{job.isOpen}"
+        if job.isOpen
+          puts '--- JOB IS OPEN'
+          # Expiry = date + 365 days
+          begin
+            date = Date.parse(@job_payload['job[created_at]'])
+            @job_payload['job[expiry_date]'] = (date + 365.days).to_s
+          rescue Exception => e
+            puts "[WARN] #{e}"
+            @job_payload['job[expiry_date]'] = (Date.today + 365.days).to_s
+          end
+        else
+          puts '--- JOB IS CLOSED'
+          @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
+        end
+
+        puts "--- @job_payload = #{@job_payload.inspect}"
+        post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
+      else
+        puts "--- #{job.title} has been Deleted"
+      end
     end
+
     puts "Total data size = #{@job_data.length} jobs"
+    puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
   end
 
   def self.parse_jobs_for_delete(client)
