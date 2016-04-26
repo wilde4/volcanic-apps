@@ -46,7 +46,12 @@
               .row
                 .col-md-6= bfm.input :job_attribute, readonly: true
                 .col-md-6= bfm.input :bullhorn_field_name
-
+        
+        .well
+          %p Enabling The public jobs filter will mean that only jobs that are flagged as Public on your Bullhorn account will go live on your site. 
+          = f.input :uses_public_filter, label: 'Enable Public Jobs Filter'
+  
+        
         .well
           %p 
             When a Candidate registers an account through the website, this App determines if they already have a Candidate profile in Bullhorn using their email address. 

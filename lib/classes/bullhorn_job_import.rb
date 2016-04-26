@@ -60,8 +60,16 @@ class BullhornJobImport
     
     @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
     # jobs = @job_data.xpath("//item")
-    
+    @non_public_jobs_count = 0
     @job_data.each do |job|
+      
+      if settings.uses_public_filter?
+        unless job.isPublic
+          @non_public_jobs_count = (@non_public_jobs_count + 1) 
+          next 
+        end
+      end
+      
       unless job.isDeleted
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
@@ -147,6 +155,7 @@ class BullhornJobImport
     end
 
     puts "Total data size = #{@job_data.length} jobs"
+    puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
   end
 
   def self.parse_jobs_for_delete(client)
