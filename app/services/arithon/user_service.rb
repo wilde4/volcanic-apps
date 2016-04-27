@@ -210,6 +210,7 @@ class Arithon::UserService < BaseService
     
     def file_to_attach
       if mime_type_is_ok?
+        tmp_cv_file.rewind
         tmp_cv_file
       else
         ""
