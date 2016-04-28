@@ -61,13 +61,10 @@ class BullhornJobImport
     @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
-    @job_data.each do |job|
-      
-      if settings.uses_public_filter?
-        unless job.isPublic
-          @non_public_jobs_count = (@non_public_jobs_count + 1) 
-          next 
-        end
+    @job_data.sample(1).each do |job|
+      if settings.uses_public_filter? && job.isPublic == 0 
+        @non_public_jobs_count = ( @non_public_jobs_count + 1 ) 
+        next 
       end
       
       unless job.isDeleted
@@ -191,7 +188,7 @@ class BullhornJobImport
 
     complete_data = []
 
-    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description isOpen isDeleted status salaryUnit) + custom_fields).join(',')
+    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description isOpen isDeleted isPublic status salaryUnit) + custom_fields).join(',')
     
     while results == 200
       if is_deleted
