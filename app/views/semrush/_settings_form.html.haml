@@ -1,0 +1,16 @@
+- url = Rails.env.development? ? 'http://localhost:3001/semrush/save_settings' : 'https://apps.volcanic.co/semrush/save_settings'
+= simple_form_for @semrush_setting, url: url, method: :post, remote: true do |f|
+  = f.input :dataset_id, as: :hidden
+  .panel.panel-default
+    .panel-heading Semrush Settings
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :domain
+          = f.input :keyword_amount
+          = f.input :request_rate
+        .col-md-6
+          = f.input :previous_data
+          = f.input :engine
+        .col-md-12.mt-20
+          = f.submit class: 'btn btn-primary'

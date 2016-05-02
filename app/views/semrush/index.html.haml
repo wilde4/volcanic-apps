@@ -1,0 +1,17 @@
+%script{:src => "https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"}
+%script{:src => "https://www.gstatic.com/charts/loader.js", :type => "text/javascript"}
+%link{:href => "//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css", :rel => "stylesheet"}/
+.volcanic_apps
+  - if @semrush_setting.new_record?
+    .row
+      .col-md-12
+        #flash_messages
+      .col-md-12
+        %p Set your Semrush preferences.
+        #settings_form
+          = render partial: 'settings_form'
+  - else
+    = render partial: 'bootstrap_tables'
+    = render partial: 'dashboard'
+    = render partial: 'special_js'
+    

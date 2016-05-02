@@ -4,7 +4,6 @@ development:
   host: 127.0.0.1
   database: apps_development
   pool: 5
-  host: 127.0.0.1
   username: root
   password:
   socket: /tmp/mysql.sock

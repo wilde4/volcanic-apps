@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160406123739) do
+ActiveRecord::Schema.define(version: 20160501181937) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -309,6 +309,39 @@ ActiveRecord::Schema.define(version: 20160406123739) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "semrush_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.integer  "keyword_amount"
+    t.integer  "request_rate"
+    t.integer  "previous_data"
+    t.string   "engine"
+    t.string   "domain"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.date     "last_petition_at"
+  end
+
+  create_table "semrush_stats", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "domain"
+    t.string   "keyword"
+    t.integer  "position"
+    t.integer  "position_difference"
+    t.float    "traffic_percent"
+    t.float    "costs_percent"
+    t.integer  "results"
+    t.float    "cpc"
+    t.integer  "volume"
+    t.string   "url"
+    t.date     "day"
+    t.string   "engine"
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.integer  "semrush_app_settings_id"
+  end
+
+  add_index "semrush_stats", ["semrush_app_settings_id"], name: "index_semrush_stats_on_semrush_app_settings_id", using: :btree
 
   create_table "split_fee_settings", force: true do |t|
     t.integer  "app_dataset_id"
