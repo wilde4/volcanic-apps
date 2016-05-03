@@ -7,7 +7,7 @@ class SemrushController < ApplicationController
   def index
     @semrush_setting = SemrushAppSettings.find_by(dataset_id: params[:data][:dataset_id]) || SemrushAppSettings.new(dataset_id: params[:data][:dataset_id])
     
-    @semrush_data = SemrushStat.where(engine: 'us', day: @semrush_setting.last_petition_at, dataset_id: params[:data][:dataset_id]).order('volume desc')
+    @semrush_data = SemrushStat.where(engine: @semrush_setting.engine, day: @semrush_setting.last_petition_at, dataset_id: params[:data][:dataset_id]).order('volume desc')
     @range_1 = @semrush_data.where('position >= 1 AND position <= 3').order('position asc')
     @range_1_keywords = @range_1.map(&:keyword)
 
@@ -27,18 +27,17 @@ class SemrushController < ApplicationController
     
     # Data for chart
     start_date = Date.today - 1.months
-    end_date = Date.parse('2016-04-22')
+    end_date = @semrush_setting.last_petition_at
     # end_date = Date.today
     
     @chart_traffic_day_keyword_data = []
     start_date.upto(end_date) do |date|
-      day_data = SemrushStat.where(engine: 'us', day: date)
+      day_data = SemrushStat.where(engine: @semrush_setting.engine, day: date)
       @chart_traffic_day_keyword_data << [date.strftime('%D'), ((day_data.sum(:traffic_percent) / day_data.size))]
     end
     
     @actual_top_keywords_traffic = []
-    # data_traffic_desc = SemrushStat.where(engine: 'us', day: Date.today).order('traffic_percent desc').limit(10)
-    data_traffic_desc = SemrushStat.where(engine: 'us', day: '2016-03-01').order('traffic_percent desc').limit(10)
+    data_traffic_desc = SemrushStat.where(engine: @semrush_setting.engine, day: @semrush_setting.last_petition_at).order('traffic_percent desc').limit(10)
     data_traffic_desc.each do |d|
       @actual_top_keywords_traffic << [d.keyword, d.traffic_percent]
     end
