@@ -11,7 +11,13 @@
         #settings_form
           = render partial: 'settings_form'
   - else
-    = render partial: 'bootstrap_tables'
-    = render partial: 'dashboard'
-    = render partial: 'special_js'
+    - if @semrush_data.present?
+      = render partial: 'bootstrap_tables'
+      = render partial: 'embbed_assets'
+      = render partial: 'dashboard'
+      = render partial: 'special_js'
+    - else
+      %h2 We are retrieving your data.
+      %h3 Your SEO dashboard will be shown as soon as possible.
+
     

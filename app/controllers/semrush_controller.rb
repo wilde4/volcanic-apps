@@ -25,10 +25,9 @@ class SemrushController < ApplicationController
     @range_5 = @semrush_data.where('position >= 51')
     @range_5_keywords = @range_5.map(&:keyword)
     
-    # Data for chart
+    # Data for charts
     start_date = Date.today - 1.months
     end_date = @semrush_setting.last_petition_at
-    # end_date = Date.today
     
     @chart_traffic_day_keyword_data = []
     start_date.upto(end_date) do |date|
@@ -66,6 +65,10 @@ class SemrushController < ApplicationController
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
     end
+  end
+  
+  def edit_semrush_settings
+    @semrush_setting = SemrushAppSettings.find_by(dataset_id: params[:data][:dataset_id])
   end
   
   def update_settings
