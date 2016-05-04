@@ -34,8 +34,39 @@
         = render partial: 'settings_form'
   .row
     .col-xs-12
-      #chart_traffic_day_keyword
-      
+      .well
+        %h3 Keywords detail
+        .table-responsive
+          %table.table#data-table
+            %thead
+              %tr
+                %th Keyword
+                %th
+                  %a{"data-content" => "The position the domain gets in organic search for the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Position
+                %th 
+                  %a{"data-content" => "The average of searches for the given keyword in the last 12 months.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Volume
+                %th
+                  %a{"data-content" => "Average price advertisers pay for a user’s click on an ad triggered by the given keyword (Google AdWords).", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}CPC(USD)
+                %th url
+                %th
+                  %a{"data-content" => "The share of traffic driven to the website with the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Traffic%
+                %th
+                  %a{"data-content" => "Estimated price of the given keyword in Google AdWords.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Costs%
+                %th
+                  %a{"data-content" => "The number of URLs displayed in organic search results for the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Results
+            %tbody
+              -@semrush_data.each do |d|
+                %tr
+                  %td= d.keyword
+                  %td= d.position
+                  %td= d.volume
+                  %td= d.cpc
+                  %td
+                    = link_to d.url, target: "_blank" do
+                      = d.url.truncate(20)
+                  %td= d.traffic_percent
+                  %td= d.costs_percent
+                  %td= d.results
   .row
     .col-xs-12
       .well
@@ -95,6 +126,9 @@
                         %a{"data-content" => "Keywords positions +50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}+ 50
                       %td
                         %a{"data-content" => "#{@range_5_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_5.size
+  .row
+    .col-xs-12
+      #chart_traffic_day_keyword 
   .row
     .col-xs-12
       #chart_top_keywords_traffic
