@@ -56,6 +56,7 @@ ActiveRecord::Schema.define(version: 20160501181937) do
     t.boolean  "authorised",                 default: false
     t.string   "status_text"
     t.string   "cv_type_text"
+    t.boolean  "uses_public_filter",         default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|

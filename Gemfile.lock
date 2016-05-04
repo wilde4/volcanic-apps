@@ -272,6 +272,3 @@ DEPENDENCIES
   unicorn
   unicorn-worker-killer
   youtube_it
-
-BUNDLED WITH
-   1.11.2
