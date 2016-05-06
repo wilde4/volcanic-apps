@@ -15,7 +15,7 @@ class SaveSemrushData
     request_rate = app_setting.request_rate
     end_date = Date.today
     if app_setting.has_records?
-      # organic_report = report.organic(limit: app_setting.keyword_amount, db: app_setting.engine, display_date: Date.today.strftime('%Y%m%%d'), display_sort: 'nq_desc')
+      # organic_report = report.organic(limit: app_setting.keyword_amount, db: app_setting.engine, display_date: Date.today.strftime('%Y%m%%d'))      
       organic_report = fake_data;
       organic_report.each do |o|
         app_setting.semrush_stats.create(

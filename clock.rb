@@ -22,8 +22,8 @@ module Clockwork
   end
   
   every(1.day, 'get_semrush_data.job') do
-    SemrushAppSetting.all.each do |semrush_setting|
-      if !semrush_setting.has_records? || semrush_setting.day_of_petition?
+    SemrushAppSettings.all.each do |semrush_setting|
+      if !semrush_setting.has_records? || semrush_setting.day_of_petition? || !semrush_setting.last_petition_at.present?
         SaveSemrushData.save_data(semrush_setting.id)
       end
     end
