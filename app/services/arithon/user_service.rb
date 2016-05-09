@@ -246,8 +246,8 @@ class Arithon::UserService < BaseService
 
     def candidate_name
       # format candidate name
-      @first_name = @user.user_profile['first_name']
-      @last_name  = @user.user_profile['last_name']
+      @first_name = @user.user_profile['first_name'].try(:strip)
+      @last_name  = @user.user_profile['last_name'].try(:strip)
       if @first_name.present? && @last_name.present?
         "#{@first_name} #{@last_name}"
       else
