@@ -28,7 +28,17 @@ class ArithonController < ApplicationController
     if @user.present?
       if @user.update(@user_attributes)
         @user.reload
-        Arithon::UserService.new(@user, @settings, @key).update_user
+        if @user.arithon_uid.present?
+          Arithon::UserService.new(@user, @settings, @key).update_user
+        else
+          @arithon_id = Arithon::UserService.new(@user, @settings, @key).check_duplicates
+          if @arithon_id.present?
+            @user.update(arithon_uid: @arithon_id)
+            Arithon::UserService.new(@user, @settings, @key).update_user
+          else
+            Arithon::UserService.new(@user, @settings, @key).save_user
+          end
+        end
         render json: { success: true,  user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
