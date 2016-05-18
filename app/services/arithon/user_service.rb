@@ -229,7 +229,7 @@ class Arithon::UserService < BaseService
     
     def cv_mime_type
       if File.exist?(tmp_cv_path)
-        @cv_mime_type ||= MimeMagic.by_magic(tmp_cv_file).type 
+        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type 
       else
         ""
       end
