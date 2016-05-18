@@ -196,7 +196,8 @@ class Arithon::UserService < BaseService
         'text/html',
         'application/rtf',
         'application/x-rtf',
-        'text/richtext'
+        'text/richtext',
+        'application/vnd.oasis.opendocument.text'
       ]
     end
     
