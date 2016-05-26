@@ -9,6 +9,8 @@ class ServicedottController < ApplicationController
     @name = [@user_profile['first_name'], @user_profile['last_name']].join(' ')
     @registration_answer_hash = params[:registration_answer_hash]
     @job = params[:job]
+    @source = "#{params[:source]} Website"
+    @applicationdate = Time.now.strftime('%B %d, %Y %H:%M')
 
     if params[:email_name] == 'apply_for_vacancy'
       # BUILD XML
