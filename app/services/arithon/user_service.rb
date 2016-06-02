@@ -30,58 +30,46 @@ class Arithon::UserService < BaseService
   end
 
   def save_user
-    Thread.new {
-      ActiveRecord::Base.connection_pool.with_connection do
-        begin
-          Rails.logger.info "--- ABOUT TO INSERT"
-          @new_cv = true
-          @new_avatar = true
-          @contact_attributes               = map_contact_attributes
-          # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
-          @response = send_request("PushCandidate", @contact_attributes)
-          delete_tmp_cv_file
-          Rails.logger.info "--- @response: #{@response.inspect}"
-          # update user details
-          if @response.present? && @response['code'].present? && @response['code'] == 200
-            # API doesn't return ID of new record so we have to fetch it
-            @attrs = Hash.new
-            @attrs[:email] = @user.email
-            @attrs[:candidateName] = candidate_name
-            @response2 = send_request("CandidateDetails", @attrs)
-            if @response2['code'] == 200
-              Rails.logger.info "--- @response2: #{@response2.inspect}"
-              @user.update(
-                arithon_uid: @response2['records'][0]['candidateID']
-              )
-            end
-          end
-        rescue => e
-          Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
-        end
+    Rails.logger.info "--- ABOUT TO INSERT"
+    @new_cv = true
+    @new_avatar = true
+    @contact_attributes               = map_contact_attributes
+    # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
+    @response = send_request("PushCandidate", @contact_attributes)
+    delete_tmp_cv_file
+    Rails.logger.info "--- @response: #{@response.inspect}"
+    # update user details
+    if @response.present? && @response['code'].present? && @response['code'] == 200
+      # API doesn't return ID of new record so we have to fetch it
+      @attrs = Hash.new
+      @attrs[:email] = @user.email
+      @attrs[:candidateName] = candidate_name
+      @response2 = send_request("CandidateDetails", @attrs)
+      if @response2['code'] == 200
+        Rails.logger.info "--- @response2: #{@response2.inspect}"
+        @user.update(
+          arithon_uid: @response2['records'][0]['candidateID']
+        )
       end
-    }
+    end
+  rescue => e
+    Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
   end
 
   def update_user
-    Thread.new {
-      ActiveRecord::Base.connection_pool.with_connection do
-        begin
-          Rails.logger.info "--- ABOUT TO UPDATE"
-          # map contact attributes
-          Rails.logger.info "--- ABOUT TO map_contact_attributes"
-          @contact_attributes               = map_contact_attributes
-          @contact_attributes[:candidateID] = @user.arithon_uid
-          Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
-          # post contact attributes
-          @response = send_request("PushCandidate", @contact_attributes)
-          delete_tmp_cv_file
-          Rails.logger.info "--- @response = #{@response.inspect}"
-          # update user details
-        rescue => e
-          Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
-        end
-     end
-    }
+    Rails.logger.info "--- ABOUT TO UPDATE"
+    # map contact attributes
+    Rails.logger.info "--- ABOUT TO map_contact_attributes"
+    @contact_attributes               = map_contact_attributes
+    @contact_attributes[:candidateID] = @user.arithon_uid
+    Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
+    # post contact attributes
+    @response = send_request("PushCandidate", @contact_attributes)
+    delete_tmp_cv_file
+    Rails.logger.info "--- @response = #{@response.inspect}"
+    # update user details
+  rescue => e
+    Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
   end
 
   def check_duplicates
@@ -114,7 +102,7 @@ class Arithon::UserService < BaseService
 
   private
     
-     def build_tmp_cv_file
+    def build_tmp_cv_file
       make_dir
       File.open(tmp_cv_path, "wb") do |file|
         file.write(open(cv_path).read)
