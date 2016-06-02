@@ -40,13 +40,14 @@ class Arithon::UserService < BaseService
     Rails.logger.info "--- @response: #{@response.inspect}"
     # update user details
     if @response.present? && @response['code'].present? && @response['code'] == 200
+      Rails.logger.info "--- GETTING ARITHON ID"
       # API doesn't return ID of new record so we have to fetch it
       @attrs = Hash.new
       @attrs[:email] = @user.email
       @attrs[:candidateName] = candidate_name
       @response2 = send_request("CandidateDetails", @attrs)
+      Rails.logger.info "--- @response2: #{@response2.inspect}"
       if @response2['code'] == 200
-        Rails.logger.info "--- @response2: #{@response2.inspect}"
         @user.update(
           arithon_uid: @response2['records'][0]['candidateID']
         )
