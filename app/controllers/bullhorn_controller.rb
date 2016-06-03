@@ -140,6 +140,8 @@ class BullhornController < ApplicationController
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
+      client = authenticate_client(params[:user][:dataset_id])
+      
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if Rails.env.development?
         key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
