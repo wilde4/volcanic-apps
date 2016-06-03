@@ -159,7 +159,7 @@ class BullhornController < ApplicationController
       logger.info "--- file_response = #{file_response.inspect}"
 
       # PARSE FILE
-      candidate_data = parse_cv(client, params, content_type, cv, ct)
+      candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
 
       # ADD TO CANDIDATE DESCRIPTION
       if candidate_data.present? && candidate_data['description'].present?
