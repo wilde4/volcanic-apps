@@ -150,40 +150,10 @@ class BullhornController < ApplicationController
       end
       logger.info "--- cv_url = #{cv_url}"
 
-      require 'open-uri'
-      require 'base64'
-      cv = open(cv_url).read
-      client = authenticate_client(params[:dataset_id])
+      # @file_attributes COME FROM THIS
+      extract_file_attributes(cv_url, params)
 
-      # UPOAD FILE
-      base64_cv = Base64.encode64(cv)
-      content_type = params[:user_profile][:upload_name].split('.').last
-      # text, html, pdf, doc, docx, rtf, or odt.
-      case content_type
-      when 'doc'
-        ct = 'application/msword'
-      when 'docx'
-        ct = 'application/vnd.openxmlformatsofficedocument.wordprocessingml.document'
-      when 'txt'
-        ct = 'text/plain'
-      when 'html'
-        ct = 'text/html'
-      when 'pdf'
-        ct = 'application/pdf'
-      when 'rtf'
-        ct = 'application/rtf'
-      when 'odt'
-        ct = 'application/vnd.oasis.opendocument.text'
-      end
-      file_attributes = {
-        'externalID' => 'CV',
-        'fileType' => 'SAMPLE',
-        'name' => params[:user_profile][:upload_name],
-        'fileContent' => base64_cv,
-        'contentType' => ct,
-        'type' => 'CV'
-      }
-      file_response = client.put_candidate_file(@user.bullhorn_uid, file_attributes.to_json)
+      file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
       logger.info "--- file_response = #{file_response.inspect}"
 
       # PARSE FILE
