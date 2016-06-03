@@ -1,4 +1,15 @@
 class MailChimpController < ApplicationController
+  
+  before_action :set_key
+  
+  def index
+    @host = @key.host
+    @app_id = params[:data][:id]
+    
+    @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @host)
+    @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
+    render layout: false
+  end
 
   def export_list
     @users = JSON.parse(params[:users]) if params[:users]

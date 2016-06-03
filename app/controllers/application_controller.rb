@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   before_action :set_env_vars_locally
   protect_from_forgery with: :exception
+  skip_before_action :verify_authenticity_token
 
   require "rubygems"
   require "net/https"

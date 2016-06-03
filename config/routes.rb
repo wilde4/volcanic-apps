@@ -188,8 +188,15 @@ Apps::Application.routes.draw do
   scope :semrush do
     get 'index'             => 'semrush#index'
     post 'activate_app'     => 'semrush#activate_app'
+    post 'deactivate_app'   => 'semrush#deactivate_app'
     post 'save_settings'    => 'semrush#save_settings'
     post 'update_settings'  => 'semrush#update_settings'
+  end
+  
+  scope :mail_chimp do
+    get 'index'             => 'mail_chimp#index'
+    post 'activate_app'     => 'mail_chimp#activate_app'
+    post 'deactivate_app'   => 'mail_chimp#deactivate_app'
   end
   
   scope :job_adder do

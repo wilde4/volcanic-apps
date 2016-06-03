@@ -11,6 +11,7 @@
         #settings_form
           = render partial: 'settings_form'
   - else
+    %h2= @end_date
     - if @semrush_data.present?
       = render partial: 'bootstrap_tables'
       = render partial: 'dashboard'

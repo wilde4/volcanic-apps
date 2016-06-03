@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160501181937) do
+ActiveRecord::Schema.define(version: 20160603000611) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -280,6 +280,14 @@ ActiveRecord::Schema.define(version: 20160501181937) do
     t.string   "user_group_name"
     t.text     "user_profile"
     t.text     "registration_answers"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "mail_chimp_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "authorization_code"
+    t.text     "access_token"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -29,10 +29,12 @@ class SemrushController < ApplicationController
       # Data for charts
       start_date = Date.today - 1.months
       end_date = @semrush_setting.last_petition_at
+      @end_date = @semrush_setting.last_petition_at
+      
       
       @chart_position_range_keywords = []
       start_date.upto(end_date) do |date|
-        day_data = SemrushStat.where(engine: 'us', day: date)
+        day_data = SemrushStat.where(engine: @semrush_setting.engine, day: date)
         if day_data.present?
           range_1 = day_data.where('position >= 1 AND position <= 3', day: date)
           range_2 = day_data.where('position >= 4 AND position <= 10', day: date)
@@ -103,6 +105,10 @@ class SemrushController < ApplicationController
         format.json { render json: { success: false, error: settings.errors } }
       end
     end
+  end
+  
+  def save_data
+    SaveSemrushData.save_data(params[:id])
   end
   
 end

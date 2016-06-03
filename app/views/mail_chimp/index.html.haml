@@ -1,0 +1,18 @@
+.volcanic_apps
+  .row
+    #flash_messages
+    - if @settings.present? && @settings.authorization_code.present?
+      %h4
+        Your App is Authorised.
+      .row
+        .col-md-6
+          %p Add your field mappings below. Use the Registration Question reference strings for the relevant YuTalent field.
+          #settings_form
+            = render partial: 'settings_form'
+    - else
+      %h1= @auth_url
+      %h2 https://login.mailchimp.com/oauth2/authorize?response_type=code&client_id=635959587059&redirect_uri=http%3A%2F%2F192.168.1.8%2Foauth%2Fcomplete.php
+      %p
+        Please click the button below to authorize your YuTalent app.
+      %br
+        = link_to "Authorize Access", "#{@auth_url}", class: 'btn btn-info btn-lg'
