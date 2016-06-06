@@ -32,7 +32,7 @@ class SemrushController < ApplicationController
       
       @chart_position_range_keywords = []
       start_date.upto(end_date) do |date|
-        day_data = SemrushStat.where(engine: 'us', day: date)
+        day_data = SemrushStat.where(engine: @semrush_setting.engine, day: date)
         if day_data.present?
           range_1 = day_data.where('position >= 1 AND position <= 3', day: date)
           range_2 = day_data.where('position >= 4 AND position <= 10', day: date)
