@@ -78,7 +78,8 @@ class SemrushController < ApplicationController
       @semrush_setting.previous_data = 12
       @semrush_setting.request_rate = 7
       if @semrush_setting.save
-        flash[:notice]  = "Settings successfully saved."
+        flash[:notice]  = "Settings successfully saved. We are processing your data"
+        save_stats(@semrush_setting.id)
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
@@ -103,6 +104,11 @@ class SemrushController < ApplicationController
         format.json { render json: { success: false, error: settings.errors } }
       end
     end
+  end
+  
+  def save_stats(app_settings_id)
+    SaveSemrushData.save_data(app_settings_id)
+    #redirect al index con flash notice y mientras se ejecutan las llamadas a la api
   end
   
 end
