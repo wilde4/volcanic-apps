@@ -1,6 +1,7 @@
 class MailChimpController < ApplicationController
-  
-  before_action :set_key
+  protect_from_forgery with: :null_session
+  before_filter :set_key, only: [:index]
+  after_filter :setup_access_control_origin
   
   def index
     @host = @key.host
