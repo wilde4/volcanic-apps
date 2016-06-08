@@ -20,6 +20,7 @@
             %h6= registration_group['label']
             - registration_group['registration_questions'].each do |question|
               %p= question['label']
-              - if question['options'].exit?
-                %span= question['options']
+              - if question['options'].present?
+                %span
+                  %strong= question['options']
         %br
