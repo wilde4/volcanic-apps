@@ -1,0 +1,25 @@
+.row
+  .container
+    %h2 Conditions
+    %p= "#{@user_groups.first}"
+    - @user_groups.each do |group|
+      -if group['allow_registrations']
+        .well
+          %p 
+            Group id: 
+            = group['id']
+          %p
+            Name: 
+            = group['name']
+          %p
+            Allow reg: 
+            = group['allow_registrations']
+          %hr
+          %h5 Registration questions groups
+          - group['registration_question_groups'].each do |registration_group|
+            %h6= registration_group['label']
+            - registration_group['registration_questions'].each do |question|
+              %p= question['label']
+              - if question['options'].exit?
+                %span= question['options']
+        %br

@@ -17,10 +17,20 @@ class MailChimp::AuthenticationService < BaseService
       client = OAuth2::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
       authorize_url = client.auth_code.authorize_url(redirect_uri: redirect_uri(app_id, host), response_type: 'code')
 
-      return URI.decode(authorize_url)
-      
+      return URI.decode(authorize_url)  
     end
     
+    def get_access_token(app_id, host, authorization_code)
+      client = OAuth2::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
+      begin
+        @callback_url = redirect_uri(app_id, host)
+        @token = client.auth_code.get_token(authorization_code, redirect_uri: @callback_url)
+        @token = @token.to_hash[:access_token]
+      rescue => e
+        Rails.logger.info "--- mailchimp get_access_token exception ----- : #{e.message}"
+      end
+      @token
+    end
 
     private
 

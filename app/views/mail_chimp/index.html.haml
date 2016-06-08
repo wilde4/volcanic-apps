@@ -1,17 +1,17 @@
 .volcanic_apps
   .row
     #flash_messages
-    - if @settings.present? && @settings.authorization_code.present?
-      %h4
-        Your App is Authorised.
-      .row
-        .col-md-6
-          %p Add your field mappings below. Use the Registration Question reference strings for the relevant YuTalent field.
-          #settings_form
-            = render partial: 'settings_form'
-    - else
-      %h1= @auth_url
-      %p
-        Please click the button below to authorize your YuTalent app.
-      %br
-        = link_to "Authorize Access", "#{@auth_url}", class: 'btn btn-info btn-lg'
+  - if @settings.present? && @settings.access_token.present?
+    .row
+      .container
+        %h2 Mailchimp Volcanic App
+        %h6
+          Your account is authorised.
+    = render partial: 'conditions_form'
+  - else
+    .row
+      .container
+        %p
+          Please click the button below to authorize your account.
+        %br
+          = link_to "Authorize Access", "#{@auth_url}", class: 'btn btn-info btn-lg'

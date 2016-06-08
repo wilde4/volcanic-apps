@@ -1,6 +1,6 @@
 class MailChimpController < ApplicationController
   protect_from_forgery with: :null_session
-  before_filter :set_key, only: [:index]
+  before_filter :set_key, only: [:index, :callback]
   after_filter :setup_access_control_origin
   
   def index
@@ -9,7 +9,45 @@ class MailChimpController < ApplicationController
     
     @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @host)
     @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
+    
+    # @user_groups_url = 'http://' + @host + ':3000' + '/api/v1/user_groups.json'
+    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+
+    @user_groups = HTTParty.get(@user_groups_url)
+    
+    
     render layout: false
+  end
+  
+  def callback
+    
+    @attributes                       = Hash.new
+    @attributes[:dataset_id]          = params[:data][:dataset_id]
+    @attributes[:authorization_code]  = params[:data][:code]
+    @attributes[:access_token]        = MailChimp::AuthenticationService.get_access_token(
+                                          params[:data][:id],
+                                          @key.host,
+                                          params[:data][:code])
+                                          
+    unless !@attributes[:access_token].present?
+      @settings = MailChimpAppSettings.find_by(dataset_id: @attributes[:dataset_id])
+      if @settings.present?
+        if @settings.update(@attributes)
+          flash[:notice]  = "App successfully authorised."
+        else
+          flash[:alert]   = "App could not be authorised."
+        end
+      else
+        @settings = MailChimpAppSettings.new(@attributes)
+        if @settings.save
+          flash[:notice]  = "App successfully authorised."
+        else
+          flash[:alert]   = "App could not be authorised."
+        end
+      end
+    end
+
+    render :index, layout: false
   end
 
   def export_list

@@ -197,6 +197,7 @@ Apps::Application.routes.draw do
     get 'index'             => 'mail_chimp#index'
     post 'activate_app'     => 'mail_chimp#activate_app'
     post 'deactivate_app'   => 'mail_chimp#deactivate_app'
+    get  'callback'         => 'mail_chimp#callback', as: :mail_chimp_callback
   end
   
   scope :job_adder do
