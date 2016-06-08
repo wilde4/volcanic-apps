@@ -1,26 +1,19 @@
 .row
-  .container
-    %h2 Conditions
-    %p= "#{@user_groups.first}"
-    - @user_groups.each do |group|
-      -if group['allow_registrations']
-        .well
-          %p 
-            Group id: 
-            = group['id']
-          %p
-            Name: 
-            = group['name']
-          %p
-            Allow reg: 
-            = group['allow_registrations']
-          %hr
-          %h5 Registration questions groups
-          - group['registration_question_groups'].each do |registration_group|
-            %h6= registration_group['label']
-            - registration_group['registration_questions'].each do |question|
-              %p= question['label']
-              - if question['options'].present?
-                %span
-                  %strong= question['options']
-        %br
+  .col-xs-12
+    %h2 Form
+  .col-xs-12
+    .row
+      - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/save_condition' : 'https://apps.volcanic.co/mail_chimp/save_condition'
+      = simple_form_for @mail_chimp_condition, url: url, method: :post do |f|
+        .col-xs-12
+          = f.input :mail_chimp_app_settings_id, input_html: { value: "#{@mail_chimp_app_settings.id}" }, readonly: true
+        .col-xs-12
+          = f.input :user_group, collection: 1..10
+        .col-xs-12
+          = f.input :mail_chimp_list_id, collection: 1..10
+        .col-xs-12
+          = f.input :registration_question_id, collection: 1..10
+        .col-xs-12
+          = f.input :answer
+        .col-xs-12
+          = f.submit class: 'btn btn-primary'

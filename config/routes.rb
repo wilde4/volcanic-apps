@@ -198,6 +198,11 @@ Apps::Application.routes.draw do
     post 'activate_app'     => 'mail_chimp#activate_app'
     post 'deactivate_app'   => 'mail_chimp#deactivate_app'
     get  'callback'         => 'mail_chimp#callback', as: :mail_chimp_callback
+    get  "new_condition"    => 'mail_chimp#new_condition', as: :mail_chimp_new_condition
+    post "save_condition"   => 'mail_chimp#save_condition'
+  end
+  
+  scope :mail_chimp_condition do
   end
   
   scope :job_adder do

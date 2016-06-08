@@ -1,0 +1,2 @@
+class MailChimpConditionController < ApplicationController
+end

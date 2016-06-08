@@ -1,6 +1,6 @@
 class MailChimpController < ApplicationController
   protect_from_forgery with: :null_session
-  before_filter :set_key, only: [:index, :callback]
+  before_filter :set_key, only: [:index, :callback, :new_condition]
   after_filter :setup_access_control_origin
   
   def index
@@ -20,7 +20,6 @@ class MailChimpController < ApplicationController
   end
   
   def callback
-    
     @attributes                       = Hash.new
     @attributes[:dataset_id]          = params[:data][:dataset_id]
     @attributes[:authorization_code]  = params[:data][:code]
@@ -48,6 +47,30 @@ class MailChimpController < ApplicationController
     end
 
     render :index, layout: false
+  end
+  
+  def new_condition
+    @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
+    @mail_chimp_condition = MailChimpCondition.new
+    render layout: false
+  end
+  
+  def save_condition
+    
+    condition_attributes = Hash.new
+    condition_attributes[:mail_chimp_app_settings_id]    = params[:mail_chimp_condition][:mail_chimp_app_settings_id]
+    condition_attributes[:user_group]                    = params[:mail_chimp_condition][:user_group]
+    condition_attributes[:mail_chimp_list_id]            = params[:mail_chimp_condition][:mail_chimp_list_id]
+    condition_attributes[:registration_question_id]      = params[:mail_chimp_condition][:registration_question_id]
+    condition_attributes[:answer]                        = params[:mail_chimp_condition][:answer]
+    
+    @mailchimp_condition = MailChimpCondition.new(condition_attributes)
+    if @mailchimp_condition.save
+      render :index
+    else
+      render json: { success: false, status: "Error: #{@mailchimp_condition.errors.full_messages.join(', ')}" }
+    end
+    
   end
 
   def export_list
