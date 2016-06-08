@@ -51,6 +51,8 @@ class JobAdderController < ApplicationController
         @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
         logger.info "--- Job Adder Volcanic responce = #{job.present? ? job.search('Title').try(:text) : 'No Job Found'}: #{@jobs_responce.body}"
       end
+
+      prune_jobs
     }
     render status: 200
   end
@@ -128,7 +130,14 @@ class JobAdderController < ApplicationController
       "http://#{@key.host}"
     end
   end
-  
+
+  def prune_jobs
+    live_refs = @xml.search('//Job').map { |job| job.attr('reference') }
+    current_refs = @key.dataset.jobs.where("expiry_date > ?", Time.now).map { |job| job.job_reference }
+    prune_refs = current_refs - live_refs
+    logger.info " --- Prune SQL: #{@key.dataset.jobs.where(job_reference: prune_refs).update_all(expiry_date: (Date.today - 1.day).to_s(:db)).to_sql}"
+    @key.dataset.jobs.where(job_reference: prune_refs).update_all(expiry_date: (Date.today - 1.day).to_s(:db))
+  end
 
 end
   
