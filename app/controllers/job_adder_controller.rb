@@ -132,11 +132,33 @@ class JobAdderController < ApplicationController
   end
 
   def prune_jobs
+    logger.info " ============> STARTING PRUNE <==========="
     live_refs = @xml.search('//Job').map { |job| job.attr('reference') }
-    current_refs = @key.dataset.jobs.where("expiry_date > ?", Time.now).map { |job| job.job_reference }
+    logger.info live_refs
+
+    current_refs = HTTParty.get("#{host_endpoint}/api/v1/jobs/job_references.json").parsed_response.map { |job| job["job_reference"] }
+
+    logger.info current_refs
     prune_refs = current_refs - live_refs
-    logger.info " --- Prune SQL: #{@key.dataset.jobs.where(job_reference: prune_refs).update_all(expiry_date: (Date.today - 1.day).to_s(:db)).to_sql}"
-    @key.dataset.jobs.where(job_reference: prune_refs).update_all(expiry_date: (Date.today - 1.day).to_s(:db))
+    logger.info prune_refs
+
+    prune_refs.each do |ref|
+      @job_payload = Hash.new
+      @job_payload["job[api_key]"] = @key.api_key
+      @job_payload['job[job_reference]'] = ref
+
+      logger.info "--- @job_payload = #{@job_payload.inspect}"
+      expire_job(@job_payload)
+    end
+  end
+
+  def expire_job(payload)
+    response = HTTParty.post("#{host_endpoint}/api/v1/jobs/expire.json", { body: payload })
+
+    logger.info "#{response.code} - #{response.read_body}"
+    return response.code.to_i == 200
+  rescue Exception => e
+    logger.info "[FAIL] http.request failed to post payload: #{e}"
   end
 
 end
