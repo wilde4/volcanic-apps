@@ -14,8 +14,27 @@
         .col-xs-12
           = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false
         .col-xs-12
-          = f.input :registration_question_id, collection: 1..10, label: "Registration question", include_blank: false
+          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", include_blank: false
         .col-xs-12
           = f.input :answer, label: "Answer to match"
         .col-xs-12
           = f.submit class: 'btn btn-primary'
+:javascript
+          $('#mail_chimp_condition_user_group').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var user_group_id = this.value;
+            alert(user_group_id);
+            display_ug_questions(user_group_id);
+          });
+          
+          function display_ug_questions(user_group_id){
+            $('#mail_chimp_condition_registration_question_id').find('option').each(function() {
+              user_group = $(this).attr("user_group");
+              console.log(user_group);
+              if(user_group != user_group_id){
+                $(this).hide();
+              }else{
+                $(this).show();
+              }
+            });
+          }

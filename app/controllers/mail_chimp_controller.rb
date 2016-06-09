@@ -60,11 +60,19 @@ class MailChimpController < ApplicationController
     @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
+    @registration_questions = []
     @user_groups.each do |g|
       @user_group_collection << [g['name'],g['id']]
+      g['registration_question_groups'].each do |registration_group|
+        registration_group['registration_questions'].each do |question|
+          @registration_questions << [question['label'],question['id'], g['id']]
+        end
+      end
     end
     
-    gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+    # gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+    gibbon = set_gibbon(@mail_chimp_app_settings.access_token)
+    
     mailchimp_lists = gibbon.lists.retrieve
     @mailchimp_lists_collection = []
     mailchimp_lists['lists'].each do |list|
@@ -111,7 +119,9 @@ class MailChimpController < ApplicationController
     end 
     
     def set_gibbon(access_token)
-      return gibbon = Gibbon::Request.new(api_key: access_token)
+      gibbon = Gibbon::Request.new
+      gibbon.api_key = access_token
+      gibbon
     end
   
 end
