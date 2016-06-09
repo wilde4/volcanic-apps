@@ -69,7 +69,8 @@ class SemrushController < ApplicationController
     @semrush_setting = SemrushAppSettings.find_by(dataset_id: params[:semrush_app_settings][:dataset_id])
     if @semrush_setting.present? #if exists -> update settings
       if @semrush_setting.update(params[:semrush_app_settings].permit!)
-        flash[:notice]  = "Settings successfully saved."
+        flash[:notice]  = "Settings successfully saved. We are processing your data."
+        save_stats(@semrush_setting.id)
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
@@ -78,7 +79,7 @@ class SemrushController < ApplicationController
       @semrush_setting.previous_data = 12
       @semrush_setting.request_rate = 7
       if @semrush_setting.save
-        flash[:notice]  = "Settings successfully saved. We are processing your data"
+        flash[:notice]  = "Settings successfully saved. We are processing your data. Try to reload the page in a few minutes"
         save_stats(@semrush_setting.id)
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
@@ -107,8 +108,10 @@ class SemrushController < ApplicationController
   end
   
   def save_stats(app_settings_id)
-    SaveSemrushData.save_data(app_settings_id)
-    #redirect al index con flash notice y mientras se ejecutan las llamadas a la api
+    Thread.new do
+      SaveSemrushData.save_data(app_settings_id)
+      ActiveRecord::Base.connection_pool.release_connection
+    end
   end
   
 end

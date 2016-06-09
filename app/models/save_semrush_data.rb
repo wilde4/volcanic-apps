@@ -1,6 +1,5 @@
 class SaveSemrushData
   def self.save_data(app_setting_id)
-    debugger
     fake_data = [
                   {keyword: 'test keyword 1',pos: '1',position_difference: '1',traffic_percent: '0.1',costs_percent: '1',number_of_results: '100',cpc: '1',average_vol: '100',url: 'url1.com'},
                   {keyword: 'test keyword 2',pos: '2',position_difference: '2',traffic_percent: '0.2',costs_percent: '2',number_of_results: '200',cpc: '2',average_vol: '200',url: 'url2.com'},

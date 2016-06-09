@@ -34,7 +34,11 @@
         = render partial: 'settings_form'
   .row
     .col-xs-12
-      #chart_position_range_keywords
+      - if @chart_position_range_keywords.present?
+        #chart_position_range_keywords
+      - else
+        .well
+          %h5 We are processing your stats. Try to refresh the page in a few minutes to view the chart.
   .row
     .col-xs-12
       .well
