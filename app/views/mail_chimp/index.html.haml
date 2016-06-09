@@ -9,10 +9,15 @@
           Your account is authorised.
     .row
       .col-xs-12
-        =link_to 'New condition', mail_chimp_new_condition_path
+        =link_to 'New condition', @new_condition_url
     .row
       .col-xs-12
-        %h2 Conditions
+        - if @mailchimp_conditions.present?
+          %h2 Conditions
+          - @mailchimp_conditions.each do |condition|
+            %p= condition.id
+    .row
+      .col-xs-12
         - @user_groups.each do |group|
           -if group['allow_registrations']
             .well

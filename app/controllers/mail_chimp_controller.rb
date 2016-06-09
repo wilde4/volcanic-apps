@@ -6,9 +6,12 @@ class MailChimpController < ApplicationController
   def index
     @host = @key.host
     @app_id = params[:data][:id]
+    @new_condition_url = create_url(@app_id,@host,'new_condition')
     
     @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @host)
     @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
+    
+    @mailchimp_conditions = @settings.mail_chimp_conditions
     
     # @user_groups_url = 'http://' + @host + ':3000' + '/api/v1/user_groups.json'
     @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
@@ -52,11 +55,26 @@ class MailChimpController < ApplicationController
   def new_condition
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
+    
+    # @user_groups_url = 'http://' + @host + ':3000' + '/api/v1/user_groups.json'
+    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+    @user_groups = HTTParty.get(@user_groups_url)
+    @user_group_collection = []
+    @user_groups.each do |g|
+      @user_group_collection << [g['name'],g['id']]
+    end
+    
+    gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+    mailchimp_lists = gibbon.lists.retrieve
+    @mailchimp_lists_collection = []
+    mailchimp_lists['lists'].each do |list|
+      @mailchimp_lists_collection << [list['name'], list['id']]
+    end
+    
     render layout: false
   end
   
   def save_condition
-    
     condition_attributes = Hash.new
     condition_attributes[:mail_chimp_app_settings_id]    = params[:mail_chimp_condition][:mail_chimp_app_settings_id]
     condition_attributes[:user_group]                    = params[:mail_chimp_condition][:user_group]
@@ -65,34 +83,36 @@ class MailChimpController < ApplicationController
     condition_attributes[:answer]                        = params[:mail_chimp_condition][:answer]
     
     @mailchimp_condition = MailChimpCondition.new(condition_attributes)
+    
+    host = Key.find(params[:key_id]).host
+    index_url = create_url(params[:app_id], host, 'index')
+    
     if @mailchimp_condition.save
-      render :index
+      flash[:notice]  = "Condition succesfully created"
+      redirect_to index_url
     else
       render json: { success: false, status: "Error: #{@mailchimp_condition.errors.full_messages.join(', ')}" }
     end
     
   end
-
-  def export_list
-    @users = JSON.parse(params[:users]) if params[:users]
-    @settings = JSON.parse(params[:settings]) if params[:settings]
-    gb = Gibbon::API.new(@settings["key"])
-    # @batch = @users.collect{|user|{:email => {:email => user["email"]}, :merge_vars => {:FNAME => user["first_name"], :LNAME => user["last_name"]}}}
+  
+  private
     
-    @batch = @users.collect{|user|{:email => {:email => (user["email"] rescue nil)}, 
-                                   :merge_vars => {
-                                     :FNAME => (user["li_entry"].split("\n")[3].gsub("firstName:", "").strip rescue nil), 
-                                     :LNAME => (user["li_entry"].split("\n")[7].gsub("lastName:", "").strip rescue nil) }}}
-    
-    response = gb.lists.batch_subscribe(:id => @settings["list_key"], :batch => @batch, :double_optin => false, :update_existing => true)
-    respond_to do |format|
-      if response["error_count"] > 0
-        format.json { render :json => { :status => "error" } }
-      else
-        format.json { render :json => { :status => "all_ok", :message => "List has been updated successfully." } }
-      end
+    def create_url(app_id, host, endpoint)
+      @host = format_url(host)
+      "#{@host}/admin/apps/#{app_id}/#{endpoint}"
     end
-  end
+    
+    def format_url(url)
+      url = URI.parse(url)
+      return url if url.scheme
+      return "http://#{url}:3000" if Rails.env.development?
+      "http://#{url}"
+    end 
+    
+    def set_gibbon(access_token)
+      return gibbon = Gibbon::Request.new(api_key: access_token)
+    end
   
 end
 

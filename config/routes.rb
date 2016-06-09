@@ -202,8 +202,6 @@ Apps::Application.routes.draw do
     post "save_condition"   => 'mail_chimp#save_condition'
   end
   
-  scope :mail_chimp_condition do
-  end
   
   scope :job_adder do
     post "activate_app"     => 'job_adder#activate_app'
