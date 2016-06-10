@@ -200,7 +200,7 @@ Apps::Application.routes.draw do
     get  'callback'         => 'mail_chimp#callback', as: :mail_chimp_callback
     get  "new_condition"    => 'mail_chimp#new_condition', as: :mail_chimp_new_condition
     post "save_condition"   => 'mail_chimp#save_condition'
-    post "delete_condition" => 'mail_chimp#delete_condition' as: :mail_chimp_delete_condition
+    post "delete_condition" => 'mail_chimp#delete_condition', as: :mail_chimp_delete_condition
   end
   
   

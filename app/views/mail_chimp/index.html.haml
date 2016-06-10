@@ -9,33 +9,10 @@
           Your account is authorised.
     .row
       .col-xs-12
-        =link_to 'New condition', @new_condition_url
+        =link_to 'New condition', @new_condition_url, class: 'btn btn-primary'
     .row
       .col-xs-12
-        - if @mailchimp_conditions.present?
-          %h2 Conditions
-          
-          %table.table#data-table
-            %thead
-              %tr
-                %th User Group
-                %th Registration Question
-                %th Candidate Answer
-                %th MailChimp List
-            %tbody
-              - @mailchimp_conditions.each do |condition|
-                %tr
-                  - @user_groups.each do |group|
-                    - if group['id'] == condition.user_group
-                      %td= group['name']
-                      - group['registration_question_groups'].each do |registration_group|
-                        - registration_group['registration_questions'].each do |question|
-                          - if question['id'] == condition.registration_question_id
-                            %td= question['label']
-                  %td= condition.answer
-                  - @mailchimp_lists_collection.each do |list|
-                    - if list[1] == condition.mail_chimp_list_id
-                      %td= list[0]
+        = render partial: 'conditions_table'
     %hr
     .row
       .col-xs-12

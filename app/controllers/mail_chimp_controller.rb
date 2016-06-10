@@ -114,6 +114,12 @@ class MailChimpController < ApplicationController
   end
   
   def delete_condition
+    @condition = MailChimpCondition.find(params[:id])
+    if @condition.destroy
+      redirect_to 'http://meridian.localhost.volcanic.co:3000/admin/apps/3/index', notice: 'Project deleted correctly'
+    else
+      flash[:alert] = "<ul>" + @project.errors.full_messages.map{|o| "<li>" + o + "</li>" }.join("") + "</ul>"
+    end
   end
   
   private
