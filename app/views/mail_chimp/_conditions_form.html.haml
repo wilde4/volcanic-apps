@@ -10,31 +10,36 @@
         .col-xs-12
           = f.input :mail_chimp_app_settings_id, input_html: { value: "#{@mail_chimp_app_settings.id}" }, readonly: true, as: :hidden
         .col-xs-12
-          = f.input :user_group, collection: @user_group_collection, label: "User Group", include_blank: false
+          = f.input :user_group, collection: @user_group_collection, label: "User Group", include_blank: false, input_html: {class: 'form-control'}, required: true
         .col-xs-12
-          = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false
+          = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false, input_html: {class: 'form-control'}, required: true
         .col-xs-12
-          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", include_blank: false
+          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true
         .col-xs-12
-          = f.input :answer, label: "Answer to match"
+          = f.input :answer, label: "Answer to match", input_html: {class: 'form-control'}, required: true
         .col-xs-12
           = f.submit class: 'btn btn-primary'
 :javascript
+          $( document ).ready(function() {
+              var user_group_id = $('#mail_chimp_condition_user_group').val();
+              display_ug_questions(user_group_id);
+          });
+          
           $('#mail_chimp_condition_user_group').on('change', function (e) {
             var optionSelected = $("option:selected", this);
             var user_group_id = this.value;
-            alert(user_group_id);
             display_ug_questions(user_group_id);
           });
           
           function display_ug_questions(user_group_id){
-            $('#mail_chimp_condition_registration_question_id').find('option').each(function() {
+            $('#mail_chimp_condition_registration_question_id').find('option').each(function(index, value) {
               user_group = $(this).attr("user_group");
-              console.log(user_group);
               if(user_group != user_group_id){
                 $(this).hide();
               }else{
                 $(this).show();
               }
             });
+            //option = $('#mail_chimp_condition_registration_question_id').find('option').last();
+            //alert(option.val())
           }
