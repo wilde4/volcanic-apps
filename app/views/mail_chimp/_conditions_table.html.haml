@@ -18,12 +18,23 @@
                 - registration_group['registration_questions'].each do |question|
                   - if question['id'] == condition.registration_question_id
                     %td= question['label']
-          %td= condition.answer
+              - if condition.registration_question_id == -1
+                %td Default (no question to match)
+
+                    
+          - if condition.answer.present?
+            %td= condition.answer
+          - else
+            %td Default (no answer to match)
+            
           - @mailchimp_lists_collection.each do |list|
             - if list[1] == condition.mail_chimp_list_id
               %td= list[0]
+            
           %td
             - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/delete_condition' : 'https://apps.volcanic.co/mail_chimp/delete_condition'
             = simple_form_for :mail_chimp_condition, url: url, method: :post do |f|
               = hidden_field_tag :id, "#{condition.id}"
+              = hidden_field_tag :app_id, "#{params[:data][:id]}"
+              = hidden_field_tag :key_id, "#{@key.id}"
               = f.submit 'Delete condition', class: 'btn btn-default'

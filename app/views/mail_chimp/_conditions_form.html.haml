@@ -14,7 +14,7 @@
         .col-xs-12
           = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false, input_html: {class: 'form-control'}, required: true
         .col-xs-12
-          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true
+          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true, include_blank: false
         .col-xs-12
           = f.input :answer, label: "Answer to match", input_html: {class: 'form-control'}, required: true
         .col-xs-12
@@ -23,6 +23,9 @@
           $( document ).ready(function() {
               var user_group_id = $('#mail_chimp_condition_user_group').val();
               display_ug_questions(user_group_id);
+              if($('#mail_chimp_condition_registration_question_id').val() == -1){
+                $("#mail_chimp_condition_answer").attr("disabled","disabled");
+              }
           });
           
           $('#mail_chimp_condition_user_group').on('change', function (e) {
@@ -31,15 +34,23 @@
             display_ug_questions(user_group_id);
           });
           
+          $('#mail_chimp_condition_registration_question_id').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var question_val = this.value;
+            if(question_val == -1){
+              $("#mail_chimp_condition_answer").attr("disabled","disabled"); 
+            }else{
+              $("#mail_chimp_condition_answer").attr('disabled', false);
+            }
+          });
+          
           function display_ug_questions(user_group_id){
             $('#mail_chimp_condition_registration_question_id').find('option').each(function(index, value) {
               user_group = $(this).attr("user_group");
-              if(user_group != user_group_id){
+              if((user_group != user_group_id) && (user_group != -1)){
                 $(this).hide();
               }else{
                 $(this).show();
               }
             });
-            //option = $('#mail_chimp_condition_registration_question_id').find('option').last();
-            //alert(option.val())
           }
