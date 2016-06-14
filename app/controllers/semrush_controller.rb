@@ -27,7 +27,7 @@ class SemrushController < ApplicationController
       @range_5_keywords = @range_5.map(&:keyword)
     
       # Data for charts
-      start_date = Date.today - 1.months
+      start_date = Date.today - 3.months
       end_date = @semrush_setting.last_petition_at
       
       @chart_position_range_keywords = []
