@@ -4,7 +4,7 @@ class MailChimpController < ApplicationController
   after_filter :setup_access_control_origin
   
   $fake_info = {
-                  id: 12, user_group: '247', first_name: 'First', last_name: 'LastName', email: 'test_volcanic_mailchimp_2@gmail.com',
+                  id: 12, user_group: '245', first_name: 'First', last_name: 'LastName', email: 'test3_volcanic_mailchimp@gmail.com',
                   registration_answers: [
                     {id: 2079972, registration_question_id: 2099, user_id: 260668, answer: 'Greater London', created_at: "2015-11-19 16:24:58", updated_at: "2015-11-19 16:24:58", upload_uid: nil, upload_name: nil, serialized_answer: nil, deleted_at: nil},
                     {id: 2079973, registration_question_id: 2098, user_id: 260668, answer: 'Health', created_at: '2015-11-19 16:24:58', updated_at: "2015-11-19 16:24:58", upload_uid: nil, upload_name: nil, serialized_answer: nil, deleted_at: nil}
@@ -78,7 +78,7 @@ class MailChimpController < ApplicationController
     @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
-    @registration_questions = [['Default (no conditions to match)',-1,-1]]
+    @registration_questions = [['Default (no conditions to match)','','']]
     @user_groups.each do |g|
       @user_group_collection << [g['name'],g['id']]
       if g['registration_question_groups'].present?
@@ -98,6 +98,9 @@ class MailChimpController < ApplicationController
     mailchimp_lists['lists'].each do |list|
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
+    
+    host = @key.host
+    @index_url = create_url(params[:data][:id], host, 'index')
     
     render layout: false
   end
@@ -144,7 +147,7 @@ class MailChimpController < ApplicationController
     mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user_data[:user_group])
     
     mailchimp_ug_conditions.each do |condition|
-      if condition.registration_question_id == -1
+      if !condition.registration_question_id.present?
         puts 'Default list'
         upsert_user(user_data[:email], user_data[:first_name], user_data[:last_name], condition.mail_chimp_list_id)
       else

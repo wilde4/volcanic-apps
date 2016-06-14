@@ -23,7 +23,7 @@
           $( document ).ready(function() {
               var user_group_id = $('#mail_chimp_condition_user_group').val();
               display_ug_questions(user_group_id);
-              if($('#mail_chimp_condition_registration_question_id').val() == -1){
+              if($('#mail_chimp_condition_registration_question_id').val() == ''){
                 $("#mail_chimp_condition_answer").attr("disabled","disabled");
               }
           });
@@ -37,7 +37,7 @@
           $('#mail_chimp_condition_registration_question_id').on('change', function (e) {
             var optionSelected = $("option:selected", this);
             var question_val = this.value;
-            if(question_val == -1){
+            if(question_val == ''){
               $("#mail_chimp_condition_answer").attr("disabled","disabled"); 
             }else{
               $("#mail_chimp_condition_answer").attr('disabled', false);
@@ -47,7 +47,7 @@
           function display_ug_questions(user_group_id){
             $('#mail_chimp_condition_registration_question_id').find('option').each(function(index, value) {
               user_group = $(this).attr("user_group");
-              if((user_group != user_group_id) && (user_group != -1)){
+              if((user_group != user_group_id) && (user_group != '')){
                 $(this).hide();
               }else{
                 $(this).show();
