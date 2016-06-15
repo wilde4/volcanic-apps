@@ -3,15 +3,6 @@ class MailChimpController < ApplicationController
   before_filter :set_key, only: [:index, :callback, :new_condition]
   after_filter :setup_access_control_origin
   
-  $fake_info = {
-                  id: 12, user_group: '245', first_name: 'First', last_name: 'LastName', email: 'test3_volcanic_mailchimp@gmail.com',
-                  registration_answers: [
-                    {id: 2079972, registration_question_id: 2099, user_id: 260668, answer: 'Greater London', created_at: "2015-11-19 16:24:58", updated_at: "2015-11-19 16:24:58", upload_uid: nil, upload_name: nil, serialized_answer: nil, deleted_at: nil},
-                    {id: 2079973, registration_question_id: 2098, user_id: 260668, answer: 'Health', created_at: '2015-11-19 16:24:58', updated_at: "2015-11-19 16:24:58", upload_uid: nil, upload_name: nil, serialized_answer: nil, deleted_at: nil}
-                  ]
-                }
-  
-  
   def index
     @host = @key.host
     @app_id = params[:data][:id]
@@ -34,8 +25,6 @@ class MailChimpController < ApplicationController
     mailchimp_lists['lists'].each do |list|
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
-    
-    classify_user($fake_info)
     
     render layout: false
   end
@@ -140,26 +129,46 @@ class MailChimpController < ApplicationController
     end
   end
   
-  def classify_user(user_data)
-    user_answers = user_data[:registration_answers]
+  def classify_user
+    user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
+    if user_answers.present?
+      
+      user = params[:user]
+      user_details = params[:user_profile]  
+      
+      if user['dataset_id'].present?
+        dataset_id = user['dataset_id']
+      elsif params[:data][:dataset_id].present?
+        dataset_id = params[:data][:dataset_id]
+      end
+      
+      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
     
-    settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
-    mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user_data[:user_group])
-    
-    mailchimp_ug_conditions.each do |condition|
-      if !condition.registration_question_id.present?
-        puts 'Default list'
-        upsert_user(user_data[:email], user_data[:first_name], user_data[:last_name], condition.mail_chimp_list_id)
-      else
-        user_answers.each do |answer|
-          if answer[:registration_question_id] == condition.registration_question_id
-            if compare_answers(answer[:answer], condition.answer)
-              upsert_user(user_data[:email], user_data[:first_name], user_data[:last_name], condition.mail_chimp_list_id)
+      if mailchimp_ug_conditions.present?
+        mailchimp_ug_conditions.each do |condition|
+          if !condition.registration_question_id.present?
+            puts 'Default list'
+            upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+          else
+            user_answers.each do |answer|
+              if answer[0].to_i == condition.registration_question_id
+                if compare_answers(answer[1], condition.answer)
+                  puts "MATCH: #{answer[1]} - #{condition.answer}"
+                  upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+                end
+              end
             end
           end
         end
+      else
+        puts "NO CONDITIONS FOR USER GROUP: #{user['user_group_id']}"
       end
+    else
+      puts "no registration questions available for this user: #{user['id']}"
     end
+    
+    head :ok, content_type: 'text/html'
   end
   
   private
@@ -196,8 +205,8 @@ class MailChimpController < ApplicationController
       match
     end
     
-    def upsert_user(email,first_name,last_name,mailchimp_list_id)
-      settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
+    def upsert_user(email, first_name, last_name, mailchimp_list_id, dataset_id)
+      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
       # gibbon = set_gibbon(settings.access_token)
       
@@ -207,7 +216,7 @@ class MailChimpController < ApplicationController
       rescue Gibbon::MailChimpError => e
        puts "Houston, we have a problem: #{e.message} - #{e.raw_body}"
       end
-      puts 'USER SENT'
+      puts "USER SENT to: #{mailchimp_list_id}"
     end
   
 end
