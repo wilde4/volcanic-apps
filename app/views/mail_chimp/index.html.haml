@@ -1,4 +1,4 @@
-.volcanic_apps
+.volcanic_apps.mailchimp-app
   .row
     #flash_messages
   - if @settings.present? && @settings.access_token.present?
@@ -16,31 +16,6 @@
     .row
       .col-xs-12
         = render partial: 'lists_info'
-    %hr
-    .row
-      .col-xs-12
-        - @user_groups.each do |group|
-          -if group['allow_registrations']
-            .well
-              %p 
-                Group id: 
-                = group['id']
-              %p
-                Name: 
-                = group['name']
-              %p
-                Allow reg: 
-                = group['allow_registrations']
-              %hr
-              %h5 Registration questions groups
-              - group['registration_question_groups'].each do |registration_group|
-                %h6= registration_group['label']
-                - registration_group['registration_questions'].each do |question|
-                  %p= question['label']
-                  - if question['options'].present?
-                    %span
-                      %strong= question['options']
-            %br
   - else
     .row
       .col-xs-12

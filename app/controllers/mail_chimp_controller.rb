@@ -13,8 +13,8 @@ class MailChimpController < ApplicationController
     
     @mailchimp_conditions = @settings.mail_chimp_conditions
     
-    # @user_groups_url = 'http://' + @host + ':3000' + '/api/v1/user_groups.json'
-    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+    @user_groups_url = @host + '/api/v1/user_groups.json'
+    # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     
     gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
@@ -63,8 +63,8 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-    # @user_groups_url = 'http://' + @key.host + ':3000' + '/api/v1/user_groups.json'
-    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+    @user_groups_url = 'http://meridian.localhost.volcanic.co:3000/api/v1/user_groups.json'
+    # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
     @registration_questions = [['Default (no conditions to match)','','']]
@@ -192,16 +192,31 @@ class MailChimpController < ApplicationController
     end
     
     def compare_answers(answer_one, answer_two)
-      one = answer_one.downcase
-      two = answer_two.downcase
       match = false
-      if one == two
-        match = true
+      two = answer_two.downcase
+      
+      if answer_one.kind_of?(Array)
+        answer_one.each do |option|
+          one = option.downcase
+          if one == two
+            match = true
+          else
+            if (one.include? two) || (two.include? one)
+              match = true
+            end
+          end
+        end
       else
-        if (one.include? two) || (two.include? one)
+        one = answer_one.downcase
+        if one == two
           match = true
+        else
+          if (one.include? two) || (two.include? one)
+            match = true
+          end
         end
       end
+      
       match
     end
     

@@ -5,17 +5,17 @@
       %thead
         %tr
           %th List name
-          %th List rating
           %th Subscribers
           %th Unsubscribed members
           %th Click rate per campaign (%)
+          %th List rating
           %th Last subscription
       %tbody
         - @mailchimp_lists['lists'].each do |list|
           %tr
             %td= list['name']
-            %td= list['list_rating']
             %td= list['stats']['member_count']
             %td= list['stats']['unsubscribe_count']
             %td= list['stats']['click_rate']
+            %td= list['list_rating']
             %td= list['stats']['last_sub_date'].to_datetime
