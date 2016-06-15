@@ -1,44 +1,45 @@
 - if @mailchimp_conditions.present?
-  %h2 Conditions
-  %table.table#data-table
-    %thead
-      %tr
-        %th User Group
-        %th Registration Question
-        %th Candidate Answer
-        %th MailChimp List
-        %th
-    %tbody
-      - @mailchimp_conditions.each do |condition|
+  %h2 Conditions to classify users
+  .well
+    %table.table
+      %thead
         %tr
-          - @user_groups.each do |group|
-            - if group['id'] == condition.user_group
-              %td= group['name']
-              - group['registration_question_groups'].each do |registration_group|
-                - registration_group['registration_questions'].each do |question|
-                  - if question['id'] == condition.registration_question_id
-                    %td= question['label']
-              - if !condition.registration_question_id.present?
-                %td Default (no question to match)
+          %th User Group
+          %th Registration Question
+          %th Candidate Answer
+          %th MailChimp List
+          %th
+      %tbody
+        - @mailchimp_conditions.each do |condition|
+          %tr
+            - @user_groups.each do |group|
+              - if group['id'] == condition.user_group
+                %td= group['name']
+                - group['registration_question_groups'].each do |registration_group|
+                  - registration_group['registration_questions'].each do |question|
+                    - if question['id'] == condition.registration_question_id
+                      %td= question['label']
+                - if !condition.registration_question_id.present?
+                  %td Default (no question to match)
 
                     
-          - if condition.answer.present?
-            %td= condition.answer
-          - else
-            %td Default (no answer to match)
+            - if condition.answer.present?
+              %td= condition.answer
+            - else
+              %td Default (no answer to match)
             
-          - list_available = false
-          - @mailchimp_lists_collection.each do |list|
-            - if list[1] == condition.mail_chimp_list_id
-              - list_available = true
-              %td= list[0]
-          - if !list_available
-            %td.text-danger List deleted in MailChimp
+            - list_available = false
+            - @mailchimp_lists_collection.each do |list|
+              - if list[1] == condition.mail_chimp_list_id
+                - list_available = true
+                %td= list[0]
+            - if !list_available
+              %td.text-danger List deleted in MailChimp
             
-          %td
-            - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/delete_condition' : 'https://apps.volcanic.co/mail_chimp/delete_condition'
-            = simple_form_for :mail_chimp_condition, url: url, method: :post do |f|
-              = hidden_field_tag :id, "#{condition.id}"
-              = hidden_field_tag :app_id, "#{params[:data][:id]}"
-              = hidden_field_tag :key_id, "#{@key.id}"
-              = f.submit 'Delete condition', class: 'btn btn-default'
+            %td
+              - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/delete_condition' : 'https://apps.volcanic.co/mail_chimp/delete_condition'
+              = simple_form_for :mail_chimp_condition, url: url, method: :post do |f|
+                = hidden_field_tag :id, "#{condition.id}"
+                = hidden_field_tag :app_id, "#{params[:data][:id]}"
+                = hidden_field_tag :key_id, "#{@key.id}"
+                = f.submit 'Delete condition', class: 'btn btn-default'

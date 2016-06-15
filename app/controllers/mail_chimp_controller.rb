@@ -20,9 +20,9 @@ class MailChimpController < ApplicationController
     gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
     # gibbon = set_gibbon(@settings.access_token)
     
-    mailchimp_lists = gibbon.lists.retrieve
+    @mailchimp_lists = gibbon.lists.retrieve
     @mailchimp_lists_collection = []
-    mailchimp_lists['lists'].each do |list|
+    @mailchimp_lists['lists'].each do |list|
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
     
