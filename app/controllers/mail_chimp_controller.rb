@@ -63,7 +63,7 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-    @user_groups_url = 'http://meridian.localhost.volcanic.co:3000/api/v1/user_groups.json'
+    @user_groups_url = 'http://' + @key.host + ':3000/api/v1/user_groups.json'
     # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
@@ -130,43 +130,59 @@ class MailChimpController < ApplicationController
   end
   
   def classify_user
+    user_answers = ''
     user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
-    if user_answers.present?
-      
-      user = params[:user]
-      user_details = params[:user_profile]  
-      
-      if user['dataset_id'].present?
-        dataset_id = user['dataset_id']
-      elsif params[:data][:dataset_id].present?
-        dataset_id = params[:data][:dataset_id]
-      end
-      
-      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
     
-      if mailchimp_ug_conditions.present?
-        mailchimp_ug_conditions.each do |condition|
-          if !condition.registration_question_id.present?
-            puts 'Default list'
-            upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-          else
-            user_answers.each do |answer|
-              if answer[0].to_i == condition.registration_question_id
-                if compare_answers(answer[1], condition.answer)
-                  puts "MATCH: #{answer[1]} - #{condition.answer}"
-                  upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-                end
+    user = params[:user]
+    user_details = params[:user_profile]  
+    if user['dataset_id'].present?
+      dataset_id = user['dataset_id']
+    elsif params[:data][:dataset_id].present?
+      dataset_id = params[:data][:dataset_id]
+    end
+    settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+    mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+    
+    if mailchimp_ug_conditions.present?
+      mailchimp_ug_conditions.each do |condition|
+        if !condition.registration_question_id.present?
+          puts 'Default list'
+          upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+        end
+        if user_answers.present?
+          user_answers.each do |answer|
+            if answer[0].to_i == condition.registration_question_id
+              if compare_answers(answer[1], condition.answer)
+                puts "MATCH: #{answer[1]} - #{condition.answer}"
+                upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
               end
             end
           end
         end
-      else
-        puts "NO CONDITIONS FOR USER GROUP: #{user['user_group_id']}"
       end
-    else
-      puts "no registration questions available for this user: #{user['id']}"
     end
+    
+    # if user_answers.present?
+#       if mailchimp_ug_conditions.present?
+#         mailchimp_ug_conditions.each do |condition|
+#           if !condition.registration_question_id.present?
+#             puts 'Default list'
+#             upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+#           else
+#             user_answers.each do |answer|
+#               if answer[0].to_i == condition.registration_question_id
+#                 if compare_answers(answer[1], condition.answer)
+#                   puts "MATCH: #{answer[1]} - #{condition.answer}"
+#                   upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+#                 end
+#               end
+#             end
+#           end
+#         end
+#       else
+#         puts "NO CONDITIONS FOR USER GROUP: #{user['user_group_id']}"
+#       end
+    # end
     
     head :ok, content_type: 'text/html'
   end

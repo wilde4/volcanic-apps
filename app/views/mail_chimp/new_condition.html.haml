@@ -2,6 +2,7 @@
   .row
     .col-xs-12
       %h1 NEW CONDITION
+      %h2= @user_groups_url_2
       %p= link_to 'Back', @index_url, class: 'btn btn-primary'
     .col-xs-12
       = render partial: 'conditions_form'
