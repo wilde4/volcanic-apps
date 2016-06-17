@@ -162,27 +162,12 @@ class MailChimpController < ApplicationController
       end
     end
     
-    # if user_answers.present?
-#       if mailchimp_ug_conditions.present?
-#         mailchimp_ug_conditions.each do |condition|
-#           if !condition.registration_question_id.present?
-#             puts 'Default list'
-#             upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-#           else
-#             user_answers.each do |answer|
-#               if answer[0].to_i == condition.registration_question_id
-#                 if compare_answers(answer[1], condition.answer)
-#                   puts "MATCH: #{answer[1]} - #{condition.answer}"
-#                   upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-#                 end
-#               end
-#             end
-#           end
-#         end
-#       else
-#         puts "NO CONDITIONS FOR USER GROUP: #{user['user_group_id']}"
-#       end
-    # end
+    head :ok, content_type: 'text/html'
+  end
+  
+  def ask_import_users
+    user_group_id = params[:group_id]
+    puts user_group_id
     
     head :ok, content_type: 'text/html'
   end
@@ -191,7 +176,7 @@ class MailChimpController < ApplicationController
     
     def create_url(app_id, host, endpoint)
       @host = format_url(host)
-      "#{@host}/admin/apps/#{app_id}/#{endpoint}"
+      "#{@host}/admin/apps/#{app_id}/#{endpoint}'"
     end
     
     def format_url(url)

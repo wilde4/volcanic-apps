@@ -1,5 +1,5 @@
 - if @mailchimp_lists.present?
-  %h2 Your Mail Chimp lists
+  %h2 Your MailChimp lists
   .well
     %table.table#data-table
       %thead
@@ -18,4 +18,4 @@
             %td= list['stats']['unsubscribe_count']
             %td= list['stats']['click_rate']
             %td= list['list_rating']
-            %td= list['stats']['last_sub_date'].to_datetime
+            %td= Date.parse(list['stats']['last_sub_date']).strftime('%D')
