@@ -130,38 +130,40 @@ class MailChimpController < ApplicationController
   end
   
   def classify_user
-    user_answers = ''
-    user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
+    Thread.new do
+      user_answers = ''
+      user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
     
-    user = params[:user]
-    user_details = params[:user_profile]  
-    if user['dataset_id'].present?
-      dataset_id = user['dataset_id']
-    elsif params[:data][:dataset_id].present?
-      dataset_id = params[:data][:dataset_id]
-    end
-    settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-    mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      user = params[:user]
+      user_details = params[:user_profile]  
+      if user['dataset_id'].present?
+        dataset_id = user['dataset_id']
+      elsif params[:data][:dataset_id].present?
+        dataset_id = params[:data][:dataset_id]
+      end
+      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
     
-    if mailchimp_ug_conditions.present?
-      mailchimp_ug_conditions.each do |condition|
-        if !condition.registration_question_id.present?
-          puts 'Default list'
-          upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-        end
-        if user_answers.present?
-          user_answers.each do |answer|
-            if answer[0].to_i == condition.registration_question_id
-              if compare_answers(answer[1], condition.answer)
-                puts "MATCH: #{answer[1]} - #{condition.answer}"
-                upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+      if mailchimp_ug_conditions.present?
+        mailchimp_ug_conditions.each do |condition|
+          if !condition.registration_question_id.present?
+            puts 'Default list'
+            upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+          end
+          if user_answers.present?
+            user_answers.each do |answer|
+              if answer[0].to_i == condition.registration_question_id
+                if compare_answers(answer[1], condition.answer)
+                  puts "MATCH: #{answer[1]} - #{condition.answer}"
+                  upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+                end
               end
             end
           end
         end
       end
-    end
-    
+      ActiveRecord::Base.connection_pool.release_connection
+    end 
     head :ok, content_type: 'text/html'
   end
   
