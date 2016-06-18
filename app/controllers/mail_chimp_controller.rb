@@ -13,8 +13,8 @@ class MailChimpController < ApplicationController
     
     @mailchimp_conditions = @settings.mail_chimp_conditions
     
-    @user_groups_url = @host + '/api/v1/user_groups.json'
-    # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+    # @user_groups_url = @host + '/api/v1/user_groups.json'
+    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     
     gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
@@ -63,8 +63,8 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-    @user_groups_url = 'http://' + @key.host + ':3000/api/v1/user_groups.json'
-    # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+    # @user_groups_url = 'http://' + @key.host + ':3000/api/v1/user_groups.json'
+    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
     @registration_questions = [['Default (no conditions to match)','','']]
@@ -130,49 +130,49 @@ class MailChimpController < ApplicationController
   end
   
   def classify_user
-    Thread.new do
-      user_answers = ''
-      user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
+    batch_operations = []
+    user_answers = ''
+    user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
+    user = params[:user]
+    user_details = params[:user_profile]  
     
-      user = params[:user]
-      user_details = params[:user_profile]  
-      if user['dataset_id'].present?
-        dataset_id = user['dataset_id']
-      elsif params[:data][:dataset_id].present?
-        dataset_id = params[:data][:dataset_id]
-      end
-      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+    if user['dataset_id'].present?
+      dataset_id = user['dataset_id']
+    elsif params[:data][:dataset_id].present?
+      dataset_id = params[:data][:dataset_id]
+    end
     
-      if mailchimp_ug_conditions.present?
-        mailchimp_ug_conditions.each do |condition|
-          if !condition.registration_question_id.present?
-            puts 'Default list'
-            upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-          end
-          if user_answers.present?
-            user_answers.each do |answer|
-              if answer[0].to_i == condition.registration_question_id
-                if compare_answers(answer[1], condition.answer)
-                  puts "MATCH: #{answer[1]} - #{condition.answer}"
-                  upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-                end
+    settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+    mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+  
+    if mailchimp_ug_conditions.present?
+      mailchimp_ug_conditions.each do |condition|
+        if !condition.registration_question_id.present?
+          puts 'Default list'
+          # upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
+          operation_json = create_batch_operation_json(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id)
+          batch_operations = collect_batch_operations(batch_operations, operation_json)
+          
+        end
+        if user_answers.present?
+          user_answers.each do |answer|
+            if answer[0].to_i == condition.registration_question_id
+              if compare_answers(answer[1], condition.answer)
+                puts "MATCH: #{answer[1]} - #{condition.answer}"
+                # upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
               end
             end
           end
         end
       end
-      ActiveRecord::Base.connection_pool.release_connection
-    end 
+    end
+    puts 'BATCH OP: '
+    puts batch_operations
+    send_batch(batch_operations, dataset_id)
     head :ok, content_type: 'text/html'
   end
   
-  def ask_import_users
-    user_group_id = params[:group_id]
-    puts user_group_id
-    
-    head :ok, content_type: 'text/html'
-  end
+
   
   private
     
@@ -235,6 +235,36 @@ class MailChimpController < ApplicationController
        puts "Houston, we have a problem: #{e.message} - #{e.raw_body}"
       end
       puts "USER SENT to: #{mailchimp_list_id}"
+    end
+    
+    def send_batch(batch_operations, dataset_id)
+      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+      gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+      # gibbon = set_gibbon(settings.access_token)
+      begin
+        gibbon.batches.create(body: {operations: batch_operations})
+      rescue Gibbon::MailChimpError => e
+       puts "Houston, we have a problem: #{e.message} - #{e.raw_body}"
+      end
+      puts "BATCH SENT"
+    end
+    
+    def create_batch_operation_json(email, first_name, last_name, list_id)
+      batch_operation = {
+                          method: "POST",
+                          path: "/lists/#{list_id}/members",
+                          body: {
+                              email_address: email,
+                              status: "subscribed",
+                              merge_fields: {FNAME: first_name, LNAME: last_name}
+                          }.to_json
+                      }
+      batch_operation
+    end
+    
+    def collect_batch_operations(batch_operations, operation_json)
+      batch_operations.append(operation_json)
+      batch_operations
     end
   
 end
