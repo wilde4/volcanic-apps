@@ -129,56 +129,34 @@ class MailChimpController < ApplicationController
     end
   end
   
-  def classify_user
-    batch_operations = []
-    user_answers = ''
-    user_answers = params[:registration_answer_hash_id] if params[:registration_answer_hash_id].present?
-    user = params[:user]
-    user_details = params[:user_profile]  
-    
-    if user['dataset_id'].present?
-      dataset_id = user['dataset_id']
-    elsif params[:data][:dataset_id].present?
-      dataset_id = params[:data][:dataset_id]
-    end
-    
-    settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-    mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
-  
-    if mailchimp_ug_conditions.present?
-      mailchimp_ug_conditions.each do |condition|
-        if !condition.registration_question_id.present?
-          puts 'Default list'
-          # upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-          operation_json = create_batch_operation_json(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id)
-          batch_operations = collect_batch_operations(batch_operations, operation_json)
-          
+  def classify_users
+    if params[:users_array].present?
+      batch_operations = []
+      params[:users_array].each do |u|
+        puts u[:user]['email']
+        operations = check_user_conditions(u[:registration_answer_hash_id],u[:user],u[:user_profile], u[:user]['dataset_id'])
+        operations.each do |op|
+          batch_operations.append(op)
         end
-        if user_answers.present?
-          user_answers.each do |answer|
-            if answer[0].to_i == condition.registration_question_id
-              if compare_answers(answer[1], condition.answer)
-                puts "MATCH: #{answer[1]} - #{condition.answer}"
-                # upsert_user(user['email'], user_details['first_name'], user_details['last_name'], condition.mail_chimp_list_id, dataset_id)
-              end
-            end
-          end
-        end
+        send_batch(batch_operations,u[:user]['dataset_id'])
+        debugger
       end
+    else
+      user_answers = params[:registration_answer_hash_id]
+      user = params[:user] 
+      user_details = params[:user_profile]
+      operations = check_user_conditions(params[:registration_answer_hash_id],params[:user],params[:user_profile], params[:user]['dataset_id'])
+      send_batch(operations,params[:user]['dataset_id'])
     end
-    puts 'BATCH OP: '
-    puts batch_operations
-    send_batch(batch_operations, dataset_id)
     head :ok, content_type: 'text/html'
   end
   
-
   
   private
     
     def create_url(app_id, host, endpoint)
       @host = format_url(host)
-      "#{@host}/admin/apps/#{app_id}/#{endpoint}'"
+      "#{@host}/admin/apps/#{app_id}/#{endpoint}"
     end
     
     def format_url(url)
@@ -262,9 +240,34 @@ class MailChimpController < ApplicationController
       batch_operation
     end
     
-    def collect_batch_operations(batch_operations, operation_json)
-      batch_operations.append(operation_json)
-      batch_operations
+    def check_user_conditions(user_answers, user, user_profile, dataset_id)
+      operations = []
+      operation_json = ''
+    
+      settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+  
+      if mailchimp_ug_conditions.present?
+        mailchimp_ug_conditions.each do |condition|
+          if !condition.registration_question_id.present?
+            puts 'Default list'
+            operation_json = create_batch_operation_json(user['email'], user_profile['first_name'], user_profile['last_name'], condition.mail_chimp_list_id)
+            operations.append(operation_json)
+          end
+          if user_answers.present?
+            user_answers.each do |answer|
+              if answer[0].to_i == condition.registration_question_id
+                if compare_answers(answer[1], condition.answer)
+                  puts "MATCH: #{answer[1]} - #{condition.answer}"
+                  operation_json = create_batch_operation_json(user['email'], user_profile['first_name'], user_profile['last_name'], condition.mail_chimp_list_id)
+                  operations.append(operation_json)
+                end
+              end
+            end
+          end
+        end
+      end
+      return operations
     end
   
 end

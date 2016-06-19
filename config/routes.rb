@@ -201,7 +201,7 @@ Apps::Application.routes.draw do
     get  "new_condition"    => 'mail_chimp#new_condition', as: :mail_chimp_new_condition
     post "save_condition"   => 'mail_chimp#save_condition'
     post "delete_condition" => 'mail_chimp#delete_condition', as: :mail_chimp_delete_condition
-    post "classify_user"    => 'mail_chimp#classify_user'
+    post "classify_users"   => 'mail_chimp#classify_users'
     get  "ask_import_users" => 'mail_chimp#ask_import_users', as: :mail_chimp_ask_import_users
   end
   
