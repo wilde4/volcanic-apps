@@ -13,19 +13,21 @@ class MailChimpController < ApplicationController
     
     @mailchimp_conditions = @settings.mail_chimp_conditions
     
-    # @user_groups_url = @host + '/api/v1/user_groups.json'
-    @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
-    @user_groups = HTTParty.get(@user_groups_url)
+    if @settings.access_token.present? 
+      
+      # @user_groups_url = @host + '/api/v1/user_groups.json'
+      @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+      
+      @user_groups = HTTParty.get(@user_groups_url)
+      # gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+      gibbon = set_gibbon(@settings.access_token)
     
-    gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
-    # gibbon = set_gibbon(@settings.access_token)
-    
-    @mailchimp_lists = gibbon.lists.retrieve
-    @mailchimp_lists_collection = []
-    @mailchimp_lists['lists'].each do |list|
-      @mailchimp_lists_collection << [list['name'], list['id']]
+      @mailchimp_lists = gibbon.lists.retrieve
+      @mailchimp_lists_collection = []
+      @mailchimp_lists['lists'].each do |list|
+        @mailchimp_lists_collection << [list['name'], list['id']]
+      end
     end
-    
     render layout: false
   end
   
@@ -55,6 +57,8 @@ class MailChimpController < ApplicationController
         end
       end
     end
+    
+
 
     render :index, layout: false
   end
@@ -79,8 +83,8 @@ class MailChimpController < ApplicationController
       end 
     end
     
-    gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
-    # gibbon = set_gibbon(@mail_chimp_app_settings.access_token)
+    # gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
+    gibbon = set_gibbon(@mail_chimp_app_settings.access_token)
     
     mailchimp_lists = gibbon.lists.retrieve
     @mailchimp_lists_collection = []
@@ -167,7 +171,12 @@ class MailChimpController < ApplicationController
     end 
     
     def set_gibbon(access_token)
+      response = HTTParty.get(
+        "https://login.mailchimp.com/oauth2/metadata",
+        headers: {"Authorization" => "OAuth #{access_token}"}
+      )
       gibbon = Gibbon::Request.new
+      gibbon.api_endpoint = response['api_endpoint']
       gibbon.api_key = access_token
       gibbon
     end

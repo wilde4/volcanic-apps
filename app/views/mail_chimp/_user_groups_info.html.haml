@@ -1,21 +1,22 @@
-%h2 Import users to MailChimp
-.well
-  %table.table#data-table
-    %thead
-      %tr
-        %th User Group
-        %th Users
-        %th
-
-    %tbody
-      - @user_groups.each do |group|
+- if @user_groups.present?
+  %h2 Import users to MailChimp
+  .well
+    %table.table#data-table
+      %thead
         %tr
-          %td= group['name']
-          %td
-            - if group['users_count'].to_i > 0
-              = group['users_count']
-            - else
-              0
-          %td
-            - if group['users_count'].to_i > 0
-              = link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
+          %th User Group
+          %th Users
+          %th
+
+      %tbody
+        - @user_groups.each do |group|
+          %tr
+            %td= group['name']
+            %td
+              - if group['users_count'].to_i > 0
+                = group['users_count']
+              - else
+                0
+            %td
+              - if group['users_count'].to_i > 0
+                = link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
