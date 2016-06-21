@@ -136,20 +136,25 @@ class MailChimpController < ApplicationController
   def classify_users
     if params[:users_array].present?
       batch_operations = []
-      params[:users_array].each do |u|
-        puts u[:user]['email']
-        operations = check_user_conditions(u[:registration_answer_hash_id],u[:user],u[:user_profile], u[:user]['dataset_id'])
+      dataset_id = params[:users_array].first.first[1]['user']['dataset_id']
+      
+      params[:users_array][0].each do |u|
+        answers = {}
+        if u.last['registration_answer_hash_id'].present?
+          answers = u.last['registration_answer_hash_id']
+        end
+        operations = check_user_conditions(answers,u.last['user'],u.last['user_profile'], u.last['user']['dataset_id'])
         operations.each do |op|
           batch_operations.append(op)
         end
-        send_batch(batch_operations,u[:user]['dataset_id'])
-        debugger
       end
+      send_batch(batch_operations, dataset_id)
     else
-      user_answers = params[:registration_answer_hash_id]
-      user = params[:user] 
-      user_details = params[:user_profile]
-      operations = check_user_conditions(params[:registration_answer_hash_id],params[:user],params[:user_profile], params[:user]['dataset_id'])
+      answers = {}
+      if params[:registration_answer_hash_id].present?
+        answers = params[:registration_answer_hash_id]
+      end
+      operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
       send_batch(operations,params[:user]['dataset_id'])
     end
     head :ok, content_type: 'text/html'
@@ -225,6 +230,7 @@ class MailChimpController < ApplicationController
     end
     
     def send_batch(batch_operations, dataset_id)
+      puts batch_operations
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
       # gibbon = set_gibbon(settings.access_token)
