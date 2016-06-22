@@ -134,28 +134,31 @@ class MailChimpController < ApplicationController
   end
   
   def classify_users
-    if params[:users_array].present?
-      batch_operations = []
-      dataset_id = params[:users_array].first.first[1]['user']['dataset_id']
+    Thread.new do
+      if params[:users_array].present?
+        batch_operations = []
+        dataset_id = params[:users_array].first.first[1]['user']['dataset_id']
       
-      params[:users_array][0].each do |u|
+        params[:users_array][0].each do |u|
+          answers = {}
+          if u.last['registration_answer_hash_id'].present?
+            answers = u.last['registration_answer_hash_id']
+          end
+          operations = check_user_conditions(answers,u.last['user'],u.last['user_profile'], u.last['user']['dataset_id'])
+          operations.each do |op|
+            batch_operations.append(op)
+          end
+        end
+        send_batch(batch_operations, dataset_id)
+      else
         answers = {}
-        if u.last['registration_answer_hash_id'].present?
-          answers = u.last['registration_answer_hash_id']
+        if params[:registration_answer_hash_id].present?
+          answers = params[:registration_answer_hash_id]
         end
-        operations = check_user_conditions(answers,u.last['user'],u.last['user_profile'], u.last['user']['dataset_id'])
-        operations.each do |op|
-          batch_operations.append(op)
-        end
+        operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
+        send_batch(operations,params[:user]['dataset_id'])
       end
-      send_batch(batch_operations, dataset_id)
-    else
-      answers = {}
-      if params[:registration_answer_hash_id].present?
-        answers = params[:registration_answer_hash_id]
-      end
-      operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
-      send_batch(operations,params[:user]['dataset_id'])
+      ActiveRecord::Base.connection_pool.release_connection
     end
     head :ok, content_type: 'text/html'
   end
