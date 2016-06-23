@@ -78,6 +78,7 @@ class SemrushController < ApplicationController
       @semrush_setting = SemrushAppSettings.new(params[:semrush_app_settings].permit!)
       @semrush_setting.previous_data = 12
       @semrush_setting.request_rate = 7
+      @semrush_setting.keyword_amount = 300
       if @semrush_setting.save
         flash[:notice]  = "Settings successfully saved. We are processing your data. Try to reload the page in a few minutes"
         save_stats(@semrush_setting.id)
