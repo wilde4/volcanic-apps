@@ -5,8 +5,11 @@ class MailChimpController < ApplicationController
   
   def index
     @host = @key.host
+    @host_2 = @key.host
     @app_id = params[:data][:id]
+    
     @new_condition_url = create_url(@app_id,@host,'new_condition')
+    @import_users_url  = create_url(@app_id,@host_2,'import_user_group')
     
     @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @host)
     @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
@@ -161,6 +164,13 @@ class MailChimpController < ApplicationController
     head :ok, content_type: 'text/html'
   end
   
+  def import_user_group
+    puts 'import user group'
+    
+
+    redirect_to 'http://meridian.localhost.volcanic.co:3000/admin/apps/3/index'
+  end
+  
   
   private
     
@@ -285,6 +295,8 @@ class MailChimpController < ApplicationController
       end
       return operations
     end
+    
+
   
 end
 

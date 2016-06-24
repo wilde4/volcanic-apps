@@ -1,6 +1,6 @@
 - if @user_groups.present?
   %h2 Import users to MailChimp
-  %p We will compare every user in each User Group with the conditions below in order to classify them into your MailChimp lists.
+  %p We will compare every user in each User Group with the conditions above in order to classify them into your MailChimp lists.
   .well
     %table.table#data-table
       %thead
@@ -20,4 +20,6 @@
                 0
             %td
               - if group['users_count'].to_i > 0
-                = link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
+                - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
+                -#= link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
+                = link_to "Import users", url + "?dataset_id=#{params[:data][:id]}", class: "btn btn-primary", method: :post
