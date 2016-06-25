@@ -69,7 +69,7 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-    # @user_groups_url = 'http://' + @host + ':3000/api/v1/user_groups.json'
+    # @user_groups_url = 'http://' + @key.host + ':3000/api/v1/user_groups.json'
     @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     @user_groups = HTTParty.get(@user_groups_url)
     @user_group_collection = []
@@ -134,41 +134,44 @@ class MailChimpController < ApplicationController
     end
   end
   
-  def classify_users
-    Thread.new do
-      if params[:users_array].present?
-        batch_operations = []
-        dataset_id = params[:users_array].first.first[1]['user']['dataset_id']
-      
-        params[:users_array][0].each do |u|
-          answers = {}
-          if u.last['registration_answer_hash_id'].present?
-            answers = u.last['registration_answer_hash_id']
-          end
-          operations = check_user_conditions(answers,u.last['user'],u.last['user_profile'], u.last['user']['dataset_id'])
-          operations.each do |op|
-            batch_operations.append(op)
-          end
-        end
-        send_batch(batch_operations, dataset_id)
-      else
-        answers = {}
-        if params[:registration_answer_hash_id].present?
-          answers = params[:registration_answer_hash_id]
-        end
-        operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
-        send_batch(operations,params[:user]['dataset_id'])
-      end
-      ActiveRecord::Base.connection_pool.release_connection
+  def classify_user
+    answers = {}
+    if params[:registration_answer_hash_id].present?
+      answers = params[:registration_answer_hash_id]
     end
+    operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
+    send_batch(operations,params[:user]['dataset_id'])
+
     head :ok, content_type: 'text/html'
   end
   
   def import_user_group
-    puts 'import user group'
     
-
-    redirect_to 'http://meridian.localhost.volcanic.co:3000/admin/apps/3/index'
+    @key = Key.find(params[:key_id])
+    host = @key.host
+    index_url = create_url(params[:app_id], host, 'index')
+    
+    users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' : 'http://' + @key.host + '/api/v1/users.json'
+    @users = HTTParty.get(users_url)
+    users_array = []
+    @users['users'].each do |u|
+      user_hash = {
+        user: {
+          'email' => u['email'],
+          'user_group_id' => u['user_group_id']
+        },
+        user_profile:{
+          'first_name' => u['first_name'],
+          'last_name' => u['last_name']
+        },
+        registration_answer_hash_id: u['registration_answers_id'],
+        dataset_id: u['dataset_id']
+      }
+      users_array << user_hash
+    end
+    classify_user_group(users_array)
+    
+    redirect_to index_url
   end
   
   
@@ -269,15 +272,19 @@ class MailChimpController < ApplicationController
     def check_user_conditions(user_answers, user, user_profile, dataset_id)
       operations = []
       operation_json = ''
+
+      user_email = user['email']
+      first_name = user_profile['first_name']
+      last_name = user_profile['last_name']
     
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
-  
+      
       if mailchimp_ug_conditions.present?
         mailchimp_ug_conditions.each do |condition|
           if !condition.registration_question_id.present?
             puts 'Default list'
-            operation_json = create_batch_operation_json(user['email'], user_profile['first_name'], user_profile['last_name'], condition.mail_chimp_list_id)
+            operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
             operations.append(operation_json)
           end
           if user_answers.present?
@@ -285,7 +292,7 @@ class MailChimpController < ApplicationController
               if answer[0].to_i == condition.registration_question_id
                 if compare_answers(answer[1], condition.answer)
                   puts "MATCH: #{answer[1]} - #{condition.answer}"
-                  operation_json = create_batch_operation_json(user['email'], user_profile['first_name'], user_profile['last_name'], condition.mail_chimp_list_id)
+                  operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
                   operations.append(operation_json)
                 end
               end
@@ -296,7 +303,23 @@ class MailChimpController < ApplicationController
       return operations
     end
     
-
+    def classify_user_group(users_array = nil)
+      if users_array.present?
+        batch_operations = []
+        dataset_id = users_array.first[:dataset_id]
+        users_array.each do |u|
+          answers = {}
+          if u[:registration_answer_hash_id].present?
+            answers = u[:registration_answer_hash_id]
+          end
+          operations = check_user_conditions(answers,u[:user],u[:user_profile], dataset_id)
+          operations.each do |op|
+            batch_operations.append(op)
+          end
+        end
+        send_batch(batch_operations, dataset_id)
+      end
+    end
   
 end
 
