@@ -1,25 +1,30 @@
-- if @user_groups.present?
+- if @settings.importing_users
   %h2 Import users to MailChimp
-  %p We will compare every user in each User Group with the conditions above in order to classify them into your MailChimp lists.
   .well
-    %table.table#data-table
-      %thead
-        %tr
-          %th User Group
-          %th Users
-          %th
-
-      %tbody
-        - @user_groups.each do |group|
+    %h5 We are importing your users
+- else
+  - if @user_groups.present?
+    %h2 Import users to MailChimp
+    %p We will compare every user in each User Group with the conditions above in order to classify them into your MailChimp lists.
+    .well
+      %table.table#data-table
+        %thead
           %tr
-            %td= group['name']
-            %td
-              - if group['users_count'].to_i > 0
-                = group['users_count']
-              - else
-                0
-            %td
-              - if group['users_count'].to_i > 0
-                - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
-                -#= link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
-                = link_to "Import users", url + "?key_id=#{@key.id}&app_id=#{params[:data][:id]}&user_group_id=#{group['id']}", class: "btn btn-primary", method: :post
+            %th User Group
+            %th Users
+            %th
+
+        %tbody
+          - @user_groups.each do |group|
+            %tr
+              %td= group['name']
+              %td
+                - if group['users_count'].to_i > 0
+                  = group['users_count']
+                - else
+                  0
+              %td
+                - if group['users_count'].to_i > 0
+                  - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
+                  -#= link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
+                  = link_to "Import users", url + "?dataset_id=#{params[:data][:dataset_id]}&key_id=#{@key.id}&app_id=#{params[:data][:id]}&user_group_id=#{group['id']}", class: "btn btn-primary", method: :post

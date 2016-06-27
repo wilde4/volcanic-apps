@@ -152,12 +152,15 @@ class MailChimpController < ApplicationController
     host = @key.host
     index_url = create_url(params[:app_id], host, 'index')
     
+    settings = MailChimpAppSettings.find_by(dataset_id: params[:dataset_id])
+    settings.importing_users = true
+    settings.save
     
     Thread.new do
       users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' + '?user_group_id=' + params[:user_group_id] : 'http://' + @key.host + '/api/v1/users.json'  + '?user_group_id=' + params[:user_group_id]
     
       users_per_page = 100
-      i = 98 #ask api page
+      i = 90 #ask api fisrt page
       available_users = true
 
       while available_users  do
@@ -188,14 +191,20 @@ class MailChimpController < ApplicationController
             i += 1
           else
             available_users = false
+            settings.importing_users = false
+            settings.save
           end
         rescue HTTParty::Error
           # don´t do anything / whatever
           available_users = false
+          settings.importing_users = false
+          settings.save
         rescue StandardError
           # rescue instances of StandardError,
           # i.e. Timeout::Error, SocketError etc
           available_users = false
+          settings.importing_users = false
+          settings.save
         end    
        
       end
