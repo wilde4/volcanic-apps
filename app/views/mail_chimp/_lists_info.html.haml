@@ -18,4 +18,7 @@
             %td= list['stats']['unsubscribe_count']
             %td= list['stats']['click_rate']
             %td= list['list_rating']
-            %td= Date.parse(list['stats']['last_sub_date']).strftime('%D')
+            -if list['stats']['last_sub_date'].present?
+              %td= Date.parse(list['stats']['last_sub_date']).strftime('%D')
+            -else
+              %td No data available

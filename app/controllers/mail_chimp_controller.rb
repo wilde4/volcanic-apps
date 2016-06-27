@@ -52,6 +52,7 @@ class MailChimpController < ApplicationController
         end
       else
         @settings = MailChimpAppSettings.new(@attributes)
+        @settings.importing_users = false;
         if @settings.save
           flash[:notice]  = "App successfully authorised."
         else
@@ -147,54 +148,58 @@ class MailChimpController < ApplicationController
   end
   
   def import_user_group
-    
     @key = Key.find(params[:key_id])
     host = @key.host
     index_url = create_url(params[:app_id], host, 'index')
     
-    users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' + '?user_group_id=' + params[:user_group_id] : 'http://' + @key.host + '/api/v1/users.json'  + '?user_group_id=' + params[:user_group_id]
     
-    users_per_page = 20
-    i = 1
-    available_users = true
+    Thread.new do
+      users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' + '?user_group_id=' + params[:user_group_id] : 'http://' + @key.host + '/api/v1/users.json'  + '?user_group_id=' + params[:user_group_id]
+    
+      users_per_page = 100
+      i = 98 #ask api page
+      available_users = true
 
-    while available_users  do
-      puts("Inside the loop i = #{i}" )
-      users_url = users_url + "&per_page=#{users_per_page}&page=#{i}"
-      begin
-        @users = HTTParty.get(users_url)
-        users_array = []
-        if @users['users'].size != 0
-          @users['users'].each do |u|
-            if u['user_group_id'].to_i == params[:user_group_id].to_i
-              user_hash = {
-                user: {
-                  'email' => u['email'],
-                  'user_group_id' => u['user_group_id']
-                },
-                user_profile:{
-                  'first_name' => u['first_name'],
-                  'last_name' => u['last_name']
-                },
-                registration_answer_hash_id: u['registration_answers_id'],
-                dataset_id: u['dataset_id']
-              }
-              users_array << user_hash
+      while available_users  do
+        puts("Inside the loop page = #{i}" )
+        users_url = users_url + "&per_page=#{users_per_page}&page=#{i}"
+        begin
+          @users = HTTParty.get(users_url)
+          users_array = []
+          if @users['users'].size != 0
+            @users['users'].each do |u|
+              if u['user_group_id'].to_i == params[:user_group_id].to_i
+                user_hash = {
+                  user: {
+                    'email' => u['email'],
+                    'user_group_id' => u['user_group_id']
+                  },
+                  user_profile:{
+                    'first_name' => u['first_name'],
+                    'last_name' => u['last_name']
+                  },
+                  registration_answer_hash_id: u['registration_answers_id'],
+                  dataset_id: u['dataset_id']
+                }
+                users_array << user_hash
+              end
             end
+            classify_user_group(users_array)
+            i += 1
+          else
+            available_users = false
           end
-          classify_user_group(users_array)
-          i += 1
-        else
+        rescue HTTParty::Error
+          # don´t do anything / whatever
           available_users = false
-        end
-
-      rescue HTTParty::Error
-        # don´t do anything / whatever
-      rescue StandardError
-        # rescue instances of StandardError,
-        # i.e. Timeout::Error, SocketError etc
-      end    
+        rescue StandardError
+          # rescue instances of StandardError,
+          # i.e. Timeout::Error, SocketError etc
+          available_users = false
+        end    
        
+      end
+      ActiveRecord::Base.connection_pool.release_connection
     end
     redirect_to index_url
   end
