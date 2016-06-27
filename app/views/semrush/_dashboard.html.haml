@@ -61,7 +61,8 @@
                   %td= d.volume
                   %td
                     = link_to d.url, target: "_blank" do
-                      = d.url.truncate(20)
+                      = URI.parse(d.url).path
+                      -#= d.url.truncate(20)
   .row
     .col-xs-12
       .well
@@ -90,37 +91,37 @@
                         %td= d.keyword
                         %td= d.position
                         %td= d.traffic_percent
-          .col-sm-12.col-md-12
-            .row
-              .col-xs-12
-                %h3 Keywords
-                .table-responsive
-                  %table.table.top-keywords
-                    %tr
-                      %td 
-                        %a{"data-content" => "Keywords between positions 1 and 3", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Top 3
-                      %td
-                        %a{"data-content" => "#{@range_1_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_1.size
-                    %tr
-                      %td 
-                        %a{"data-content" => "Keywords between positions 4 and 10", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}4 - 10
-                      %td
-                        %a{"data-content" => "#{@range_2_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_2.size
-                    %tr
-                      %td
-                        %a{"data-content" => "Keywords between positions 11 and 21", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}11 - 20
-                      %td
-                        %a{"data-content" => "#{@range_3_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_3.size
-                    %tr
-                      %td
-                        %a{"data-content" => "Keywords between positions 21 and 50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}21 - 50
-                      %td
-                        %a{"data-content" => "#{@range_4_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_4.size
-                    %tr
-                      %td
-                        %a{"data-content" => "Keywords positions +50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}+ 50
-                      %td
-                        %a{"data-content" => "#{@range_5_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_5.size
+          -#.col-sm-12.col-md-12
+            -#.row
+              -#.col-xs-12
+                -#%h3 Keywords
+                -#.table-responsive
+                  -#%table.table.top-keywords
+                    -#%tr
+                      -#%td 
+                        -#%a{"data-content" => "Keywords between positions 1 and 3", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Top 3
+                      -#%td
+                        -#%a{"data-content" => "#{@range_1_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_1.size
+                    -#%tr
+                      -#%td 
+                        -#%a{"data-content" => "Keywords between positions 4 and 10", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}4 - 10
+                      -#%td
+                        -#%a{"data-content" => "#{@range_2_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_2.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords between positions 11 and 21", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}11 - 20
+                      -#%td
+                        -#%a{"data-content" => "#{@range_3_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_3.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords between positions 21 and 50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}21 - 50
+                      -#%td
+                        -#%a{"data-content" => "#{@range_4_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_4.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords positions +50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}+ 50
+                      -#%td
+                        -#%a{"data-content" => "#{@range_5_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_5.size
   / .row
   /   .col-xs-12
   /     #chart_traffic_day_keyword
