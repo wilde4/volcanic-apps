@@ -131,7 +131,7 @@ class MailChimpController < ApplicationController
     settings.save
     
     Thread.new do
-      users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' + '?user_group_id=' + params[:user_group_id] : 'http://' + @key.host + '/api/v1/users.json'  + '?user_group_id=' + params[:user_group_id]
+      users_url = Rails.env.development? ? "http://#{@key.host}:3000/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
     
       users_per_page = 500
       i = 1 #ask api first page
