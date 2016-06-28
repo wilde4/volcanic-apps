@@ -15,12 +15,13 @@
     .row
       .col-xs-12
         = render partial: 'lists_info'
-    .row
-      .col-xs-12
-        = render partial: 'user_groups_info'
+    -#.row
+      -#.col-xs-12
+        -#= render partial: 'user_groups_info'
   - else
     .row
       .col-xs-12
+        %h2 Mailchimp Volcanic App
         %p
           Please click the button below to authorize your account.
         %br

@@ -4,32 +4,8 @@ class MailChimpController < ApplicationController
   after_filter :setup_access_control_origin
   
   def index
-    @host = @key.host
-    @host_2 = @key.host
-    @app_id = params[:data][:id]
+    set_index_variables
     
-    @new_condition_url = create_url(@app_id,@host,'new_condition')
-    @import_users_url  = create_url(@app_id,@host_2,'import_user_group')
-    
-    @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @host)
-    @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
-    
-    @mailchimp_conditions = @settings.mail_chimp_conditions
-    
-    if @settings.access_token.present? 
-      
-      @user_groups_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
-      # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
-      
-      @user_groups = HTTParty.get(@user_groups_url)
-      gibbon = set_gibbon(@settings.access_token)
-    
-      @mailchimp_lists = gibbon.lists.retrieve
-      @mailchimp_lists_collection = []
-      @mailchimp_lists['lists'].each do |list|
-        @mailchimp_lists_collection << [list['name'], list['id']]
-      end
-    end
     render layout: false
   end
   
@@ -60,10 +36,10 @@ class MailChimpController < ApplicationController
         end
       end
     end
-    
-    host = @key.host
-    index_url = create_url(params[:data][:id], host, 'index')
-    redirect_to index_url
+     
+    set_index_variables
+    render :index, layout: false
+
   end
   
   def new_condition
@@ -95,8 +71,7 @@ class MailChimpController < ApplicationController
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
     
-    host = @key.host
-    @index_url = create_url(params[:data][:id], host, 'index')
+    @index_url = create_url(params[:data][:id], @key.host, 'index')
     
     render layout: false
   end
@@ -149,8 +124,7 @@ class MailChimpController < ApplicationController
   
   def import_user_group
     @key = Key.find(params[:key_id])
-    host = @key.host
-    index_url = create_url(params[:app_id], host, 'index')
+    index_url = create_url(params[:app_id], @key.host, 'index')
     
     settings = MailChimpAppSettings.find_by(dataset_id: params[:dataset_id])
     settings.importing_users = true
@@ -159,8 +133,8 @@ class MailChimpController < ApplicationController
     Thread.new do
       users_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/users.json' + '?user_group_id=' + params[:user_group_id] : 'http://' + @key.host + '/api/v1/users.json'  + '?user_group_id=' + params[:user_group_id]
     
-      users_per_page = 100
-      i = 90 #ask api fisrt page
+      users_per_page = 500
+      i = 1 #ask api first page
       available_users = true
 
       while available_users  do
@@ -215,10 +189,38 @@ class MailChimpController < ApplicationController
   
   
   private
+  
+    def set_index_variables
+
+      @app_id = params[:data][:id]
+      
+      @new_condition_url = create_url(@app_id,@key.host,'new_condition')
+      @import_users_url  = create_url(@app_id,@key.host,'import_user_group')
+      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.host)
+    
+      @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
+    
+      @mailchimp_conditions = @settings.mail_chimp_conditions if @settings.present?
+    
+      if @settings.present? && @settings.access_token.present? 
+      
+        @user_groups_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
+        # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
+      
+        @user_groups = HTTParty.get(@user_groups_url)
+        gibbon = set_gibbon(@settings.access_token)
+    
+        @mailchimp_lists = gibbon.lists.retrieve
+        @mailchimp_lists_collection = []
+        @mailchimp_lists['lists'].each do |list|
+          @mailchimp_lists_collection << [list['name'], list['id']]
+        end
+      end
+    end
     
     def create_url(app_id, host, endpoint)
-      @host = format_url(host)
-      "#{@host}/admin/apps/#{app_id}/#{endpoint}"
+      @host_aux = format_url(host)
+      "#{@host_aux}/admin/apps/#{app_id}/#{endpoint}"
     end
     
     def format_url(url)
@@ -270,8 +272,7 @@ class MailChimpController < ApplicationController
     
     def upsert_user(email, first_name, last_name, mailchimp_list_id, dataset_id)
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
-      # gibbon = set_gibbon(settings.access_token)
+      gibbon = set_gibbon(settings.access_token)
       
       md5_email = Digest::MD5.hexdigest(email.downcase)
       begin
@@ -285,8 +286,7 @@ class MailChimpController < ApplicationController
     def send_batch(batch_operations, dataset_id)
       puts batch_operations
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      gibbon = set_gibbon('d82e45856f225b103b668b15c4b6e874-us13')
-      # gibbon = set_gibbon(settings.access_token)
+      gibbon = set_gibbon(settings.access_token)
       begin
         gibbon.batches.create(body: {operations: batch_operations})
       rescue Gibbon::MailChimpError => e
