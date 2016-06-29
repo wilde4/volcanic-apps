@@ -58,7 +58,7 @@ class BullhornJobImport
     settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
     field_mappings = settings.bullhorn_field_mappings.job
     
-    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
+    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
