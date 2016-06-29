@@ -112,14 +112,14 @@ class MailChimpController < ApplicationController
   end
   
   def classify_user
-    logger.info "--- classify_user, params = #{params.inspect}"
+    # logger.info "--- classify_user, params = #{params.inspect}"
     answers = {}
     if params[:registration_answer_hash_id].present?
       answers = params[:registration_answer_hash_id]
     end
-    logger.info "--- answers = #{answers.inspect}"
+    # logger.info "--- answers = #{answers.inspect}"
     operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
-    logger.info "--- operations = #{operations.inspect}"
+    # logger.info "--- operations = #{operations.inspect}"
     send_batch(operations,params[:user]['dataset_id'])
 
     head :ok, content_type: 'text/html'
@@ -134,7 +134,7 @@ class MailChimpController < ApplicationController
     settings.save
     
     Thread.new do
-      users_url = Rails.env.development? ? "http://#{@key.host}:3000/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
+      users_url = Rails.env.development? ? "#{@key.protocol}#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
     
       users_per_page = 500
       i = 1 #ask api first page
@@ -142,12 +142,15 @@ class MailChimpController < ApplicationController
 
       while available_users  do
         puts("Inside the loop page = #{i}" )
+        # logger.info "--- Inside the loop page = #{i}"
         users_url = users_url + "&per_page=#{users_per_page}&page=#{i}"
+        # logger.info "--- users_url = #{users_url}"
         begin
           @users = HTTParty.get(users_url)
           users_array = []
           if @users['users'].size != 0
             @users['users'].each do |u|
+              # logger.info "--- u = #{u.inspect}"
               if u['user_group_id'].to_i == params[:user_group_id].to_i
                 user_hash = {
                   user: {
@@ -164,6 +167,7 @@ class MailChimpController < ApplicationController
                 users_array << user_hash
               end
             end
+            # logger.info "--- users_array = #{users_array.inspect}"
             classify_user_group(users_array)
             i += 1
           else
@@ -173,10 +177,12 @@ class MailChimpController < ApplicationController
           end
         rescue HTTParty::Error
           # don´t do anything / whatever
+          logger.info "--- HTTParty::Error"
           available_users = false
           settings.importing_users = false
           settings.save
-        rescue StandardError
+        rescue StandardError => e
+          logger.info "--- Error = #{e.inspect}"
           # rescue instances of StandardError,
           # i.e. Timeout::Error, SocketError etc
           available_users = false
@@ -287,7 +293,7 @@ class MailChimpController < ApplicationController
     end
     
     def send_batch(batch_operations, dataset_id)
-      logger.info "--- send_batch"
+      # logger.info "--- send_batch"
       puts batch_operations
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       gibbon = set_gibbon(settings.access_token)
@@ -313,7 +319,7 @@ class MailChimpController < ApplicationController
     end
     
     def check_user_conditions(user_answers, user, user_profile, dataset_id)
-      logger.info "--- check_user_conditions, user = #{user.inspect}"
+      # logger.info "--- check_user_conditions, user = #{user.inspect}"
       operations = []
       operation_json = ''
 
@@ -322,26 +328,26 @@ class MailChimpController < ApplicationController
       last_name = user_profile['last_name']
     
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      logger.info "--- settings = #{settings.inspect}"
+      # logger.info "--- settings = #{settings.inspect}"
       mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
-      logger.info "--- mailchimp_ug_conditions = #{mailchimp_ug_conditions.inspect}"
+      # logger.info "--- mailchimp_ug_conditions = #{mailchimp_ug_conditions.inspect}"
       
       if mailchimp_ug_conditions.present?
-        logger.info "--- mailchimp_ug_conditions.present?"
+        # logger.info "--- mailchimp_ug_conditions.present?"
         mailchimp_ug_conditions.each do |condition|
-          logger.info "--- condition = #{condition.inspect}"
+          # logger.info "--- condition = #{condition.inspect}"
           if condition.registration_question_id.blank?
-            logger.info "--- Default list"
+            # logger.info "--- Default list"
             operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
             operations.append(operation_json)
           end
           if user_answers.present?
-            logger.info "--- user_answers.present?"
+            # logger.info "--- user_answers.present?"
             user_answers.each do |answer|
-              logger.info "--- answer = #{answer.inspect}"
+              # logger.info "--- answer = #{answer.inspect}"
               if answer[0].to_i == condition.registration_question_id
                 if compare_answers(answer[1], condition.answer)
-                  logger.info "--- MATCH: #{answer[1]} - #{condition.answer}"
+                  # logger.info "--- MATCH: #{answer[1]} - #{condition.answer}"
                   operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
                   operations.append(operation_json)
                 end
@@ -354,6 +360,7 @@ class MailChimpController < ApplicationController
     end
     
     def classify_user_group(users_array = nil)
+      # logger.info "--- classify_user_group, users_array = #{users_array.inspect}"
       if users_array.present?
         batch_operations = []
         dataset_id = users_array.first[:dataset_id]
@@ -367,6 +374,7 @@ class MailChimpController < ApplicationController
             batch_operations.append(op)
           end
         end
+        # logger.info "--- batch_operations = #{batch_operations.inspect}"
         send_batch(batch_operations, dataset_id)
       end
     end
