@@ -2,7 +2,8 @@
     // START -- GOOGLE CHARTS --//
     google.charts.load('current', {packages: ['corechart', 'bar']});
     // google.charts.setOnLoadCallback(drawCharts);
-    google.charts.setOnLoadCallback(drawMainChart);
+    // google.charts.setOnLoadCallback(drawMainChart);
+    google.charts.setOnLoadCallback(drawStackedChart);
     
     function drawMainChart(){      
       var data = new google.visualization.arrayToDataTable(#{[['Day', 'Top 3', 'Pos 4-10','Pos 11-20','Pos 21-50','Pos +50']] + @chart_position_range_keywords});    
@@ -14,6 +15,20 @@
         focusTarget: 'category',
         chartArea: {'width': '85%', 'height': '65%'},
         legend: {'position': 'bottom'}
+      }
+      chart.draw(data, options);
+    }
+    
+    function drawStackedChart(){      
+      var data = new google.visualization.arrayToDataTable(#{[['Day', 'Pos +50', 'Pos 21-50','Pos 11-20','Pos 4-10','Top 3']] + @chart_position_range_keywords});      
+      var chart = new google.visualization.ColumnChart(document.getElementById('chart_position_range_keywords'));
+      var options = {
+        isStacked: true,
+        title: 'Keywords - Organic Search Positions',
+        width: '100%',
+        height: 600,
+        legend: {position: 'top', maxLines: 3},
+        vAxis: {minValue: 0}
       }
       chart.draw(data, options);
     }

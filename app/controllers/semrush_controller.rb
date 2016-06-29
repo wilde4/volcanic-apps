@@ -39,7 +39,7 @@ class SemrushController < ApplicationController
           range_3 = day_data.where('position >= 11 AND position <= 20', day: date)
           range_4 = day_data.where('position >= 21 AND position <= 50', day: date)
           range_5 = day_data.where('position >= 51', day: date)
-          @chart_position_range_keywords << [date.strftime('%D'), range_1.size, range_2.size, range_3.size, range_4.size, range_5.size]
+          @chart_position_range_keywords << [date.strftime('%D'), range_5.size, range_4.size, range_3.size, range_2.size, range_1.size]
         end
       end
     
