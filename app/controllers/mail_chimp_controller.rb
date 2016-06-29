@@ -15,7 +15,7 @@ class MailChimpController < ApplicationController
     @attributes[:authorization_code]  = params[:data][:code]
     @attributes[:access_token]        = MailChimp::AuthenticationService.get_access_token(
                                           params[:data][:id],
-                                          @key.host,
+                                          @key.protocol+@key.host,
                                           params[:data][:code])
                                           
     unless !@attributes[:access_token].present?
@@ -46,7 +46,7 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-     @user_groups_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
+     @user_groups_url = Rails.env.development? ? 'http://' + @key.host + '/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
     # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     
     @user_groups = HTTParty.get(@user_groups_url)
@@ -71,7 +71,7 @@ class MailChimpController < ApplicationController
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
     
-    @index_url = create_url(params[:data][:id], @key.host, 'index')
+    @index_url = create_url(params[:data][:id], @key.protocol+@key.host, 'index')
     
     render layout: false
   end
@@ -86,7 +86,7 @@ class MailChimpController < ApplicationController
     
     @mailchimp_condition = MailChimpCondition.new(condition_attributes)
     
-    host = Key.find(params[:key_id]).host
+    host = Key.find(params[:key_id]).protocol+Key.find(params[:key_id]).host
     index_url = create_url(params[:app_id], host, 'index')
     
     if @mailchimp_condition.save
@@ -112,11 +112,14 @@ class MailChimpController < ApplicationController
   end
   
   def classify_user
+    logger.info "--- classify_user, params = #{params.inspect}"
     answers = {}
     if params[:registration_answer_hash_id].present?
       answers = params[:registration_answer_hash_id]
     end
+    logger.info "--- answers = #{answers.inspect}"
     operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
+    logger.info "--- operations = #{operations.inspect}"
     send_batch(operations,params[:user]['dataset_id'])
 
     head :ok, content_type: 'text/html'
@@ -194,8 +197,8 @@ class MailChimpController < ApplicationController
 
       @app_id = params[:data][:id]
       
-      @new_condition_url = create_url(@app_id,@key.host,'new_condition')
-      @import_users_url  = create_url(@app_id,@key.host,'import_user_group')
+      @new_condition_url = create_url(@app_id, @key.protocol+@key.host, 'new_condition')
+      @import_users_url  = create_url(@app_id, @key.protocol+@key.host, 'import_user_group')
       @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.protocol+@key.host)
     
       @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
@@ -204,7 +207,7 @@ class MailChimpController < ApplicationController
     
       if @settings.present? && @settings.access_token.present? 
       
-        @user_groups_url = Rails.env.development? ? 'http://' + @key.host + ':3000/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
+        @user_groups_url = Rails.env.development? ? 'http://' + @key.host + '/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
         # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
       
         @user_groups = HTTParty.get(@user_groups_url)
@@ -226,7 +229,7 @@ class MailChimpController < ApplicationController
     def format_url(url)
       url = URI.parse(url)
       return url if url.scheme
-      return "http://#{url}:3000" if Rails.env.development?
+      return "http://#{url}" if Rails.env.development?
       "http://#{url}"
     end 
     
@@ -284,6 +287,7 @@ class MailChimpController < ApplicationController
     end
     
     def send_batch(batch_operations, dataset_id)
+      logger.info "--- send_batch"
       puts batch_operations
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       gibbon = set_gibbon(settings.access_token)
@@ -309,6 +313,7 @@ class MailChimpController < ApplicationController
     end
     
     def check_user_conditions(user_answers, user, user_profile, dataset_id)
+      logger.info "--- check_user_conditions, user = #{user.inspect}"
       operations = []
       operation_json = ''
 
@@ -317,20 +322,26 @@ class MailChimpController < ApplicationController
       last_name = user_profile['last_name']
     
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
+      logger.info "--- settings = #{settings.inspect}"
       mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      logger.info "--- mailchimp_ug_conditions = #{mailchimp_ug_conditions.inspect}"
       
       if mailchimp_ug_conditions.present?
+        logger.info "--- mailchimp_ug_conditions.present?"
         mailchimp_ug_conditions.each do |condition|
-          if !condition.registration_question_id.present?
-            puts 'Default list'
+          logger.info "--- condition = #{condition.inspect}"
+          if condition.registration_question_id.blank?
+            logger.info "--- Default list"
             operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
             operations.append(operation_json)
           end
           if user_answers.present?
+            logger.info "--- user_answers.present?"
             user_answers.each do |answer|
+              logger.info "--- answer = #{answer.inspect}"
               if answer[0].to_i == condition.registration_question_id
                 if compare_answers(answer[1], condition.answer)
-                  puts "MATCH: #{answer[1]} - #{condition.answer}"
+                  logger.info "--- MATCH: #{answer[1]} - #{condition.answer}"
                   operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
                   operations.append(operation_json)
                 end
