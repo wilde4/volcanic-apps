@@ -196,7 +196,7 @@ class MailChimpController < ApplicationController
       
       @new_condition_url = create_url(@app_id,@key.host,'new_condition')
       @import_users_url  = create_url(@app_id,@key.host,'import_user_group')
-      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.host)
+      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.protocol+@key.host)
     
       @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
     
