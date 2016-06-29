@@ -3,7 +3,7 @@
     google.charts.load('current', {packages: ['corechart', 'bar']});
     // google.charts.setOnLoadCallback(drawCharts);
     // google.charts.setOnLoadCallback(drawMainChart);
-    google.charts.setOnLoadCallback(drawStackedChart);
+    // google.charts.setOnLoadCallback(drawStackedChart);
     
     function drawMainChart(){      
       var data = new google.visualization.arrayToDataTable(#{[['Day', 'Top 3', 'Pos 4-10','Pos 11-20','Pos 21-50','Pos +50']] + @chart_position_range_keywords});    
@@ -191,6 +191,17 @@
         margin: 25px 0;
         padding-bottom: 20px;
         background: $bg-color;
+      }
+      #chart_position_range_keywords{
+        p{
+          padding-top: 15px;
+        }
+        figure{
+          width: 100%;
+          img{
+            width: 100%;
+          }
+        }
       }
     }
     #edit-app-settings{

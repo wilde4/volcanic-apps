@@ -14,7 +14,7 @@ class SaveSemrushData
     start_date = Date.today - app_setting.previous_data.month
     request_rate = app_setting.request_rate
     end_date = Date.today
-    if app_setting.has_records?
+    # if app_setting.has_records?
       organic_report = report.organic(db: app_setting.engine, display_date: Date.today.strftime('%Y%m%d'), limit: app_setting.keyword_amount)
       # organic_report = fake_data;
       organic_report.each do |o|
@@ -34,33 +34,33 @@ class SaveSemrushData
           day: Date.today
         )
         app_setting.update(last_petition_at: Date.today)
-      end
-    else
-      (start_date.to_datetime.to_i .. end_date.to_datetime.to_i).step(request_rate.days) do |date|
-        date = Time.at(date)
-        if date <= Date.today
-          organic_report = report.organic(db: app_setting.engine, display_date: date.strftime('%Y%m%d'), limit: app_setting.keyword_amount)
-          # organic_report = fake_data;
-          organic_report.each do |o|
-            app_setting.semrush_stats.create(
-              dataset_id: app_setting.dataset_id,
-              domain: app_setting.domain,
-              keyword: o[:keyword],
-              position: o[:pos],
-              position_difference: o[:position_difference],
-              traffic_percent: o[:traffic_percent],
-              costs_percent: o[:costs_percent],
-              results: o[:number_of_results],
-              cpc: o[:cpc],
-              volume: o[:average_vol],
-              url: o[:url],
-              engine: engine,
-              day: date
-            )
-          end
-          app_setting.update(last_petition_at: date)
-        end
-      end
+      # end
+    # else
+    #   (start_date.to_datetime.to_i .. end_date.to_datetime.to_i).step(request_rate.days) do |date|
+    #     date = Time.at(date)
+    #     if date <= Date.today
+    #       organic_report = report.organic(db: app_setting.engine, display_date: date.strftime('%Y%m%d'), limit: app_setting.keyword_amount)
+    #       # organic_report = fake_data;
+    #       organic_report.each do |o|
+    #         app_setting.semrush_stats.create(
+    #           dataset_id: app_setting.dataset_id,
+    #           domain: app_setting.domain,
+    #           keyword: o[:keyword],
+    #           position: o[:pos],
+    #           position_difference: o[:position_difference],
+    #           traffic_percent: o[:traffic_percent],
+    #           costs_percent: o[:costs_percent],
+    #           results: o[:number_of_results],
+    #           cpc: o[:cpc],
+    #           volume: o[:average_vol],
+    #           url: o[:url],
+    #           engine: engine,
+    #           day: date
+    #         )
+    #       end
+    #       app_setting.update(last_petition_at: date)
+    #     end
+    #   end
     end
   end
 end
