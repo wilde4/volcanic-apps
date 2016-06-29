@@ -88,8 +88,8 @@ class JobAdderController < ApplicationController
     job_adder_categories << job.search('Classification[name="Sub-Categories"]').text
     arr = []
     job_adder_categories.each do |category|
-      if @disciplines.find { |discipline| discipline['name'] == category }
-        arr << @disciplines.find { |discipline| discipline['name'] == category }['id']
+      if @disciplines.find { |discipline| discipline['name'] == CGI.unescapeHTML(category) }
+        arr << @disciplines.find { |discipline| discipline['name'] == CGI.unescapeHTML(category) }['id']
       end
     end
     arr
