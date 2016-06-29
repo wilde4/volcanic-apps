@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160627164404) do
+ActiveRecord::Schema.define(version: 20160627193629) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,6 +27,14 @@ ActiveRecord::Schema.define(version: 20160627164404) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "arithon_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "api_key"
+    t.string   "company_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -352,14 +360,14 @@ ActiveRecord::Schema.define(version: 20160627164404) do
     t.integer  "position_difference"
     t.float    "traffic_percent"
     t.float    "costs_percent"
-    t.integer  "results"
+    t.integer  "results",                 limit: 8
     t.float    "cpc"
     t.integer  "volume"
     t.string   "url"
     t.date     "day"
     t.string   "engine"
-    t.datetime "created_at",              null: false
-    t.datetime "updated_at",              null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
     t.integer  "semrush_app_settings_id"
   end
 
