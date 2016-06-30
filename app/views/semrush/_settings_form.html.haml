@@ -1,0 +1,19 @@
+- url = Rails.env.development? ? 'http://localhost:3001/semrush/save_settings' : 'https://apps.volcanic.co/semrush/save_settings'
+= simple_form_for @semrush_setting, url: url, method: :post, remote: true do |f|
+  = f.input :dataset_id, as: :hidden
+  .panel.panel-default
+    .panel-heading Semrush Settings
+    .panel-body
+      .row
+        .col-md-6
+          -if @semrush_setting.domain.present?
+            = f.input :domain
+          -else
+            = f.input :domain, input_html: { value: "#{request.host}" }
+          %small Domain without "www."
+          %small Example: sample.co.uk
+        .col-md-6
+          = f.input :engine, collection: [ ['United Kingdom', 'uk'],['United States', 'us'] ], include_blank: false, input_html: { class: "form-control" }, label: "Google engine"
+   
+        .col-md-12.mt-20
+          = f.submit class: 'btn btn-primary'

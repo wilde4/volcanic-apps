@@ -185,6 +185,13 @@ Apps::Application.routes.draw do
     post 'new_search'       => 'bullhorn#new_search'
   end
   
+  scope :semrush do
+    get 'index'             => 'semrush#index'
+    post 'activate_app'     => 'semrush#activate_app'
+    post 'save_settings'    => 'semrush#save_settings'
+    post 'update_settings'  => 'semrush#update_settings'
+  end
+  
   scope :job_adder do
     post "activate_app"     => 'job_adder#activate_app'
     post "deactivate_app"   => 'job_adder#deactivate_app'

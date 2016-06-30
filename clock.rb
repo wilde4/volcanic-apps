@@ -20,6 +20,14 @@ module Clockwork
   every(1.month, 'send_referral_email.job') do
     SendReferralEmail.send_funds_email(18)
   end
+  
+  every(1.day, 'get_semrush_data.job') do
+    SemrushAppSettings.all.each do |semrush_setting|
+      if !semrush_setting.has_records? || semrush_setting.day_of_petition? || !semrush_setting.last_petition_at.present?
+        SaveSemrushData.save_data(semrush_setting.id)
+      end
+    end
+  end
 
   # JOB IMPORTS
   every(1.hour, 'poll_talentrover_feed.job') do
