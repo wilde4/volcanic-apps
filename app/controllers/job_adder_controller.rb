@@ -45,7 +45,8 @@ class JobAdderController < ApplicationController
               job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
               application_email: job.search('EmailTo').text,
               application_url: job.search('Url').text,
-              discipline: find_disciplines(job).join(",")
+              discipline: find_disciplines(job).join(","),
+              source: "jobadder_#{@key.id}"
             }.merge(contact_hash)
         }
         @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
@@ -135,8 +136,8 @@ class JobAdderController < ApplicationController
     logger.info " ============> STARTING PRUNE <==========="
     live_refs = @xml.search('//Job').map { |job| job.attr('reference') }
     logger.info live_refs
-
-    current_refs = HTTParty.get("#{host_endpoint}/api/v1/jobs/job_references.json").parsed_response.map { |job| job["job_reference"] }
+    source = "jobadder_#{@key.id}"
+    current_refs = HTTParty.get("#{host_endpoint}/api/v1/jobs/job_references.json?source=#{source}").parsed_response.map { |job| job["job_reference"] }
 
     logger.info current_refs
     prune_refs = current_refs - live_refs
