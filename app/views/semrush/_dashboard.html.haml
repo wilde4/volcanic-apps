@@ -1,0 +1,135 @@
+%header
+  %h1 Semrush Volcanic Dashboard
+  %hr.featurette-divider
+%section#semrush-dashboard
+  .row
+    .col-xs-12
+      .well
+        .row
+          .col-xs-12
+            %h2 Domain info
+          .col-xs-12
+            .row
+              .col-xs-12.col-sm-6
+                %h3=@semrush_data.first.domain
+                %h4
+                  %strong Keywords:
+                  = @semrush_data.size
+              .col-xs-12.col-sm-6
+                %p
+                  %strong Last update: 
+                  = @semrush_data.first.day
+                %p
+                  %strong Engine:
+                  Google 
+                  = @semrush_data.first.engine
+                %p
+                  %span.btn#edit-settings-btn Update App Settings 
+                 
+  .row#edit-app-settings
+    .col-md-12
+      #flash_messages
+    .col-xs-12
+      #settings_form
+        = render partial: 'settings_form'
+  .row
+    .col-xs-12
+      
+      - if @chart_position_range_keywords.present?
+        #chart_position_range_keywords
+          %p.text-center.text-warning This chart will be shown if we get historical data from Semrush
+          %figure
+            %img(src="https://drive.google.com/uc?export=view&id=0Bxrb3jdEFNhNLTBkZzZBVlNhaEk")
+           
+      - else
+        .well
+          %h5 We are processing your stats. Try to refresh the page in a few minutes to view the chart.
+  .row
+    .col-xs-12
+      .well
+        %h3 Keywords detail
+        .table-responsive
+          %table.table#data-table
+            %thead
+              %tr
+                %th Keyword
+                %th
+                  %a{"data-content" => "The position the domain gets in organic search for the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Position
+                %th 
+                  %a{"data-content" => "The average of searches for the given keyword in the last 12 months.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Volume
+                %th url
+            %tbody
+              -@semrush_data.each do |d|
+                %tr
+                  %td= d.keyword
+                  %td= d.position
+                  %td= d.volume
+                  %td
+                    - if d.url != "http://" && d.url != "https://"
+                      = link_to d.url, target: "_blank" do
+                        = URI.parse(d.url).path
+  .row
+    .col-xs-12
+      .well
+        %h2 Today's report 
+        .row
+          .col-sm-12.col-md-12
+            .col-xs-12
+              %h3 Top 10 searched keywords
+              .table-responsive
+                %table.table
+                  %thead
+                    %tr
+                      %th Position
+                      %th
+                        %a{"data-content" => "The average of searches for the given keyword in the last 12 months.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Volume
+                      %th Keyword
+                      %th
+                        %a{"data-content" => "The position the domain gets in organic search for the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Position
+                      %th
+                        %a{"data-content" => "The share of traffic driven to the website with the given keyword.", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Traffic%
+                  %tbody
+                    -@semrush_data.take(10).each_with_index do |d, index|
+                      %tr
+                        %td= index + 1
+                        %td= d.volume
+                        %td= d.keyword
+                        %td= d.position
+                        %td= d.traffic_percent
+          -#.col-sm-12.col-md-12
+            -#.row
+              -#.col-xs-12
+                -#%h3 Keywords
+                -#.table-responsive
+                  -#%table.table.top-keywords
+                    -#%tr
+                      -#%td 
+                        -#%a{"data-content" => "Keywords between positions 1 and 3", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}Top 3
+                      -#%td
+                        -#%a{"data-content" => "#{@range_1_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_1.size
+                    -#%tr
+                      -#%td 
+                        -#%a{"data-content" => "Keywords between positions 4 and 10", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}4 - 10
+                      -#%td
+                        -#%a{"data-content" => "#{@range_2_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_2.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords between positions 11 and 21", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}11 - 20
+                      -#%td
+                        -#%a{"data-content" => "#{@range_3_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_3.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords between positions 21 and 50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}21 - 50
+                      -#%td
+                        -#%a{"data-content" => "#{@range_4_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_4.size
+                    -#%tr
+                      -#%td
+                        -#%a{"data-content" => "Keywords positions +50", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}+ 50
+                      -#%td
+                        -#%a{"data-content" => "#{@range_5_keywords.join(', ')}", "data-toggle" => "popover", "data-trigger" => "hover", :href => "#"}=@range_5.size
+  / .row
+  /   .col-xs-12
+  /     #chart_traffic_day_keyword
+  / .row
+  /   .col-xs-12
+  /     #chart_top_keywords_traffic

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160426090752) do
+ActiveRecord::Schema.define(version: 20160627193629) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -37,17 +37,6 @@ ActiveRecord::Schema.define(version: 20160426090752) do
     t.text     "registration_answers"
     t.text     "linkedin_profile"
     t.integer  "arithon_uid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "bond_adapt_app_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "username"
-    t.string   "password"
-    t.string   "domain"
-    t.string   "domain_profile"
-    t.string   "endpoint"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -295,6 +284,27 @@ ActiveRecord::Schema.define(version: 20160426090752) do
     t.datetime "updated_at"
   end
 
+  create_table "mail_chimp_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "authorization_code"
+    t.text     "access_token"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.boolean  "importing_users"
+  end
+
+  create_table "mail_chimp_conditions", force: true do |t|
+    t.integer  "mail_chimp_app_settings_id"
+    t.integer  "user_group"
+    t.string   "mail_chimp_list_id"
+    t.integer  "registration_question_id"
+    t.text     "answer"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
+
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
     t.string   "token"
@@ -321,6 +331,39 @@ ActiveRecord::Schema.define(version: 20160426090752) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "semrush_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.integer  "keyword_amount"
+    t.integer  "request_rate"
+    t.integer  "previous_data"
+    t.string   "engine"
+    t.string   "domain"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.date     "last_petition_at"
+  end
+
+  create_table "semrush_stats", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "domain"
+    t.string   "keyword"
+    t.integer  "position"
+    t.integer  "position_difference"
+    t.float    "traffic_percent"
+    t.float    "costs_percent"
+    t.integer  "results",                 limit: 8
+    t.float    "cpc"
+    t.integer  "volume"
+    t.string   "url"
+    t.date     "day"
+    t.string   "engine"
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.integer  "semrush_app_settings_id"
+  end
+
+  add_index "semrush_stats", ["semrush_app_settings_id"], name: "index_semrush_stats_on_semrush_app_settings_id", using: :btree
 
   create_table "split_fee_settings", force: true do |t|
     t.integer  "app_dataset_id"

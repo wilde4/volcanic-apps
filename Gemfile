@@ -36,6 +36,9 @@ gem 'honeybadger'
 gem 'unicorn'
 gem 'unicorn-worker-killer'
 
+#Semrush API gem
+gem 'semrush'
+
 # gem 'bullhorn-rest'
 # gem 'bullhorn-rest', git: 'https://github.com/getoutreach/bullhorn-rest.git'
 gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 'create_candidates'
