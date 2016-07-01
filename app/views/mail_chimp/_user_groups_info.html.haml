@@ -25,6 +25,4 @@
                   0
               %td
                 - if group['users_count'].to_i > 0
-                  - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
-                  -#= link_to "Import users", "/admin/classify_mailchimp_users/#{group['id']}", class: "btn btn-primary"
-                  = link_to "Import users", url + "?dataset_id=#{params[:data][:dataset_id]}&key_id=#{@key.id}&app_id=#{params[:data][:id]}&user_group_id=#{group['id']}", class: "btn btn-primary", method: :post
+                  = link_to "Import users", @import_group_url + "?dataset_id=#{params[:data][:dataset_id]}&key_id=#{@key.id}&app_id=#{params[:data][:id]}&user_group_id=#{group['id']}", class: "btn btn-primary", method: :post

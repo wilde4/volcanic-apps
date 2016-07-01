@@ -46,7 +46,8 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-     @user_groups_url = Rails.env.development? ? 'http://' + @key.host + '/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
+    host = format_url(@key.host)
+    @user_groups_url = host + '/api/v1/user_groups.json'
     # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     
     @user_groups = HTTParty.get(@user_groups_url)
@@ -71,7 +72,7 @@ class MailChimpController < ApplicationController
       @mailchimp_lists_collection << [list['name'], list['id']]
     end
     
-    @index_url = create_url(params[:data][:id], @key.protocol+@key.host, 'index')
+    @index_url = create_url(params[:data][:id], host, 'index')
     
     render layout: false
   end
@@ -86,7 +87,7 @@ class MailChimpController < ApplicationController
     
     @mailchimp_condition = MailChimpCondition.new(condition_attributes)
     
-    host = Key.find(params[:key_id]).protocol+Key.find(params[:key_id]).host
+    host = format_url(Key.find(params[:key_id]).host)
     index_url = create_url(params[:app_id], host, 'index')
     
     if @mailchimp_condition.save
@@ -133,8 +134,10 @@ class MailChimpController < ApplicationController
     settings.importing_users = true
     settings.save
     
+    @host = format_url(@key.host)
+    
     Thread.new do
-      users_url = Rails.env.development? ? "#{@key.protocol}#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{@key.host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
+      users_url = Rails.env.development? ? "#{@host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
     
       users_per_page = 500
       i = 1 #ask api first page
@@ -203,8 +206,8 @@ class MailChimpController < ApplicationController
 
       @app_id = params[:data][:id]
       
-      @new_condition_url = create_url(@app_id, @key.protocol+@key.host, 'new_condition')
-      @import_users_url  = create_url(@app_id, @key.protocol+@key.host, 'import_user_group')
+      host = format_url(@key.host)
+      @new_condition_url = create_url(@app_id, host, 'new_condition')
       @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.protocol+@key.host)
     
       @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
@@ -212,11 +215,12 @@ class MailChimpController < ApplicationController
       @mailchimp_conditions = @settings.mail_chimp_conditions if @settings.present?
     
       if @settings.present? && @settings.access_token.present? 
-      
-        @user_groups_url = Rails.env.development? ? 'http://' + @key.host + '/api/v1/user_groups.json' : 'http://' + @key.host + '/api/v1/user_groups.json'
+        
+        host = format_url(@key.host)
+        @user_groups_url = host + '/api/v1/user_groups.json'
         # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
-      
         @user_groups = HTTParty.get(@user_groups_url)
+        @import_group_url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
         gibbon = set_gibbon(@settings.access_token)
     
         @mailchimp_lists = gibbon.lists.retrieve
@@ -233,10 +237,11 @@ class MailChimpController < ApplicationController
     end
     
     def format_url(url)
-      url = URI.parse(url)
-      return url if url.scheme
-      return "http://#{url}" if Rails.env.development?
-      "http://#{url}"
+      url_aux = url
+      url_aux = URI.parse(url_aux)
+      return url_aux if url_aux.scheme
+      return "http://#{url_aux}:3000" if Rails.env.development?
+      "http://#{url_aux}"
     end 
     
     def set_gibbon(access_token)
