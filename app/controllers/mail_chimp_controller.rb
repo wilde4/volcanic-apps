@@ -10,12 +10,13 @@ class MailChimpController < ApplicationController
   end
   
   def callback
+    host = format_url(@key.host)
     @attributes                       = Hash.new
     @attributes[:dataset_id]          = params[:data][:dataset_id]
     @attributes[:authorization_code]  = params[:data][:code]
     @attributes[:access_token]        = MailChimp::AuthenticationService.get_access_token(
                                           params[:data][:id],
-                                          @key.protocol+@key.host,
+                                          host,
                                           params[:data][:code])
                                           
     unless !@attributes[:access_token].present?
@@ -208,7 +209,7 @@ class MailChimpController < ApplicationController
       
       host = format_url(@key.host)
       @new_condition_url = create_url(@app_id, host, 'new_condition')
-      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, @key.protocol+@key.host)
+      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, host)
     
       @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
     

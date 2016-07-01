@@ -8,20 +8,23 @@ class MailChimp::AuthenticationService < BaseService
     CREDENTIALS = {
       authorize_url: 'https://login.mailchimp.com/oauth2/authorize',
       token_url: 'https://login.mailchimp.com/oauth2/token',
-      client_id: '651907686702',
-      client_secret: 'b5e3a197a0e465d2f0e42a7dba8b9393'
+      client_secret: 'b5e3a197a0e465d2f0e42a7dba8b9393',
+      client_id: '651907686702'
     }
     
 
     def client_auth(app_id, host)
-      client = OAuth2::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
+      client = OAuth2::Client.new(ENV['MAILCHIMP_CLIENT_ID'], ENV['MAILCHIMP_CLIENT_SECRET'], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
+      
+      # client = OAuth2::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
+      
       authorize_url = client.auth_code.authorize_url(redirect_uri: redirect_uri(app_id, host), response_type: 'code')
 
       return URI.decode(authorize_url)  
     end
     
     def get_access_token(app_id, host, authorization_code)
-      client = OAuth2::Client.new(CREDENTIALS[:client_id], CREDENTIALS[:client_secret], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
+      client = OAuth2::Client.new(ENV['MAILCHIMP_CLIENT_ID'], ENV['MAILCHIMP_CLIENT_SECRET'], { authorize_url: CREDENTIALS[:authorize_url], token_url: CREDENTIALS[:token_url] })
       begin
         @callback_url = redirect_uri(app_id, host)
         @token = client.auth_code.get_token(authorization_code, redirect_uri: @callback_url)
