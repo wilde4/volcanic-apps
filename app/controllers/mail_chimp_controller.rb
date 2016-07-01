@@ -10,7 +10,8 @@ class MailChimpController < ApplicationController
   end
   
   def callback
-    host = format_url(@key.host)
+    host = key_host(@key)
+    
     @attributes                       = Hash.new
     @attributes[:dataset_id]          = params[:data][:dataset_id]
     @attributes[:authorization_code]  = params[:data][:code]
@@ -47,7 +48,7 @@ class MailChimpController < ApplicationController
     @mail_chimp_app_settings = MailChimpAppSettings.find_by(dataset_id: @key.app_dataset_id)
     @mail_chimp_condition = MailChimpCondition.new
     
-    host = format_url(@key.host)
+    host = key_host(@key)
     @user_groups_url = host + '/api/v1/user_groups.json'
     # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
     
@@ -87,8 +88,8 @@ class MailChimpController < ApplicationController
     condition_attributes[:answer]                        = params[:mail_chimp_condition][:answer]
     
     @mailchimp_condition = MailChimpCondition.new(condition_attributes)
-    
-    host = format_url(Key.find(params[:key_id]).host)
+    @key = Key.find(params[:key_id])
+    host = key_host(@key)
     index_url = create_url(params[:app_id], host, 'index')
     
     if @mailchimp_condition.save
@@ -103,7 +104,8 @@ class MailChimpController < ApplicationController
   def delete_condition
     @condition = MailChimpCondition.find(params[:id])
     
-    host = Key.find(params[:key_id]).host
+    @key = Key.find(params[:key_id])
+    host = key_host(@key)
     index_url = create_url(params[:app_id], host, 'index')
     
     if @condition.destroy
@@ -129,13 +131,12 @@ class MailChimpController < ApplicationController
   
   def import_user_group
     @key = Key.find(params[:key_id])
-    index_url = create_url(params[:app_id], @key.host, 'index')
+    @host = key_host(@key)
+    index_url = create_url(params[:app_id], @host, 'index')
     
     settings = MailChimpAppSettings.find_by(dataset_id: params[:dataset_id])
     settings.importing_users = true
     settings.save
-    
-    @host = format_url(@key.host)
     
     Thread.new do
       users_url = Rails.env.development? ? "#{@host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}" : "http://#{host}/api/v1/users/#{params[:user_group_id]}/user_group_users.json?api_key=#{@key.api_key}"
@@ -206,8 +207,7 @@ class MailChimpController < ApplicationController
     def set_index_variables
 
       @app_id = params[:data][:id]
-      
-      host = format_url(@key.host)
+      host = key_host(@key)
       @new_condition_url = create_url(@app_id, host, 'new_condition')
       @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, host)
     
@@ -217,7 +217,6 @@ class MailChimpController < ApplicationController
     
       if @settings.present? && @settings.access_token.present? 
         
-        host = format_url(@key.host)
         @user_groups_url = host + '/api/v1/user_groups.json'
         # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
         @user_groups = HTTParty.get(@user_groups_url)
@@ -233,17 +232,19 @@ class MailChimpController < ApplicationController
     end
     
     def create_url(app_id, host, endpoint)
-      @host_aux = format_url(host)
-      "#{@host_aux}/admin/apps/#{app_id}/#{endpoint}"
+      "#{host}/admin/apps/#{app_id}/#{endpoint}"
     end
     
-    def format_url(url)
-      url_aux = url
+    
+    def key_host(key)
+      url_aux = key.host
       url_aux = URI.parse(url_aux)
+
       return url_aux if url_aux.scheme
-      return "http://#{url_aux}:3000" if Rails.env.development?
-      "http://#{url_aux}"
-    end 
+      return "#{@key.protocol}#{url_aux}:3000" if Rails.env.development?
+      "#{@key.protocol}#{url_aux}"
+      
+    end
     
     def set_gibbon(access_token)
       response = HTTParty.get(
