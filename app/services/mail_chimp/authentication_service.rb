@@ -7,9 +7,7 @@ class MailChimp::AuthenticationService < BaseService
 
     CREDENTIALS = {
       authorize_url: 'https://login.mailchimp.com/oauth2/authorize',
-      token_url: 'https://login.mailchimp.com/oauth2/token',
-      client_secret: 'b5e3a197a0e465d2f0e42a7dba8b9393',
-      client_id: '651907686702'
+      token_url: 'https://login.mailchimp.com/oauth2/token'
     }
     
 
