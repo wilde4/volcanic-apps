@@ -290,4 +290,11 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'servicedott#deactivate_app'
   end
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
+
+  scope :prs do
+    get "email_data"     => 'prs#email_data'
+    post "email_data"     => 'prs#email_data'
+    post "activate_app"     => 'prs#activate_app'
+    post "deactivate_app"   => 'prs#deactivate_app'
+  end
 end
