@@ -1,8 +1,8 @@
 class PrsController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json, :xml
-  
-  before_action :set_key
+
+  before_action :set_key, only: [:index]
   after_filter :setup_access_control_origin
 
   def index
