@@ -1,6 +1,13 @@
 class PrsController < ApplicationController
   protect_from_forgery with: :null_session
   respond_to :json, :xml
+  before_action :set_key
+
+  def index
+    @host = @key.host
+    @app_id = params[:data][:id]
+    render layout: false
+  end
 
   # http://localhost:3001/prs/email_data.json?user[email]=bob@foo.com&user[created_at]=2014-02-11T10:01:07.000+00:00&user_profile[first_name]=Bob&user_profile[last_name]=Hoskins&job[job_title]=Testing Job&job[job_reference]=ABC123&email_name=apply_for_vacancy
   def email_data

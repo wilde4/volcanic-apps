@@ -296,5 +296,6 @@ Apps::Application.routes.draw do
     post "email_data"     => 'prs#email_data'
     post "activate_app"     => 'prs#activate_app'
     post "deactivate_app"   => 'prs#deactivate_app'
+    get  "index"            => 'prs#index'
   end
 end
