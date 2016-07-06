@@ -14,6 +14,7 @@ class SaveSemrushData
     start_date = Date.today - app_setting.previous_data.month
     request_rate = app_setting.request_rate
     end_date = Date.today
+
     # if app_setting.has_records?
       organic_report = report.organic(db: app_setting.engine, display_date: Date.today.strftime('%Y%m%d'), limit: app_setting.keyword_amount)
       # organic_report = fake_data;

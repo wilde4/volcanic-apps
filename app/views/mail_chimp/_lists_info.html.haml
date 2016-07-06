@@ -1,0 +1,24 @@
+- if @mailchimp_lists.present?
+  %h2 Your MailChimp lists
+  .well
+    %table.table#data-table
+      %thead
+        %tr
+          %th List name
+          %th Subscribers
+          %th Unsubscribed members
+          %th Click rate per campaign (%)
+          %th List rating
+          %th Last subscription
+      %tbody
+        - @mailchimp_lists['lists'].each do |list|
+          %tr
+            %td= list['name']
+            %td= list['stats']['member_count']
+            %td= list['stats']['unsubscribe_count']
+            %td= list['stats']['click_rate']
+            %td= list['list_rating']
+            -if list['stats']['last_sub_date'].present?
+              %td= Date.parse(list['stats']['last_sub_date']).strftime('%D')
+            -else
+              %td No data available

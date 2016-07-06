@@ -1,0 +1,28 @@
+.volcanic_apps.mailchimp-app
+  .row
+    #flash_messages
+  - if @settings.present? && @settings.access_token.present?
+    .row
+      .col-xs-12
+        %h2 Mailchimp Volcanic App
+        %h6 Your account is authorised.
+    .row
+      .col-xs-12
+        =link_to 'New condition', @new_condition_url, class: 'btn btn-primary'
+    .row
+      .col-xs-12
+        = render partial: 'conditions_table'
+    .row
+      .col-xs-12
+        = render partial: 'lists_info'
+    .row
+      .col-xs-12
+        = render partial: 'user_groups_info'
+  - else
+    .row
+      .col-xs-12
+        %h2 Mailchimp Volcanic App
+        %p
+          Please click the button below to authorize your account.
+        %br
+          = link_to "Authorize Access", "#{@auth_url}", class: 'btn btn-info btn-lg'

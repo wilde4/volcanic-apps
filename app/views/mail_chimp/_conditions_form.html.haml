@@ -1,0 +1,56 @@
+.row
+  .col-xs-12
+    %h2 Form
+  .col-xs-12
+    .row
+      - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/save_condition' : 'https://apps.volcanic.co/mail_chimp/save_condition'
+      = simple_form_for @mail_chimp_condition, url: url, method: :post do |f|
+        = hidden_field_tag :app_id, "#{params[:data][:id]}"
+        = hidden_field_tag :key_id, "#{@key.id}"
+        .col-xs-12
+          = f.input :mail_chimp_app_settings_id, input_html: { value: "#{@mail_chimp_app_settings.id}" }, readonly: true, as: :hidden
+        .col-xs-12
+          = f.input :user_group, collection: @user_group_collection, label: "User Group", include_blank: false, input_html: {class: 'form-control'}, required: true
+        .col-xs-12
+          = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false, input_html: {class: 'form-control'}, required: true
+        .col-xs-12
+          = f.input :registration_question_reference, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true, include_blank: false
+        .col-xs-12
+          = f.input :answer, label: "Answer to match", input_html: {class: 'form-control'}, required: true
+        .col-xs-12
+          = f.submit class: 'btn btn-primary'
+:javascript
+          $( document ).ready(function() {
+              var user_group_id = $('#mail_chimp_condition_user_group').val();
+              display_ug_questions(user_group_id);
+              if($('#mail_chimp_condition_registration_question_reference').val() == ''){
+                $("#mail_chimp_condition_answer").attr("disabled","disabled");
+              }
+          });
+          
+          $('#mail_chimp_condition_user_group').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var user_group_id = this.value;
+            display_ug_questions(user_group_id);
+          });
+          
+          $('#mail_chimp_condition_registration_question_reference').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var question_val = this.value;
+            if(question_val == ''){
+              $("#mail_chimp_condition_answer").attr("disabled","disabled"); 
+            }else{
+              $("#mail_chimp_condition_answer").attr('disabled', false);
+            }
+          });
+          
+          function display_ug_questions(user_group_id){
+            $('#mail_chimp_condition_registration_question_reference').find('option').each(function(index, value) {
+              user_group = $(this).attr("user_group");
+              if((user_group != user_group_id) && (user_group != '')){
+                $(this).hide();
+              }else{
+                $(this).show();
+              }
+            });
+          }

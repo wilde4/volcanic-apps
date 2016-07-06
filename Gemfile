@@ -52,7 +52,6 @@ gem 'sanitize', '3.0.0'
 
 group :development do
   gem 'sqlite3'
-  gem 'pry-byebug'
   gem 'bootstrap-sass'
 end
 
@@ -60,6 +59,10 @@ group :test do
   gem "factory_girl_rails"
   gem "faker"
   # gem "byebug"
+end
+
+group :development, :test do
+  gem 'pry-byebug'
 end
 
 group :production do
