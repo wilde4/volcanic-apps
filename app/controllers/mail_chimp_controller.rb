@@ -337,7 +337,9 @@ class MailChimpController < ApplicationController
     
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       # logger.info "--- settings = #{settings.inspect}"
-      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      if settings.present?
+        mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      end
       # logger.info "--- mailchimp_ug_conditions = #{mailchimp_ug_conditions.inspect}"
       
       if mailchimp_ug_conditions.present?
