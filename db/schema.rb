@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160627193629) do
+ActiveRecord::Schema.define(version: 20160706032344) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -27,14 +27,6 @@ ActiveRecord::Schema.define(version: 20160627193629) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -305,7 +297,7 @@ ActiveRecord::Schema.define(version: 20160627193629) do
     t.integer  "mail_chimp_app_settings_id"
     t.integer  "user_group"
     t.string   "mail_chimp_list_id"
-    t.integer  "registration_question_id"
+    t.string   "registration_question_reference"
     t.text     "answer"
     t.datetime "created_at"
     t.datetime "updated_at"

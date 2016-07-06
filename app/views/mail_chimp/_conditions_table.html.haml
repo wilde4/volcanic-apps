@@ -17,9 +17,9 @@
                 %td= group['name']
                 - group['registration_question_groups'].each do |registration_group|
                   - registration_group['registration_questions'].each do |question|
-                    - if question['id'] == condition.registration_question_id
+                    - if question['reference'] == condition.registration_question_reference
                       %td= question['label']
-                - if !condition.registration_question_id.present?
+                - if !condition.registration_question_reference.present?
                   %td Default (no question to match)
 
                     

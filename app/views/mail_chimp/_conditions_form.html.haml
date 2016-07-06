@@ -14,7 +14,7 @@
         .col-xs-12
           = f.input :mail_chimp_list_id, collection: @mailchimp_lists_collection, label: "MailChimp mailing list", include_blank: false, input_html: {class: 'form-control'}, required: true
         .col-xs-12
-          = f.input :registration_question_id, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true, include_blank: false
+          = f.input :registration_question_reference, collection: @registration_questions.map{ |q| [q[0], q[1], {user_group: q[2]}] }, label: "Registration question", input_html: {class: 'form-control'}, required: true, include_blank: false
         .col-xs-12
           = f.input :answer, label: "Answer to match", input_html: {class: 'form-control'}, required: true
         .col-xs-12
@@ -23,7 +23,7 @@
           $( document ).ready(function() {
               var user_group_id = $('#mail_chimp_condition_user_group').val();
               display_ug_questions(user_group_id);
-              if($('#mail_chimp_condition_registration_question_id').val() == ''){
+              if($('#mail_chimp_condition_registration_question_reference').val() == ''){
                 $("#mail_chimp_condition_answer").attr("disabled","disabled");
               }
           });
@@ -34,7 +34,7 @@
             display_ug_questions(user_group_id);
           });
           
-          $('#mail_chimp_condition_registration_question_id').on('change', function (e) {
+          $('#mail_chimp_condition_registration_question_reference').on('change', function (e) {
             var optionSelected = $("option:selected", this);
             var question_val = this.value;
             if(question_val == ''){
@@ -45,7 +45,7 @@
           });
           
           function display_ug_questions(user_group_id){
-            $('#mail_chimp_condition_registration_question_id').find('option').each(function(index, value) {
+            $('#mail_chimp_condition_registration_question_reference').find('option').each(function(index, value) {
               user_group = $(this).attr("user_group");
               if((user_group != user_group_id) && (user_group != '')){
                 $(this).hide();

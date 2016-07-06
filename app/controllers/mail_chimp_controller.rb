@@ -60,7 +60,7 @@ class MailChimpController < ApplicationController
       if g['registration_question_groups'].present?
         g['registration_question_groups'].each do |registration_group|
           registration_group['registration_questions'].each do |question|
-            @registration_questions << [question['label'],question['id'], g['id']]
+            @registration_questions << [question['label'],question['reference'], g['id']]
           end
         end
       end 
@@ -84,7 +84,7 @@ class MailChimpController < ApplicationController
     condition_attributes[:mail_chimp_app_settings_id]    = params[:mail_chimp_condition][:mail_chimp_app_settings_id]
     condition_attributes[:user_group]                    = params[:mail_chimp_condition][:user_group]
     condition_attributes[:mail_chimp_list_id]            = params[:mail_chimp_condition][:mail_chimp_list_id]
-    condition_attributes[:registration_question_id]      = params[:mail_chimp_condition][:registration_question_id]
+    condition_attributes[:registration_question_reference]      = params[:mail_chimp_condition][:registration_question_reference]
     condition_attributes[:answer]                        = params[:mail_chimp_condition][:answer]
     
     @mailchimp_condition = MailChimpCondition.new(condition_attributes)
@@ -118,8 +118,8 @@ class MailChimpController < ApplicationController
   def classify_user
     # logger.info "--- classify_user, params = #{params.inspect}"
     answers = {}
-    if params[:registration_answer_hash_id].present?
-      answers = params[:registration_answer_hash_id]
+    if params[:registration_answer_hash].present?
+      answers = params[:registration_answer_hash]
     end
     # logger.info "--- answers = #{answers.inspect}"
     operations = check_user_conditions(answers,params[:user],params[:user_profile], params[:user]['dataset_id'])
@@ -152,6 +152,7 @@ class MailChimpController < ApplicationController
         # logger.info "--- users_url = #{users_url}"
         begin
           @users = HTTParty.get(users_url)
+          
           users_array = []
           if @users['users'].size != 0
             @users['users'].each do |u|
@@ -166,7 +167,7 @@ class MailChimpController < ApplicationController
                     'first_name' => u['first_name'],
                     'last_name' => u['last_name']
                   },
-                  registration_answer_hash_id: u['registration_answers_id'],
+                  registration_answer_hash: u['registration_answers'],
                   dataset_id: u['dataset_id']
                 }
                 users_array << user_hash
@@ -343,7 +344,7 @@ class MailChimpController < ApplicationController
         # logger.info "--- mailchimp_ug_conditions.present?"
         mailchimp_ug_conditions.each do |condition|
           # logger.info "--- condition = #{condition.inspect}"
-          if condition.registration_question_id.blank?
+          if condition.registration_question_reference.blank?
             # logger.info "--- Default list"
             operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
             operations.append(operation_json)
@@ -352,7 +353,7 @@ class MailChimpController < ApplicationController
             # logger.info "--- user_answers.present?"
             user_answers.each do |answer|
               # logger.info "--- answer = #{answer.inspect}"
-              if answer[0].to_i == condition.registration_question_id
+              if answer[0] == condition.registration_question_reference
                 if compare_answers(answer[1], condition.answer)
                   # logger.info "--- MATCH: #{answer[1]} - #{condition.answer}"
                   operation_json = create_batch_operation_json(user_email, first_name, last_name, condition.mail_chimp_list_id)
@@ -373,8 +374,8 @@ class MailChimpController < ApplicationController
         dataset_id = users_array.first[:dataset_id]
         users_array.each do |u|
           answers = {}
-          if u[:registration_answer_hash_id].present?
-            answers = u[:registration_answer_hash_id]
+          if u[:registration_answer_hash].present?
+            answers = u[:registration_answer_hash]
           end
           operations = check_user_conditions(answers,u[:user],u[:user_profile], dataset_id)
           operations.each do |op|
