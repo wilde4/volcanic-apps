@@ -16,7 +16,7 @@ class JobAdderController < ApplicationController
 
   def capture_jobs
     @disciplines = HTTParty.get("#{host_endpoint}/api/v1/disciplines.json?").parsed_response
-    @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json").parsed_response['consultants']
+    @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json?per_page=500").parsed_response['consultants']
     Thread.new {
       @xml.search('//Job').each do |job|
       
