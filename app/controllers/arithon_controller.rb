@@ -28,7 +28,21 @@ class ArithonController < ApplicationController
     if @user.present?
       if @user.update(@user_attributes)
         @user.reload
-        Arithon::UserService.new(@user, @settings, @key).update_user
+        @arithon_id = Arithon::UserService.new(@user, @settings, @key).get_arithon_uid
+        if @arithon_id.present?
+          Rails.logger.info "--- EXISTING ARITHON USER"
+          if @user.arithon_uid != @arithon_id.to_i
+            Rails.logger.info "--- NEW arithon_id: #{@arithon_id}"
+            @user.update(arithon_uid: @arithon_id)
+          else
+            Rails.logger.info "--- SAME arithon_id: #{@arithon_id}"
+          end
+
+          Arithon::UserService.new(@user, @settings, @key).update_user
+        else
+          Rails.logger.info "--- NEW ARITHON USER"
+          Arithon::UserService.new(@user, @settings, @key).save_user
+        end
         render json: { success: true,  user_id: @user.id }
       else
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
@@ -37,12 +51,15 @@ class ArithonController < ApplicationController
       @user = ArithonUser.new(@user_attributes)
       if @user.save
         # CHECK DUPLICATES
-        @arithon_id = Arithon::UserService.new(@user, @settings, @key).check_duplicates
+        @arithon_id = Arithon::UserService.new(@user, @settings, @key).get_arithon_uid
         # UPDATE IF DUPLICATE
         if @arithon_id.present?
+          Rails.logger.info "--- EXISTING ARITHON USER"
+          Rails.logger.info "--- NEW arithon_id: #{@arithon_id}"
           @user.update(arithon_uid: @arithon_id)
           Arithon::UserService.new(@user, @settings, @key).update_user
         else
+          Rails.logger.info "--- NEW ARITHON USER"
           Arithon::UserService.new(@user, @settings, @key).save_user
         end
         render json: { success: true,  user_id: @user.id }

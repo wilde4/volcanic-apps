@@ -1,0 +1,8 @@
+FirstName: #{@first_name}
+LastName: #{@last_name}
+Email: #{@email}
+- @registration_answer_hash.each do |question, answer|
+  - unless question.ends_with? '_array'
+    #{question}: #{answer}
+- if @job.present?
+  Vacancy: #{@job[:job_reference]}

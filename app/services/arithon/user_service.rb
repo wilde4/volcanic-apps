@@ -30,91 +30,67 @@ class Arithon::UserService < BaseService
   end
 
   def save_user
-    Thread.new {
-      ActiveRecord::Base.connection_pool.with_connection do
-        begin
-          Rails.logger.info "--- ABOUT TO INSERT"
-          @new_cv = true
-          @new_avatar = true
-          @contact_attributes               = map_contact_attributes
-          # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
-          @response = send_request("PushCandidate", @contact_attributes)
-          delete_tmp_cv_file
-          Rails.logger.info "--- @response: #{@response.inspect}"
-          # update user details
-          if @response.present? && @response['code'].present? && @response['code'] == 200
-            # API doesn't return ID of new record so we have to fetch it
-            @attrs = Hash.new
-            @attrs[:email] = @user.email
-            @attrs[:candidateName] = candidate_name
-            @response2 = send_request("CandidateDetails", @attrs)
-            if @response2['code'] == 200
-              Rails.logger.info "--- @response2: #{@response2.inspect}"
-              @user.update(
-                arithon_uid: @response2['records'][0]['candidateID']
-              )
-            end
-          end
-        rescue => e
-          Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
-        end
-      end
-    }
+    Rails.logger.info "--- ABOUT TO INSERT"
+    @new_cv = true
+    @new_avatar = true
+    @contact_attributes               = map_contact_attributes
+    # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
+    @response = send_request("PushCandidate", @contact_attributes)
+    delete_tmp_cv_file
+    Rails.logger.info "--- @response: #{@response.inspect}"
+    
+    # update user details
+    Rails.logger.info "--- Updating Arithon ID"
+    if arithon_uid = get_arithon_uid
+      Rails.logger.info "--- arithon_uid: #{arithon_uid}"
+      @user.update arithon_uid: arithon_uid
+    end
+  rescue => e
+    Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
   end
 
   def update_user
-    Thread.new {
-      ActiveRecord::Base.connection_pool.with_connection do
-        begin
-          Rails.logger.info "--- ABOUT TO UPDATE"
-          # map contact attributes
-          Rails.logger.info "--- ABOUT TO map_contact_attributes"
-          @contact_attributes               = map_contact_attributes
-          @contact_attributes[:candidateID] = @user.arithon_uid
-          Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
-          # post contact attributes
-          @response = send_request("PushCandidate", @contact_attributes)
-          delete_tmp_cv_file
-          Rails.logger.info "--- @response = #{@response.inspect}"
-          # update user details
-        rescue => e
-          Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
-        end
-     end
-    }
+    Rails.logger.info "--- ABOUT TO UPDATE"
+    # map contact attributes
+    Rails.logger.info "--- ABOUT TO map_contact_attributes"
+    @contact_attributes               = map_contact_attributes
+    @contact_attributes[:candidateID] = @user.arithon_uid
+    Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
+    # post contact attributes
+    @response = send_request("PushCandidate", @contact_attributes)
+    delete_tmp_cv_file
+    Rails.logger.info "--- @response = #{@response.inspect}"
+    # update user details
+  rescue => e
+    Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
   end
 
-  def check_duplicates
-    Rails.logger.info "--- STARTING check_duplicates"
-    begin
-      if @user.arithon_uid.present?
-        arithon_id = @user.arithon_uid
-      else
-        @dup_attributes = Hash.new
-        @dup_attributes[:email] = @user.email
-        @dup_attributes[:candidateName] = candidate_name
-        # Rails.logger.info "--- @dup_attributes: #{@dup_attributes.inspect}"
-        @response = send_request("CandidateDetails", @dup_attributes)
-        # Rails.logger.info "--- @response: #{@response.present? ? @response.inspect : ''}"
-        if @response.present? && @response["count"].present? && @response["count"] > 0
-          # Rails.logger.info '--- arithon DUPLICATE CANDIDATE RECORD FOUND'
-          @last_candidate = @response["records"].last
-          # Rails.logger.info "--- @last_candidate: #{@last_candidate.inspect}"
-          arithon_id     = @last_candidate["candidateID"]
-        else
-          arithon_id = nil
-        end
-      end
-      return arithon_id
-    rescue => e
-      Rails.logger.info "--- arithon check_duplicates exception ----- : #{e.message}"
+  def get_arithon_uid
+    Rails.logger.info "--- STARTING get_arithon_uid"
+
+    @attributes2 = Hash.new
+    @attributes2[:email] = @user.email
+    @attributes2[:candidateName] = candidate_name
+    # Rails.logger.info "--- @attributes2: #{@attributes2.inspect}"
+    @response = send_request("CandidateDetails", @attributes2)
+    # Rails.logger.info "--- @response: #{@response.present? ? @response.inspect : ''}"
+    if @response.present? && @response["count"].present? && @response["count"] > 0
+      Rails.logger.info '--- arithon CANDIDATE RECORD FOUND'
+      @last_candidate = @response["records"].last
+      # Rails.logger.info "--- @last_candidate: #{@last_candidate.inspect}"
+      arithon_id     = @last_candidate["candidateID"]
+    else
+      arithon_id = nil
     end
+    return arithon_id
+  rescue => e
+    Rails.logger.info "--- arithon get_arithon_uid exception ----- : #{e.message}"
   end
 
 
   private
     
-     def build_tmp_cv_file
+    def build_tmp_cv_file
       make_dir
       File.open(tmp_cv_path, "wb") do |file|
         file.write(open(cv_path).read)
@@ -196,7 +172,8 @@ class Arithon::UserService < BaseService
         'text/html',
         'application/rtf',
         'application/x-rtf',
-        'text/richtext'
+        'text/richtext',
+        'application/vnd.oasis.opendocument.text'
       ]
     end
     
@@ -228,7 +205,7 @@ class Arithon::UserService < BaseService
     
     def cv_mime_type
       if File.exist?(tmp_cv_path)
-        @cv_mime_type ||= MimeMagic.by_magic(tmp_cv_file).type 
+        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type 
       else
         ""
       end
@@ -246,8 +223,8 @@ class Arithon::UserService < BaseService
 
     def candidate_name
       # format candidate name
-      @first_name = @user.user_profile['first_name']
-      @last_name  = @user.user_profile['last_name']
+      @first_name = @user.user_profile['first_name'].try(:strip)
+      @last_name  = @user.user_profile['last_name'].try(:strip)
       if @first_name.present? && @last_name.present?
         "#{@first_name} #{@last_name}"
       else

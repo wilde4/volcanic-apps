@@ -16,7 +16,7 @@ class JobAdderController < ApplicationController
 
   def capture_jobs
     @disciplines = HTTParty.get("#{host_endpoint}/api/v1/disciplines.json?").parsed_response
-    @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json").parsed_response['consultants']
+    @consultants = HTTParty.get("#{host_endpoint}/api/v1/consultants/search.json?per_page=500").parsed_response['consultants']
     Thread.new {
       @xml.search('//Job').each do |job|
       
@@ -45,12 +45,15 @@ class JobAdderController < ApplicationController
               job_type: find_job_type(job.search('Classification[name="Job Type"]').text),
               application_email: job.search('EmailTo').text,
               application_url: job.search('Url').text,
-              discipline: find_disciplines(job).join(",")
+              discipline: find_disciplines(job).join(","),
+              source: "jobadder_#{@key.id}"
             }.merge(contact_hash)
         }
         @jobs_responce = HTTParty.post("#{host_endpoint}/api/v1/jobs.json", { body: @options })
         logger.info "--- Job Adder Volcanic responce = #{job.present? ? job.search('Title').try(:text) : 'No Job Found'}: #{@jobs_responce.body}"
       end
+
+      prune_jobs
     }
     render status: 200
   end
@@ -86,8 +89,8 @@ class JobAdderController < ApplicationController
     job_adder_categories << job.search('Classification[name="Sub-Categories"]').text
     arr = []
     job_adder_categories.each do |category|
-      if @disciplines.find { |discipline| discipline['name'] == category }
-        arr << @disciplines.find { |discipline| discipline['name'] == category }['id']
+      if @disciplines.find { |discipline| discipline['name'] == CGI.unescapeHTML(category) }
+        arr << @disciplines.find { |discipline| discipline['name'] == CGI.unescapeHTML(category) }['id']
       end
     end
     arr
@@ -128,7 +131,36 @@ class JobAdderController < ApplicationController
       "http://#{@key.host}"
     end
   end
-  
+
+  def prune_jobs
+    logger.info " ============> STARTING PRUNE <==========="
+    live_refs = @xml.search('//Job').map { |job| job.attr('reference') }
+    logger.info live_refs
+    source = "jobadder_#{@key.id}"
+    current_refs = HTTParty.get("#{host_endpoint}/api/v1/jobs/job_references.json?source=#{source}").parsed_response.map { |job| job["job_reference"] }
+
+    logger.info current_refs
+    prune_refs = current_refs - live_refs
+    logger.info prune_refs
+
+    prune_refs.each do |ref|
+      @job_payload = Hash.new
+      @job_payload["job[api_key]"] = @key.api_key
+      @job_payload['job[job_reference]'] = ref
+
+      logger.info "--- @job_payload = #{@job_payload.inspect}"
+      expire_job(@job_payload)
+    end
+  end
+
+  def expire_job(payload)
+    response = HTTParty.post("#{host_endpoint}/api/v1/jobs/expire.json", { body: payload })
+
+    logger.info "#{response.code} - #{response.read_body}"
+    return response.code.to_i == 200
+  rescue Exception => e
+    logger.info "[FAIL] http.request failed to post payload: #{e}"
+  end
 
 end
   

@@ -27,7 +27,7 @@ class SemrushController < ApplicationController
       @range_5_keywords = @range_5.map(&:keyword)
     
       # Data for charts
-      start_date = Date.today - 1.months
+      start_date = Date.today - 3.months
       end_date = @semrush_setting.last_petition_at
       @end_date = @semrush_setting.last_petition_at
       
@@ -41,7 +41,7 @@ class SemrushController < ApplicationController
           range_3 = day_data.where('position >= 11 AND position <= 20', day: date)
           range_4 = day_data.where('position >= 21 AND position <= 50', day: date)
           range_5 = day_data.where('position >= 51', day: date)
-          @chart_position_range_keywords << [date.strftime('%D'), range_1.size, range_2.size, range_3.size, range_4.size, range_5.size]
+          @chart_position_range_keywords << [date.strftime('%D'), range_5.size, range_4.size, range_3.size, range_2.size, range_1.size]
         end
       end
     
@@ -71,7 +71,8 @@ class SemrushController < ApplicationController
     @semrush_setting = SemrushAppSettings.find_by(dataset_id: params[:semrush_app_settings][:dataset_id])
     if @semrush_setting.present? #if exists -> update settings
       if @semrush_setting.update(params[:semrush_app_settings].permit!)
-        flash[:notice]  = "Settings successfully saved."
+        flash[:notice]  = "Settings successfully saved. We are processing your data."
+        save_stats(@semrush_setting.id)
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
@@ -79,8 +80,10 @@ class SemrushController < ApplicationController
       @semrush_setting = SemrushAppSettings.new(params[:semrush_app_settings].permit!)
       @semrush_setting.previous_data = 12
       @semrush_setting.request_rate = 7
+      @semrush_setting.keyword_amount = 1500
       if @semrush_setting.save
-        flash[:notice]  = "Settings successfully saved."
+        flash[:notice]  = "Settings successfully saved. We are processing your data. Try to reload the page in a few minutes"
+        save_stats(@semrush_setting.id)
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
@@ -107,8 +110,11 @@ class SemrushController < ApplicationController
     end
   end
   
-  def save_data
-    SaveSemrushData.save_data(params[:id])
+  def save_stats(app_settings_id)
+    Thread.new do
+      SaveSemrushData.save_data(app_settings_id)
+      ActiveRecord::Base.connection_pool.release_connection
+    end
   end
   
 end
