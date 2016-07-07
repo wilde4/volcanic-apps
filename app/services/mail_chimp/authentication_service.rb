@@ -38,7 +38,7 @@ class MailChimp::AuthenticationService < BaseService
       def redirect_uri(app_id, host, dataset_id)
         @host = format_url(host)
         # "#{@host}/admin/apps/#{app_id}/callback"
-        Rails.env.development? ? "http://127.0.0.1:3001/mail_chimp/callback?app_info=#{app_id}-#{dataset_id}" : "http://apps.volcanic.co/mail_chimp/callback?dataset_id=#{dataset_id}&app_id=#{app_id}"
+        Rails.env.development? ? "http://127.0.0.1:3001/mail_chimp/callback?app_info=#{app_id}-#{dataset_id}" : "http://apps.volcanic.co/mail_chimp/callback?app_info=#{app_id}-#{dataset_id}"
       end
       
       def format_url(url)
