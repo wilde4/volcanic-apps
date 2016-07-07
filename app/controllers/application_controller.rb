@@ -82,6 +82,8 @@ protected
       app_dataset_id = params[:like][:dataset_id]
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
+    elsif params[:app_info]
+      app_dataset_id = params[:app_info].split('-').last
     end
     Rails.logger.info(app_dataset_id)
     @key = Key.find_by(app_dataset_id: app_dataset_id, app_name: params[:controller])

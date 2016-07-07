@@ -11,14 +11,18 @@ class MailChimpController < ApplicationController
   
   def callback
     host = key_host(@key)
+    app_id = params[:app_info].split('-').first
+    dataset_id = params[:app_info].split('-').last
+    index_url = create_url(app_id, host, 'index')
     
     @attributes                       = Hash.new
-    @attributes[:dataset_id]          = params[:data][:dataset_id]
-    @attributes[:authorization_code]  = params[:data][:code]
+    @attributes[:dataset_id]          = dataset_id
+    @attributes[:authorization_code]  = params[:code]
     @attributes[:access_token]        = MailChimp::AuthenticationService.get_access_token(
-                                          params[:data][:id],
+                                          app_id,
                                           host,
-                                          params[:data][:code])
+                                          params[:code],
+                                          dataset_id)
                                           
     unless !@attributes[:access_token].present?
       @settings = MailChimpAppSettings.find_by(dataset_id: @attributes[:dataset_id])
@@ -38,9 +42,8 @@ class MailChimpController < ApplicationController
         end
       end
     end
-     
-    set_index_variables
-    render :index, layout: false
+    
+    redirect_to index_url
 
   end
   
@@ -210,7 +213,7 @@ class MailChimpController < ApplicationController
       @app_id = params[:data][:id]
       host = key_host(@key)
       @new_condition_url = create_url(@app_id, host, 'new_condition')
-      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, host)
+      @auth_url = MailChimp::AuthenticationService.client_auth(@app_id, host, params[:data][:dataset_id])
     
       @settings = MailChimpAppSettings.find_by(dataset_id: params[:data][:dataset_id])
     
@@ -337,7 +340,9 @@ class MailChimpController < ApplicationController
     
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
       # logger.info "--- settings = #{settings.inspect}"
-      mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      if settings.present?
+        mailchimp_ug_conditions = settings.mail_chimp_conditions.where(user_group: user['user_group_id'])
+      end
       # logger.info "--- mailchimp_ug_conditions = #{mailchimp_ug_conditions.inspect}"
       
       if mailchimp_ug_conditions.present?
