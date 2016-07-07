@@ -307,13 +307,15 @@ class MailChimpController < ApplicationController
       # logger.info "--- send_batch"
       puts batch_operations
       settings = MailChimpAppSettings.find_by(dataset_id: dataset_id)
-      gibbon = set_gibbon(settings.access_token)
-      begin
-        gibbon.batches.create(body: {operations: batch_operations})
-      rescue Gibbon::MailChimpError => e
-       puts "Houston, we have a problem: #{e.message} - #{e.raw_body}"
+      if settings.present?
+        gibbon = set_gibbon(settings.access_token)
+        begin
+          gibbon.batches.create(body: {operations: batch_operations})
+        rescue Gibbon::MailChimpError => e
+         puts "Houston, we have a problem: #{e.message} - #{e.raw_body}"
+        end
+        puts "BATCH SENT"
       end
-      puts "BATCH SENT"
     end
     
     def create_batch_operation_json(email, first_name, last_name, list_id)
