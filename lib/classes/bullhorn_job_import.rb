@@ -114,7 +114,7 @@ class BullhornJobImport
           when 'salary_free'
             @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
           when 'salary_high'
-            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
+            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name).to_i != 0
               @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
             else
               @job_payload['job[salary_high]'] = salary_val
