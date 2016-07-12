@@ -22,7 +22,7 @@ class Arithon::UserService < BaseService
     @dataset_id   = @user.user_data['dataset_id']
     if Rails.env.development?
         @company_name = "API Test"
-        @api_key = "ask_mark_for_api_key"
+        @api_key = ENV['ARITHON_DEV_KEY']
     else
       @api_key = settings["authorization_code"]
       @company_name = settings["company_name"]
