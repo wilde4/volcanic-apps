@@ -1,3 +1,20 @@
+- if @job.present?
+  #{@first_name} #{@last_name} has applied for the job below...
+                    
+  Job Details
+  Job Title: #{@job[:job_title]}
+  Job Reference: #{@job[:job_reference]}
+  Application Date: #{Time.current.to_s(:long)}
+- else
+  #{@first_name} #{@last_name} has registered on the website
+
+
+User Details
+Name: #{@first_name} #{@last_name}
+Email: #{@email}
+
+
+*** PRS DATA ***
 FirstName: #{@first_name}
 LastName: #{@last_name}
 Email: #{@email}
@@ -5,4 +22,6 @@ Email: #{@email}
   - unless question.ends_with? '_array'
     #{question}: #{answer}
 - if @job.present?
+  JobTitle: #{@job[:job_title]}
   Vacancy: #{@job[:job_reference]}
+*** PRS DATA ***

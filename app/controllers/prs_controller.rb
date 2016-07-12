@@ -11,20 +11,28 @@ class PrsController < ApplicationController
     render layout: false
   end
 
-  # http://localhost:3001/prs/email_data.json?user[email]=bob@foo.com&user[created_at]=2014-02-11T10:01:07.000+00:00&user_profile[first_name]=Bob&user_profile[last_name]=Hoskins&job[job_title]=Testing Job&job[job_reference]=ABC123&email_name=apply_for_vacancy
+  # http://localhost:3001/prs/email_data.json?user[email]=bob@foo.com&user[created_at]=2014-02-11T10:01:07.000+00:00&user_profile[first_name]=Bob&user_profile[last_name]=Hoskins&job[job_title]=Testing Job&job[job_reference]=ABC123&email_name=apply_for_vacancy&target_type=job_application
   def email_data
-    @email = params[:user][:email]
-    @user_profile = params[:user_profile]
-    @first_name = @user_profile['first_name']
-    @last_name = @user_profile['last_name']
-    @registration_answer_hash = params[:registration_answer_hash] || {}
-    @job = params[:job]
+    if params[:target_type] == 'job_application' || ['new_candidate', 'updated_candidate'].include?(params[:email_name])
+      @email = params[:user][:email]
+      @user_profile = params[:user_profile]
+      @first_name = @user_profile['first_name']
+      @last_name = @user_profile['last_name']
+      @registration_answer_hash = params[:registration_answer_hash] || {}
+      @job = params[:job]
 
-    body =  render_to_string(action: 'email_data.html.haml', layout: false)
+      body =  render_to_string(action: 'email_data.html.haml', layout: false)
 
-    to = [@job[:application_email]]
-    to << @job[:contact_email] if @job[:contact_email].present?
+      if @job.present?
+        to = [@job[:application_email]]
+        to << @job[:contact_email] if @job[:contact_email].present?
+      else
+        to = []
+      end
 
-    render json: { success: true, body: body, to: to.join(', ') }
+      render json: { success: true, body: body, to: to.join(', ') }
+    else
+      render json: {}
+    end
   end
 end
