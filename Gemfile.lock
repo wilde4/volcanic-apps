@@ -282,11 +282,8 @@ DEPENDENCIES
   rest-client (~> 1.8)
   sanitize (= 3.0.0)
   sass-rails (~> 4.0.0)
-<<<<<<< HEAD
   savon (~> 2.0)
-=======
   semrush
->>>>>>> master
   simple_form
   sqlite3
   stringex
