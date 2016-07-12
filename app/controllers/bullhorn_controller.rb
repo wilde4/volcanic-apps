@@ -51,7 +51,7 @@ class BullhornController < ApplicationController
         user_data: params[:user],
         user_profile: params[:user_profile],
         linkedin_profile: params[:linkedin_profile],
-        registration_answers: params[:registration_answer_hash]
+        registration_answers: format_reg_answer(params[:registration_answer_hash])
       )
         logger.info "--- params = #{params.inspect}"
         post_user_to_bullhorn_2(@user, client, params)
@@ -67,8 +67,7 @@ class BullhornController < ApplicationController
       @user.user_data = params[:user]
       @user.user_profile = params[:user_profile]
       @user.linkedin_profile = params[:linkedin_profile]
-      @user.registration_answers = params[:registration_answer_hash]
-
+      @user.registration_answers = format_reg_answer(params[:registration_answer_hash])
       if @user.save
         post_user_to_bullhorn_2(@user, client, params)
         upload_cv_to_bullhorn_2(@user, client, params)
@@ -141,6 +140,8 @@ class BullhornController < ApplicationController
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
+      client = authenticate_client(params[:user][:dataset_id])
+      
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if Rails.env.development?
         key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
@@ -151,44 +152,14 @@ class BullhornController < ApplicationController
       end
       logger.info "--- cv_url = #{cv_url}"
 
-      require 'open-uri'
-      require 'base64'
-      cv = open(cv_url).read
-      client = authenticate_client(params[:dataset_id])
+      # @file_attributes COME FROM THIS
+      extract_file_attributes(cv_url, params)
 
-      # UPOAD FILE
-      base64_cv = Base64.encode64(cv)
-      content_type = params[:user_profile][:upload_name].split('.').last
-      # text, html, pdf, doc, docx, rtf, or odt.
-      case content_type
-      when 'doc'
-        ct = 'application/msword'
-      when 'docx'
-        ct = 'application/vnd.openxmlformatsofficedocument.wordprocessingml.document'
-      when 'txt'
-        ct = 'text/plain'
-      when 'html'
-        ct = 'text/html'
-      when 'pdf'
-        ct = 'application/pdf'
-      when 'rtf'
-        ct = 'application/rtf'
-      when 'odt'
-        ct = 'application/vnd.oasis.opendocument.text'
-      end
-      file_attributes = {
-        'externalID' => 'CV',
-        'fileType' => 'SAMPLE',
-        'name' => params[:user_profile][:upload_name],
-        'fileContent' => base64_cv,
-        'contentType' => ct,
-        'type' => 'CV'
-      }
-      file_response = client.put_candidate_file(@user.bullhorn_uid, file_attributes.to_json)
+      file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
       logger.info "--- file_response = #{file_response.inspect}"
 
       # PARSE FILE
-      candidate_data = parse_cv(client, params, content_type, cv, ct)
+      candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
 
       # ADD TO CANDIDATE DESCRIPTION
       if candidate_data.present? && candidate_data['description'].present?
@@ -283,6 +254,31 @@ class BullhornController < ApplicationController
 
   private
 
+    def format_reg_answer(registration_answers = nil)
+      if registration_answers.present?
+        if registration_answers.is_a?(Hash)
+          registration_answers.keys.each do |key|
+            if registration_answers[key].is_a?(Array)
+              reg_answer_arr_looper(registration_answers[key])
+            else
+              registration_answers[key] = CGI.unescapeHTML(registration_answers[key].to_s)
+            end
+          end
+        else
+          CGI.unescapeHTML(registration_answers.to_s)
+        end	
+        registration_answers
+      end
+    end
+    
+    
+    def reg_answer_arr_looper(registration_answers)
+      registration_answers.map! do |slot|
+          slot = CGI.unescapeHTML(slot.to_s)
+      end
+      registration_answers
+    end
+    
     def authenticate_client(dataset_id)
       settings = BullhornAppSetting.find_by(dataset_id: dataset_id)
       return Bullhorn::Rest::Client.new(
@@ -331,16 +327,17 @@ class BullhornController < ApplicationController
       attributes['address'] = {}
 
       # MAP FIELDS TO FIELDS
+     
       field_mappings.each do |fm|
         # logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
         # TIMESTAMPS
         answer = user.registration_answers[fm.registration_question_reference] rescue nil
         # logger.info "--- raw answer = #{answer}"
-
+      
         case fm.bullhorn_field_name
         when 'dateOfBirth', 'dateAvailable' # AND OTHERS
           # TIMESTAMP NEEDED IN MILLISECONDS
-          answer = (Date.parse(answer).to_time.to_i.to_f * 1000.0).to_i rescue nil
+          answer = (( Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
           # logger.info "--- processed answer = #{answer}"
           attributes[fm.bullhorn_field_name] = answer if answer.present?
         when 'address1', 'address2', 'city', 'state', 'zip'
@@ -352,15 +349,16 @@ class BullhornController < ApplicationController
         when 'countryID'
           # ADDRESS COUNTRY
           attributes['address']['countryID'] = get_country_id(answer) if answer.present?
-        when 'category'
+        when 'category', 'categoryID'
           # FIND category ID
           categories = client.categories
           # logger.info "--- categories = #{categories.inspect}"
           category = categories.data.select{ |c| c.name == answer }.first
           # logger.info "--- category = #{category.inspect}"
           if category.present?
-            attributes['category'] = {}
-            attributes['category']['id'] = category.id
+             attributes['category'] = {}
+             attributes['category']['id'] = category.id
+             @category_id = category.id
           end
         when 'businessSectors'
           # UPDATE CANDIDATE AFTER CREATION
@@ -425,27 +423,38 @@ class BullhornController < ApplicationController
           end
         end
       end
-
-      # 'businessSectors'      
+      
       if bullhorn_id.present?
+        #categoies
+        send_category(bullhorn_id, client)
         # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
         # FIND businessSector ID
-        business_sectors = client.business_sectors
-        # logger.info "--- business_sectors = #{business_sectors.inspect}"
-        answer = user.registration_answers['businessSectors']
-        bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
-        if bs_mapping.present?
-          business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
-          # logger.info "--- business_sector = #{business_sector.inspect}"
-          if business_sector.present?
-            bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-            logger.info "--- bs_response = #{bs_response.inspect}"
+        # 'businessSectors'
+        if user.registration_answers.present?
+          business_sectors = client.business_sectors
+          # logger.info "--- business_sectors = #{business_sectors.inspect}"
+          answer = user.registration_answers['businessSectors']
+          bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
+          if bs_mapping.present?
+            business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
+            # logger.info "--- business_sector = #{business_sector.inspect}"
+            if business_sector.present?
+              bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+              logger.info "--- bs_response = #{bs_response.inspect}"
+            end
           end
         end
+
       end
       
     end
-
+    
+    def send_category(bullhorn_id, client)
+      if @category_id.present?
+        Bullhorn::SendCategoryService.new(bullhorn_id, client, @category_id).send_category_to_bullhorn
+      end
+    end
+    
     def post_user_to_bullhorn(user, params)
       settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
       logger.info "--- settings = #{settings.inspect}"

@@ -185,6 +185,27 @@ Apps::Application.routes.draw do
     post 'new_search'       => 'bullhorn#new_search'
   end
   
+  scope :semrush do
+    get 'index'             => 'semrush#index'
+    post 'activate_app'     => 'semrush#activate_app'
+    post 'deactivate_app'   => 'semrush#deactivate_app'
+    post 'save_settings'    => 'semrush#save_settings'
+    post 'update_settings'  => 'semrush#update_settings'
+  end
+  
+  scope :mail_chimp do
+    get 'index'             => 'mail_chimp#index'
+    post 'activate_app'     => 'mail_chimp#activate_app'
+    post 'deactivate_app'   => 'mail_chimp#deactivate_app'
+    get  'callback'         => 'mail_chimp#callback', as: :mail_chimp_callback
+    get  "new_condition"    => 'mail_chimp#new_condition', as: :mail_chimp_new_condition
+    post "save_condition"   => 'mail_chimp#save_condition'
+    post "delete_condition" => 'mail_chimp#delete_condition', as: :mail_chimp_delete_condition
+    post "classify_user"   => 'mail_chimp#classify_user'
+    post "import_user_group"=> 'mail_chimp#import_user_group', as: :mail_chimp_import_user_group
+  end
+  
+  
   scope :job_adder do
     post "activate_app"     => 'job_adder#activate_app'
     post "deactivate_app"   => 'job_adder#deactivate_app'
@@ -288,4 +309,12 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'servicedott#deactivate_app'
   end
   # get 'send_email', :to => "end_points#send_email", :as => :send_email
+
+  scope :prs do
+    get "email_data"     => 'prs#email_data'
+    post "email_data"     => 'prs#email_data'
+    post "activate_app"     => 'prs#activate_app'
+    post "deactivate_app"   => 'prs#deactivate_app'
+    get  "index"            => 'prs#index'
+  end
 end

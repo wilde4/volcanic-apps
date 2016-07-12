@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rails', '4.0.1'
-gem "mysql2"
+gem "mysql2", '0.3.18'
 gem 'sass-rails', '~> 4.0.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.0.0'
@@ -17,6 +17,8 @@ gem 'flickraw'
 gem 'youtube_it'
 gem 'mandrill-api', '~> 1.0.51'
 gem "httparty"
+gem 'rest-client', '~> 1.8' #enables sending files with httparty
+gem 'mimemagic', '~> 0.3.1'
 gem 'oauth2'
 
 gem 'gibberish' # For referral payment data
@@ -34,6 +36,9 @@ gem 'honeybadger'
 gem 'unicorn'
 gem 'unicorn-worker-killer'
 
+#Semrush API gem
+gem 'semrush'
+
 # gem 'bullhorn-rest'
 # gem 'bullhorn-rest', git: 'https://github.com/getoutreach/bullhorn-rest.git'
 gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 'create_candidates'
@@ -48,7 +53,6 @@ gem 'sanitize', '3.0.0'
 
 group :development do
   gem 'sqlite3'
-  gem 'pry-byebug'
   gem 'bootstrap-sass'
 end
 
@@ -56,6 +60,10 @@ group :test do
   gem "factory_girl_rails"
   gem "faker"
   # gem "byebug"
+end
+
+group :development, :test do
+  gem 'pry-byebug'
 end
 
 group :production do

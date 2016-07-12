@@ -1,0 +1,25 @@
+:javascript
+  $(document).ready(function() {
+    $('#data-table').DataTable({
+      "order": [[ 1, "asc" ]]
+    });
+
+    var options = {
+        placement: 'auto right'
+    };
+    $('[data-toggle="popover"]').popover(options); 
+    
+    //SHOW / HIDE edit app setting's section
+    $('#edit-settings-btn ').click(function() {
+      if ($(this).hasClass('open')){
+        $('#edit-app-settings').hide();
+        $(this).removeClass('open');
+        $(this).html('Update App Settings');
+        
+      }else{
+        $('#edit-app-settings').show();
+        $(this).addClass('open');
+        $(this).html('Close App Settings form');
+      }
+    });
+  });

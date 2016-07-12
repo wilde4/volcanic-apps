@@ -58,10 +58,15 @@ class BullhornJobImport
     settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
     field_mappings = settings.bullhorn_field_mappings.job
     
-    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name))
+    @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
     # jobs = @job_data.xpath("//item")
-    
+    @non_public_jobs_count = 0
     @job_data.each do |job|
+      if settings.uses_public_filter? && job.isPublic == 0 
+        @non_public_jobs_count = ( @non_public_jobs_count + 1 ) 
+        next 
+      end
+      
       unless job.isDeleted
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
@@ -109,7 +114,7 @@ class BullhornJobImport
           when 'salary_free'
             @job_payload["job[salary_free]"] = job.send(fm.bullhorn_field_name)
           when 'salary_high'
-            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name) != '0.0'
+            if job.send(fm.bullhorn_field_name).present? && job.send(fm.bullhorn_field_name).to_i != 0
               @job_payload['job[salary_high]'] = job.send(fm.bullhorn_field_name)
             else
               @job_payload['job[salary_high]'] = salary_val
@@ -121,7 +126,7 @@ class BullhornJobImport
         salary_per = 'day' if job.salaryUnit == 'Per Day'
         @job_payload['job[salary_per]'] = salary_per
 
-        @job_payload['job[job_description]'] = job.description
+        @job_payload['job[job_description]'] = job.publicDescription.present? ? job.publicDescription : job.description
 
         puts "--- job.isOpen = #{job.isOpen}"
         if job.isOpen
@@ -147,6 +152,7 @@ class BullhornJobImport
     end
 
     puts "Total data size = #{@job_data.length} jobs"
+    puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
   end
 
   def self.parse_jobs_for_delete(client)
@@ -182,7 +188,7 @@ class BullhornJobImport
 
     complete_data = []
 
-    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description isOpen isDeleted status salaryUnit) + custom_fields).join(',')
+    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     
     while results == 200
       if is_deleted

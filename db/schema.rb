@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160323094034) do
+ActiveRecord::Schema.define(version: 20160706032344) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -67,6 +67,7 @@ ActiveRecord::Schema.define(version: 20160323094034) do
     t.boolean  "authorised",                 default: false
     t.string   "status_text"
     t.string   "cv_type_text"
+    t.boolean  "uses_public_filter",         default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|
@@ -167,6 +168,8 @@ ActiveRecord::Schema.define(version: 20160323094034) do
     t.date    "feature_end"
   end
 
+  add_index "featured_jobs", ["job_id"], name: "index_featured_jobs_on_job_id", using: :btree
+
   create_table "filtered_notification_sendings", force: true do |t|
     t.integer  "job_id"
     t.text     "client_ids"
@@ -266,6 +269,11 @@ ActiveRecord::Schema.define(version: 20160323094034) do
     t.datetime "updated_at"
   end
 
+  create_table "local_env_vars", force: true do |t|
+    t.text "name"
+    t.text "value"
+  end
+
   create_table "mac_daxtra_jobs", force: true do |t|
     t.integer  "job_id"
     t.text     "job"
@@ -286,6 +294,27 @@ ActiveRecord::Schema.define(version: 20160323094034) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "mail_chimp_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "authorization_code"
+    t.text     "access_token"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.boolean  "importing_users"
+  end
+
+  create_table "mail_chimp_conditions", force: true do |t|
+    t.integer  "mail_chimp_app_settings_id"
+    t.integer  "user_group"
+    t.string   "mail_chimp_list_id"
+    t.string   "registration_question_reference"
+    t.text     "answer"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
@@ -313,6 +342,39 @@ ActiveRecord::Schema.define(version: 20160323094034) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "semrush_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.integer  "keyword_amount"
+    t.integer  "request_rate"
+    t.integer  "previous_data"
+    t.string   "engine"
+    t.string   "domain"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.date     "last_petition_at"
+  end
+
+  create_table "semrush_stats", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "domain"
+    t.string   "keyword"
+    t.integer  "position"
+    t.integer  "position_difference"
+    t.float    "traffic_percent"
+    t.float    "costs_percent"
+    t.integer  "results",                 limit: 8
+    t.float    "cpc"
+    t.integer  "volume"
+    t.string   "url"
+    t.date     "day"
+    t.string   "engine"
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.integer  "semrush_app_settings_id"
+  end
+
+  add_index "semrush_stats", ["semrush_app_settings_id"], name: "index_semrush_stats_on_semrush_app_settings_id", using: :btree
 
   create_table "split_fee_settings", force: true do |t|
     t.integer  "app_dataset_id"

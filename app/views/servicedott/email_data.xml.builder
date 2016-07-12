@@ -19,5 +19,7 @@ xml.details do
         xml.tag!(k, v)
       end
     end
+    xml.source @source
+    xml.applicationdate @applicationdate
   end
 end
