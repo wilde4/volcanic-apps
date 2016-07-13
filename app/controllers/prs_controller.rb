@@ -23,6 +23,8 @@ class PrsController < ApplicationController
 
       body =  render_to_string(action: 'email_data.html.haml', layout: false)
 
+      body = body.encode(body.encoding, crlf_newline: true)
+
       if @job.present?
         to = [@job[:application_email]]
         to << @job[:contact_email] if @job[:contact_email].present?
