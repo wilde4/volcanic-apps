@@ -20,7 +20,7 @@ LastName: #{@last_name}
 Email: #{@email}
 - @registration_answer_hash.each do |question, answer|
   - unless question.ends_with? '_array'
-    #{question}: #{answer}
+    #{question}: #{answer.encode(answer.encoding, universal_newline: true).gsub("\n",", ")}
 - if @job.present?
   JobTitle: #{@job[:job_title]}
   Vacancy: #{@job[:job_reference]}
