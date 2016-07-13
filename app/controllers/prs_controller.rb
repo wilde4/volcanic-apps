@@ -20,6 +20,7 @@ class PrsController < ApplicationController
       @last_name = @user_profile['last_name']
       @registration_answer_hash = params[:registration_answer_hash] || {}
       @job = params[:job]
+      @vacancy_number = @job[:remote_id] || @job[:job_reference]
 
       body =  render_to_string(action: 'email_data.html.haml', layout: false)
 

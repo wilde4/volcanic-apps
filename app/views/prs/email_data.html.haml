@@ -23,5 +23,5 @@
     #{question}: #{answer.encode(answer.encoding, universal_newline: true).gsub("\n",", ")}
 - if @job.present?
   JobTitle: #{@job[:job_title]}
-  Vacancy: #{@job[:job_reference]}
+  Vacancy: #{@vacancy_number}
 *** PRS DATA ***
