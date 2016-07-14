@@ -1,4 +1,5 @@
 class ArithonUser < ActiveRecord::Base
+  has_many :app_logs, as: :loggable
   serialize :user_data, JSON
   serialize :user_profile, JSON
   serialize :registration_answers, JSON

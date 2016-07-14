@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160706032344) do
+ActiveRecord::Schema.define(version: 20160714101038) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -24,17 +24,26 @@ ActiveRecord::Schema.define(version: 20160706032344) do
     t.string  "level"
   end
 
+  create_table "app_logs", force: true do |t|
+    t.integer  "loggable_id"
+    t.string   "loggable_type"
+    t.integer  "key_id"
+    t.string   "endpoint"
+    t.text     "message"
+    t.text     "response"
+    t.string   "name"
+    t.boolean  "error",         default: false
+    t.boolean  "internal",      default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "app_logs", ["key_id"], name: "index_app_logs_on_key_id", using: :btree
+  add_index "app_logs", ["loggable_id", "loggable_type"], name: "index_app_logs_on_loggable_id_and_loggable_type", using: :btree
+
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -45,6 +54,17 @@ ActiveRecord::Schema.define(version: 20160706032344) do
     t.text     "registration_answers"
     t.text     "linkedin_profile"
     t.integer  "arithon_uid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "bond_adapt_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "username"
+    t.string   "password"
+    t.string   "domain"
+    t.string   "domain_profile"
+    t.string   "endpoint"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
