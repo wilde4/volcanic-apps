@@ -7,15 +7,26 @@ class BullhornController < ApplicationController
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index, :job_application]
 
-  # To Autorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
+  # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
 
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
+    get_fields(params[:data][:dataset_id]) if @bullhorn_setting.authorised?
     render layout: false
   end
 
   def save_settings
+    @key = Key.find_by(app_dataset_id: params[:bullhorn_app_setting][:dataset_id], app_name: params[:controller])
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:bullhorn_app_setting][:dataset_id])
+
+    if params[:bullhorn_app_setting][:bullhorn_field_mappings_attributes].present?
+      params[:bullhorn_app_setting][:bullhorn_field_mappings_attributes].each do |i, mapping_attributes|
+        if mapping_attributes[:job_attribute].blank? && mapping_attributes[:bullhorn_field_name].blank? && mapping_attributes[:id].present?
+          params[:bullhorn_app_setting][:bullhorn_field_mappings_attributes][i][:_destroy] = 1
+        end
+      end
+    end
+
     if @bullhorn_setting.present?
       if @bullhorn_setting.update(params[:bullhorn_app_setting].permit!)
         if @bullhorn_setting.import_jobs?
@@ -31,6 +42,7 @@ class BullhornController < ApplicationController
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
+      get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     else
       @bullhorn_setting = BullhornAppSetting.new(params[:bullhorn_app_setting].permit!)
       if @bullhorn_setting.save
@@ -39,6 +51,7 @@ class BullhornController < ApplicationController
       else
         flash[:alert]   = "Settings could not be saved. Please try again."
       end
+      get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     end
   end
 
@@ -697,6 +710,33 @@ class BullhornController < ApplicationController
       #   end
       # end
       return string
+    end
+
+    def get_fields(dataset_id)
+    
+      # Get bullhorn fields
+      client = authenticate_client(dataset_id)
+      path = "meta/Candidate"
+      client_params = {fields: '*'}
+      client.conn.options.timeout = 50 # Oliver will reap a unicorn process if it's waiting for longer than 60 seconds, so we'll only wait for 50
+      res = client.conn.get path, client_params
+      obj = client.decorate_response JSON.parse(res.body)
+      @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
+
+      # Get volcanic fields
+      response = HTTParty.get("#{@key.protocol}#{@key.host}/api/v1/user_groups.json")
+
+      @volcanic_fields = {}
+      response.each { |r| r['registration_question_groups'].each { |rg| rg['registration_questions'].each { |q| @volcanic_fields[q["reference"]] = q["label"] unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference']) } } }
+      @volcanic_fields = Hash[@volcanic_fields.sort]
+
+      @volcanic_fields.each do |reference, label|
+        @bullhorn_setting.bullhorn_field_mappings.build(registration_question_reference: reference) unless @bullhorn_setting.bullhorn_field_mappings.find_by(registration_question_reference: reference)
+      end
+
+      @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
+    rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
+      @net_error = e.message
     end
 
     def get_country_name(country_id)

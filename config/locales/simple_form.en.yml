@@ -30,11 +30,11 @@ en:
         bullhorn_field_name: Bullhorn Field Name
         registration_question_reference: Registration Question Reference
         sync_from_bullhorn: Sync from Bullhorn
-    hints:
+    placeholders:
       bullhorn_app_setting:
-        source_text: 'Default if left empty: Company Website'
-        status_text: 'Default if left empty: New Lead'
-        cv_type_text: 'Default if left empty: CV'
+        source_text: 'Company Website'
+        status_text: 'New Lead'
+        cv_type_text: 'CV'
     # Examples
     # labels:
     #   defaults:
