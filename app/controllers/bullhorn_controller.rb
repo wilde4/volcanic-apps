@@ -9,6 +9,19 @@ class BullhornController < ApplicationController
 
   # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
 
+  def deactivate_app
+    key = Key.where(app_dataset_id: params[:data][:app_dataset_id], app_name: params[:controller]).first
+    respond_to do |format|
+      if key
+        bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:app_dataset_id])
+        bullhorn_setting.destroy if bullhorn_setting
+        format.json { render json: { success: key.destroy }}
+      else
+        format.json { render json: { error: 'Key not found.' } }
+      end
+    end
+  end
+
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
     get_fields(params[:data][:dataset_id]) if @bullhorn_setting.authorised?
@@ -158,7 +171,7 @@ class BullhornController < ApplicationController
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if Rails.env.development?
         key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-        cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+        cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
       else
         # UPLOAD PATHS USE CLOUDFRONT URL
         cv_url = params[:user_profile][:upload_path]
@@ -543,7 +556,7 @@ class BullhornController < ApplicationController
       if params[:user_profile][:upload_path].present?
         if Rails.env.development?
           key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-          cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+          cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
         else
           # UPLOAD PATHS USE CLOUDFRONT URL
           cv_url = params[:user_profile][:upload_path]
@@ -724,7 +737,8 @@ class BullhornController < ApplicationController
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
 
       # Get volcanic fields
-      response = HTTParty.get("#{@key.protocol}#{@key.host}/api/v1/user_groups.json")
+      url = Rails.env.development? ? "#{@key.protocol}#{@key.host}:3000/api/v1/user_groups.json" : "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
+      response = HTTParty.get(url)
 
       @volcanic_fields = {}
       response.each { |r| r['registration_question_groups'].each { |rg| rg['registration_questions'].each { |q| @volcanic_fields[q["reference"]] = q["label"] unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference']) } } }
@@ -735,7 +749,7 @@ class BullhornController < ApplicationController
       end
 
       @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
-    rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
+    rescue Exception => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
       @net_error = e.message
     end
 
