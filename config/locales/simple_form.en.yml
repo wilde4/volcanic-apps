@@ -23,18 +23,14 @@ en:
         import_jobs: Import Jobs from Bullhorn
         linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
         source_text: Bullhorn Source text for Candidate records
-        always_create: Always create a new Bullhorn record when a Candidate registers
+        always_create: Saving Candidates in Bullhorn
         status_text: Bullhorn Status text for Candidate records
         cv_type_text: Bullhorn CV Type text for Candidate CV files
+        uses_public_filter: Published Vacancies Filter
       bullhorn_field_mappings:
         bullhorn_field_name: Bullhorn Field Name
         registration_question_reference: Registration Question Reference
         sync_from_bullhorn: Sync from Bullhorn
-    placeholders:
-      bullhorn_app_setting:
-        source_text: 'Company Website'
-        status_text: 'New Lead'
-        cv_type_text: 'CV'
     # Examples
     # labels:
     #   defaults:

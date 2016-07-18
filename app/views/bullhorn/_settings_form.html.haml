@@ -7,7 +7,7 @@
       - if @bullhorn_setting.authorised?
         %i.icon-checkmark
       - else
-        %a{:href => "#", 'data-toggle' => "modal", 'data-target' => "#credentialsInfo"}
+        = link_to '#', data: { toggle: "modal", target: "#credentialsInfo"} do
           %i.icon-info22
     .panel-body
       .row
@@ -25,32 +25,26 @@
           %h4 Candidate Settings
           .row
             .col-md-6
-              = f.input :source_text, input_html: { class: 'form-control' }
-            .col-md-6
-              = f.input :linkedin_bullhorn_field, collection: @bullhorn_fields, input_html: { class: 'form-control' }
+              = f.input :source_text, input_html: { class: 'form-control', value: f.object.source_text.present? ? f.object.source_text : 'Company Website' }
           .row
             .col-md-6
-              = f.input :status_text, input_html: { class: 'form-control' }
+              = f.input :status_text, input_html: { class: 'form-control', value: f.object.status_text.present? ? f.object.status_text : 'New Lead' }
+          .row
             .col-md-6
-              = f.input :cv_type_text, input_html: { class: 'form-control' }
+              = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
           %hr
-          %p 
-            When a Candidate registers an account through the website, this App determines if they already have a Candidate profile in Bullhorn using their email address. 
-            If so, the Bullhorn Candidate record is updated with the registration data the Candidate provides.
-          %p You can force a new Candidate profile to be created in Bullhorn instead of updating an existing account by selecting this option.
-          = f.input :always_create, input_html: { class: 'form-control' }
+          = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
 
         .well
           %h4 Vacancy Settings
-          %p This App can import Vacancies from Bullhorn to your Volcanic website. Vacancies are imported every hour at quarter to the hour.
+          %p This App can import Vacancies from Bullhorn to your Volcanic website. Vacancies are imported every hour at a quarter to the hour.
           %p Applications made to these Vacancies through the website are automatically updated in Bullhorn. 
           %p This option should not be selected if your website already uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
           = f.input :import_jobs, input_html: { class: 'form-control' }
           
           - if @bullhorn_setting.import_jobs?
             %hr
-            %p You have an option in Bullhorn to flag jobs as Published. Enabling the Published Jobs Filter will mean that only jobs that are flagged as Published on your Bullhorn account will go live on your site. 
-            = f.input :uses_public_filter, label: 'Enable Published Jobs Filter', input_html: { class: 'form-control' }
+            = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, input_html: { class: 'form-control' }
           
           - if @bullhorn_setting.bullhorn_field_mappings.job.present?
             %hr
@@ -94,11 +88,16 @@
                 %th
                 %th Bullhorn Field
               %tbody
+                %tr
+                  %td LinkedIn Public URL
+                  %td.text-center
+                    %i.icon-arrow-right16
+                  %td= f.input :linkedin_bullhorn_field, collection: @bullhorn_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
                 = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
                   %tr
                     %td
                       = @volcanic_fields[bfm.object.registration_question_reference]
-                      = bfm.input :registration_question_reference, label: false, as: :hidden, input_html: { class: 'form-control' }
+                      = bfm.input :registration_question_reference, as: :hidden
                     %td.text-center
                       %i.icon-arrow-right16
                     %td= bfm.input :bullhorn_field_name, collection: @bullhorn_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
