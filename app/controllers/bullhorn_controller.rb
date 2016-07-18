@@ -749,8 +749,10 @@ class BullhornController < ApplicationController
       end
 
       @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
-    rescue Exception => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
-      @net_error = e.message
+    rescue StandardError => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
+      log = @bullhorn_setting.app_logs.create key: @key, name: 'get_fields', endpoint: path, response: e.message, error: true, internal: true
+      notify_honeybadger(e)
+      @net_error = log.id
     end
 
     def get_country_name(country_id)
