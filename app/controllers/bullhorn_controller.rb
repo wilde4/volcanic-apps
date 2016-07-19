@@ -738,7 +738,9 @@ class BullhornController < ApplicationController
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
       address_field = obj['fields'].select { |f| f['name'] == 'address' }.first
-      address_field.fields.select { |f| f['type'] == "SCALAR" }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+      if address_field.present?
+        address_field.fields.select { |f| f['type'] == "SCALAR" }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+      end
 
       # Get some specfic non SCALAR fields
       obj['fields'].select { |f| f['type'] == "TO_ONE" && f['name'] == 'category' }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
