@@ -727,7 +727,7 @@ class BullhornController < ApplicationController
 
     def get_fields(dataset_id)
     
-      # Get bullhorn fields
+      # Get bullhorn candidate fields
       client = authenticate_client(dataset_id)
       path = "meta/Candidate"
       client_params = {fields: '*'}
@@ -735,6 +735,13 @@ class BullhornController < ApplicationController
       res = client.conn.get path, client_params
       obj = client.decorate_response JSON.parse(res.body)
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
+
+      # Get bullhorn job fields
+      path = "meta/JobOrder"
+      res = client.conn.get path, client_params
+      obj = client.decorate_response JSON.parse(res.body)
+      @bullhorn_job_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
+
 
       # Get volcanic fields
       url = Rails.env.development? ? "#{@key.protocol}#{@key.host}:3000/api/v1/user_groups.json" : "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"

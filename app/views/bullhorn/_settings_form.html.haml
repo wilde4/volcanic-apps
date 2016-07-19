@@ -62,7 +62,7 @@
                 %tbody
                   = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.job do |bfm|
                     %tr
-                      %td= bfm.input :bullhorn_field_name, collection: @bullhorn_fields, label: false, input_html: { class: 'form-control' }
+                      %td= bfm.input :bullhorn_field_name, collection: @bullhorn_job_fields, label: false, input_html: { class: 'form-control' }
                       %td.text-center
                         %i.icon-arrow-right16
                       %td
