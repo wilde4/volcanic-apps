@@ -8,7 +8,7 @@ class BullhornAppSetting < ActiveRecord::Base
 
   has_many :bullhorn_field_mappings, dependent: :destroy
 
-  accepts_nested_attributes_for :bullhorn_field_mappings, allow_destroy: true, reject_if: proc { |attributes| attributes['bullhorn_field_name'].blank? }
+  accepts_nested_attributes_for :bullhorn_field_mappings, allow_destroy: true, reject_if: proc { |attributes| attributes['bullhorn_field_name'].blank? && attributes['job_attribute'].blank? }
 
   def auth_settings_filled
     bh_username.present? && bh_password.present? && bh_client_id.present? && bh_client_secret.present?
