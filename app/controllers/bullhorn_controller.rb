@@ -6,6 +6,7 @@ class BullhornController < ApplicationController
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index, :job_application]
+  before_action :check_authenticated, except: [:index, :save_settings]
 
   # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
 
@@ -985,5 +986,9 @@ class BullhornController < ApplicationController
       end
     end
 
+    def check_authenticated
+      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      render json: { error: "Bullhorn app has not been configured." }, status: 403 and return unless settings.authorised?
+    end
 
 end
