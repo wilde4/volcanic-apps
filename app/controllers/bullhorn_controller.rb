@@ -735,7 +735,16 @@ class BullhornController < ApplicationController
       client.conn.options.timeout = 50 # Oliver will reap a unicorn process if it's waiting for longer than 60 seconds, so we'll only wait for 50
       res = client.conn.get path, client_params
       obj = client.decorate_response JSON.parse(res.body)
-      @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
+      @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
+
+      address_field = obj['fields'].select { |f| f['name'] == 'address' }.first
+      address_field.fields.select { |f| f['type'] == "SCALAR" }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+
+      # Get some specfic non SCALAR fields
+      obj['fields'].select { |f| f['type'] == "TO_ONE" && f['name'] == 'category' }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+      obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'businessSectors' }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+
+      @bullhorn_fields.sort! { |x,y| x.first <=> y.first }
 
       # Get bullhorn job fields
       path = "meta/JobOrder"
