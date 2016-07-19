@@ -737,9 +737,12 @@ class BullhornController < ApplicationController
       obj = client.decorate_response JSON.parse(res.body)
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
-      address_field = obj['fields'].select { |f| f['name'] == 'address' }.first
-      if address_field.present?
-        address_field.fields.select { |f| f['type'] == "SCALAR" }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+      # Get nested address fields
+      address_fields = obj['fields'].select { |f| f.dataType == 'Address' }
+      address_fields.each do |address_field|
+        if address_field['name'] == 'address'
+          address_field.fields.select { |f| f['type'] == "SCALAR" }.each { |field| @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+        end
       end
 
       # Get some specfic non SCALAR fields

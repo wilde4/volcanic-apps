@@ -6,7 +6,8 @@
       %hr
       %p You can contact Bullhorn UK Support on the following number:
       %p 0800 032 2848
-      %p= link_to 'Requesting Authentication settings', '#', data: { toggle: "modal", target: "#credentialsInfo"}
+      - unless @bullhorn_setting.authorised
+        %p= link_to 'Requesting Authentication settings', '#', data: { toggle: "modal", target: "#credentialsInfo"}
       %hr
 
       #flash_messages

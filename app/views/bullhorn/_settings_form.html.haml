@@ -96,7 +96,11 @@
                 = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
                   %tr
                     %td
-                      = @volcanic_fields[bfm.object.registration_question_reference]
+                      - if @volcanic_fields[bfm.object.registration_question_reference].present?
+                        = @volcanic_fields[bfm.object.registration_question_reference]
+                      - else
+                        = bfm.object.registration_question_reference
+                        %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
                       = bfm.input :registration_question_reference, as: :hidden
                     %td.text-center
                       %i.icon-arrow-right16
@@ -142,3 +146,4 @@
     $(this).addClass("disabled");
     $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
   });
+  $('[data-toggle="tooltip"]').tooltip();
