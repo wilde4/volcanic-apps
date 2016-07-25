@@ -46,6 +46,14 @@ ActiveRecord::Schema.define(version: 20160714101038) do
     t.text    "settings"
   end
 
+  create_table "arithon_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "api_key"
+    t.string   "company_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "arithon_users", force: true do |t|
     t.integer  "user_id"
     t.string   "email"
@@ -54,17 +62,6 @@ ActiveRecord::Schema.define(version: 20160714101038) do
     t.text     "registration_answers"
     t.text     "linkedin_profile"
     t.integer  "arithon_uid"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "bond_adapt_app_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "username"
-    t.string   "password"
-    t.string   "domain"
-    t.string   "domain_profile"
-    t.string   "endpoint"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
