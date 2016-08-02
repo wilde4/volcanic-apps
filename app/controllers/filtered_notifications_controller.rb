@@ -56,7 +56,7 @@ class FilteredNotificationsController < ApplicationController
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
       data[:secondary_key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|") if key_locations.present?
       data[:search_origin] = "filtered_notifications"
-      data[:per_page] = 100
+      data[:per_page] = 1000
 
       if params[:job][:extra][:filtered_notifications].present?
         dataset_id = params[:job][:extra][:filtered_notifications][:dataset_id]
