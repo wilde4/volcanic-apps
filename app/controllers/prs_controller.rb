@@ -22,7 +22,7 @@ class PrsController < ApplicationController
       @job = params[:job]
       @vacancy_number = @job[:remote_id] || @job[:job_reference] if @job.present?
 
-      body =  render_to_string(action: 'email_data.html.haml', layout: false)
+      body =  render_to_string(action: 'email_data.html.erb', layout: false)
 
       if @job.present?
         to = [@job[:application_email]]
