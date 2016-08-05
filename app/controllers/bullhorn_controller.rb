@@ -340,8 +340,7 @@ class BullhornController < ApplicationController
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
         'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        'email' => user.email,
-        'source' => settings.source_text.present? ? settings.source_text : 'Company Website'
+        'email' => user.email
       }
 
       if user.linkedin_profile.present?
@@ -435,6 +434,7 @@ class BullhornController < ApplicationController
         end
       else
         attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
+        attributes['source'] = settings.source_text.present? ? settings.source_text : 'Company Website'
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
