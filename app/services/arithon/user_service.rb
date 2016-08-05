@@ -46,6 +46,7 @@ class Arithon::UserService < BaseService
       @user.update arithon_uid: arithon_uid
     end
   rescue => e
+    @user.app_logs.create key: @key, name: 'save_user', response: "Exception: #{e.message}", error: true, internal: true
     Rails.logger.info "--- arithon save_user exception ----- : #{e.message}"
   end
 
@@ -62,6 +63,7 @@ class Arithon::UserService < BaseService
     Rails.logger.info "--- @response = #{@response.inspect}"
     # update user details
   rescue => e
+    @user.app_logs.create key: @key, name: 'update_user', response: "Exception: #{e.message}", error: true, internal: true
     Rails.logger.info "--- arithon update_user exception ----- : #{e.message}"
   end
 
@@ -84,6 +86,7 @@ class Arithon::UserService < BaseService
     end
     return arithon_id
   rescue => e
+    @user.app_logs.create key: @key, name: 'get_arithon_uid', response: "Exception: #{e.message}", error: true, internal: true
     Rails.logger.info "--- arithon get_arithon_uid exception ----- : #{e.message}"
   end
 
@@ -148,10 +151,12 @@ class Arithon::UserService < BaseService
       if command == "PushCandidate" && cv_up_loads_checks?  
         build_tmp_cv_file
         request[:request][:data].merge!(file_info_hash) if data.present?
-        @response =  RestClient.post(API_ENDPOINT, file_request_hash(request)) # All responses from API return a 200, even those that fail, actual response code is sent in body
+        @response = JSON.parse(RestClient.post(API_ENDPOINT, file_request_hash(request))) # All responses from API return a 200, even those that fail, actual response code is sent in body
+        @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: file_request_hash(request).to_s, response: @response.to_s, error: @response["code"] != 200
       else
         @response =  HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
-      end      
+        @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: { body: request }.to_s, response: @response.to_s, error: @response["code"] != 200
+      end
       @response
     end
     
@@ -172,8 +177,7 @@ class Arithon::UserService < BaseService
         'text/html',
         'application/rtf',
         'application/x-rtf',
-        'text/richtext',
-        'application/vnd.oasis.opendocument.text'
+        'text/richtext'
       ]
     end
     
@@ -195,7 +199,12 @@ class Arithon::UserService < BaseService
     end
     
     def mime_type_is_ok?
-      @mime_type_is_ok ||= accepted_mime_types.include?(cv_mime_type)
+      if accepted_mime_types.include?(cv_mime_type)
+        @mime_type_is_ok ||= true
+      else
+        @user.app_logs.create(key: @key, name: 'mime_type_is_ok?', response: "CV mime type:#{cv_mime_type} not accepted", error: true, internal: true) if @mime_type_is_ok.nil?
+        @mime_type_is_ok ||= false
+      end
     end
       
     
@@ -205,7 +214,7 @@ class Arithon::UserService < BaseService
     
     def cv_mime_type
       if File.exist?(tmp_cv_path)
-        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type 
+        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type rescue ""
       else
         ""
       end

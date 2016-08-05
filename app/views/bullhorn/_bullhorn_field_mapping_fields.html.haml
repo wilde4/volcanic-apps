@@ -1,8 +1,0 @@
-= f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.user do |bfm|
-  .well
-    .row
-      .col-md-6= bfm.input :bullhorn_field_name
-      .col-md-6= bfm.input :registration_question_reference
-    .row
-      .col-md-6= bfm.input :sync_from_bullhorn
-      .col-md-6.text-right= link_to '<i class="fa fa-times"></i> '.html_safe + t('.delete'), save_settings_url(bullhorn_app_setting: { dataset_id: @bullhorn_setting.dataset_id, bullhorn_field_mappings_attributes: { id: bfm.object.id, "_destroy" => true } }), remote: true, method: :post, confirm: t('.really_delete'), class: 'btn btn-xs btn-default'
