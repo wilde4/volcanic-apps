@@ -235,6 +235,14 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :bond_adapt do
+    post "activate_app"     => 'bond_adapt#activate_app'
+    post "deactivate_app"   => 'bond_adapt#deactivate_app'
+    get  "index"            => 'bond_adapt#index'
+    post "save_settings"    => 'bond_adapt#save_settings'
+    post "save_user"        => 'bond_adapt#save_user'
+  end
+
   scope :job_board do
     post "activate_app"     => 'job_board#activate_app'
     post "deactivate_app"   => 'job_board#deactivate_app'
