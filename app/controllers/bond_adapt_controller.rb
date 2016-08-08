@@ -8,6 +8,28 @@ class BondAdaptController < ApplicationController
   def index
     @host = @key.host
     @app_id = params[:data][:id]
+    @bond_adapt_setting = BondAdaptAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BondAdaptAppSetting.new(dataset_id: params[:data][:dataset_id])
+    render layout: false
+  end
+
+  def save_settings
+    @key = Key.find_by(app_dataset_id: params[:bond_adapt_app_setting][:dataset_id], app_name: params[:controller])
+    @bond_adapt_setting = BondAdaptAppSetting.find_by(dataset_id: params[:bond_adapt_app_setting][:dataset_id])
+
+    if @bond_adapt_setting.present?
+      if @bond_adapt_setting.update(params[:bond_adapt_app_setting].permit!)
+        flash[:notice]  = "Settings successfully saved."
+      else
+        flash[:alert]   = "Settings could not be saved. Please try again."
+      end
+    else
+      @bond_adapt_setting = BondAdaptAppSetting.new(params[:bond_adapt_app_setting].permit!)
+      if @bond_adapt_setting.save
+        flash[:notice]  = "Settings successfully saved."
+      else
+        flash[:alert]   = "Settings could not be saved. Please try again."
+      end
+    end
   end
   
   def save_user 

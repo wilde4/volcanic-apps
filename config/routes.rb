@@ -239,6 +239,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'bond_adapt#activate_app'
     post "deactivate_app"   => 'bond_adapt#deactivate_app'
     get  "index"            => 'bond_adapt#index'
+    post "save_settings"    => 'bond_adapt#save_settings'
     post "save_user"        => 'bond_adapt#save_user'
   end
 

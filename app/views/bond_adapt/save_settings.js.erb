@@ -1,0 +1,3 @@
+$("#settings_form").html("<%= escape_javascript(render :partial => 'settings_form', :locals => { :flash => flash }) %>");
+$("#flash_messages").html("<%= escape_javascript(render :partial => 'shared/flashes', :locals => { :flash => flash }) %>");
+$('html, body').animate({ scrollTop: 0 }, 0);
