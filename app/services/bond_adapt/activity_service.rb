@@ -85,15 +85,18 @@ class BondAdapt::ActivityService < BaseService
     end
   
     def job_searches_responce_body(page)
-      HTTParty.get(end_point('job_searches') << "&page=#{page}" ).body
+      response = HTTParty.get(end_point('job_searches') << "&page=#{page}" )
+      response.code == 200 ? response.body : '{}'
     end
     
     def page_views_responce_body(page)
-      HTTParty.get(end_point('page_views') << "&page=#{page}").body
+      response = HTTParty.get(end_point('page_views') << "&page=#{page}")
+      response.code == 200 ? response.body : '{}'
     end
     
     def job_views_responce_body(page)
-      HTTParty.get(end_point_job_views_filter_on('page_views') << "&page=#{page}" ).body
+      response = HTTParty.get(end_point_job_views_filter_on('page_views') << "&page=#{page}" )
+      response.code == 200 ? response.body : '{}'
     end
     
     def build_string(records_name)
