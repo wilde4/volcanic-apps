@@ -16,7 +16,7 @@ class FilteredNotificationsController < ApplicationController
     notifications = { filtered_job_announcement: {
                         description: "a Filtered Notification is sent",
                         targets: [:user, :custom],
-                        tags: [:name, :job_title, :job_link]
+                        tags: [:name, :job_title, :job_link, :"job.job_location", :"job.job_description", :"job.job_type", :"job.salary_low", :"job.salary_high", :"job.salary_free", :"job.contact_name", :"job.contact_email"]
                       }
                     }
 
