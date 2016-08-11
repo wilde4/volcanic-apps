@@ -32,16 +32,19 @@ class BondAdaptController < ApplicationController
     end
   end
   
-  def save_user 
-    BondAdapt::UserService.new({dataset_id: params["dataset_id"], 
-      user_name: set_user_name, 
-      user_email: set_user_email, 
-      user_phone: req_quest_finder("mobile-number"), 
-      user_url: set_user_linkedin, 
-      user_location: req_quest_finder("preferred-location"), 
-      user_sector: req_quest_finder("preferred-sector"), 
-      user_permanent: set_contract_type("Permanent"),
-      user_contract: set_contract_type("Contract")}).send_to_bond_adapt(choose_reg_type.to_s)
+  def save_user
+    # Only send certain emails while testing
+    if set_user_email.ends_with?('@volcanic.co.uk') || set_user_email.ends_with?('@ojassociates.com')
+      BondAdapt::UserService.new({dataset_id: params["dataset_id"], 
+        user_name: set_user_name, 
+        user_email: set_user_email, 
+        user_phone: req_quest_finder("mobile-number"), 
+        user_url: set_user_linkedin, 
+        user_location: req_quest_finder("preferred-location"), 
+        user_sector: req_quest_finder("preferred-sector"), 
+        user_permanent: set_contract_type("Permanent"),
+        user_contract: set_contract_type("Contract")}).send_to_bond_adapt(choose_reg_type.to_s)
+    end
   end
   
   private
