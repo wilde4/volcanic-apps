@@ -6,17 +6,24 @@ class FilteredNotificationsController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:send_notification, :job_form]
+  before_action :set_key, only: [:send_notification, :job_form, :app_notifications]
 
   after_filter :setup_access_control_origin, only: [:modal_content]
 
   layout false
 
   def app_notifications
+    extra_keys = []
+    if Key.find_by(app_dataset_id: @key.app_dataset_id, app_name: "split_fee").present?
+      extra_keys = [:"split_fee.amount", :"split_fee.percentage", :"split_fee.terms"]
+    end
+
+    tags = [:name, :job_title, :job_link, :"job.job_location", :"job.job_description", :"job.salary_low", :"job.salary_high", :"job.salary_free", :"job.contact_name", :"job.contact_email"].concat(extra_keys)
+
     notifications = { filtered_job_announcement: {
                         description: "a Filtered Notification is sent",
                         targets: [:user, :custom],
-                        tags: [:name, :job_title, :job_link, :"job.job_location", :"job.job_description", :"job.job_type", :"job.salary_low", :"job.salary_high", :"job.salary_free", :"job.contact_name", :"job.contact_email"]
+                        tags: tags
                       }
                     }
 
