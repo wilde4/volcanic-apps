@@ -290,6 +290,8 @@ Apps::Application.routes.draw do
 
     get 'job_form'          => 'split_fee#job_form'
     post 'job_create'       => 'split_fee#job_create'
+    post 'job_expire'       => 'split_fee#job_expire'
+    post 'job_destroy'      => 'split_fee#job_destroy'
 
     get 'current_split_fee' => 'split_fee#current_split_fee'
     get 'get_split_fee'     => 'split_fee#get_split_fee'
