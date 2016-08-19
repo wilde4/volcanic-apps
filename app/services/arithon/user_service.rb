@@ -94,27 +94,22 @@ class Arithon::UserService < BaseService
   private
     
     def build_tmp_cv_file
-      make_dir
-      File.open(tmp_cv_path, "wb") do |file|
-        file.write(open(cv_path).read)
+
+      # Save file into tempfile from S3
+      uri = URI.parse(cv_path)
+      io = uri.open
+      encoding = io.read.encoding
+      Rails.logger.info " --- Encoding: #{encoding}"
+      filename_array = upload_name.split('.')
+      extension = filename_array.pop
+      filename = filename_array.join('.')
+      @tmp_cv_file = Tempfile.new(["#{filename}-", ".#{extension}"], Rails.root.join('tmp'), encoding: encoding).tap do |f|
+        io.rewind
+        f.write(io.read)
       end
-    end
-    
-    def cv_tmp_folder
-      @cv_tmp_folder ||= "#{Rails.root}/tmp/arithon_cvs"
-    end
-    
-    def make_dir
-      FileUtils.mkdir_p(user_id_tmp_folder_path) unless File.directory?(user_id_tmp_folder_path)
-    end
-    
-    
-    def tmp_cv_path
-      @tmp_cv_path ||= "#{user_id_tmp_folder_path}/#{upload_name}"
-    end
-    
-    def user_id_tmp_folder_path
-     @user_id_tmp_folder_path ||= "#{cv_tmp_folder}/#{@user.user_data['id']}"
+      @tmp_cv_file.rewind
+
+
     end
     
     def cv_path
@@ -139,8 +134,8 @@ class Arithon::UserService < BaseService
     end
     
     def delete_tmp_cv_file
-      File.delete(tmp_cv_path) if File.exist?(tmp_cv_path)
-      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path) && user_id_tmp_folder_path.include?("/tmp/arithon_cvs")
+      @tmp_cv_file.close
+      @tmp_cv_file.unlink
     end
 
     def send_request(command, data=nil)
@@ -162,7 +157,7 @@ class Arithon::UserService < BaseService
     
     def file_request_hash(request)
       if mime_type_is_ok?
-        { authorise: request[:authorise], request: request[:request], attachedFile: file_to_attach }
+        { authorise: request[:authorise], request: request[:request], attachedFile: @tmp_cv_file }
       else
         { authorise: request[:authorise], request: request[:request] }
       end
@@ -183,18 +178,9 @@ class Arithon::UserService < BaseService
     
     def file_info_hash
       if mime_type_is_ok?
-        {file: { name: upload_name, type: cv_mime_type }}
+        {file: { name: @tmp_cv_file.path.split('/').last, type: cv_mime_type }}
       else
         {}
-      end
-    end
-    
-    def file_to_attach
-      if mime_type_is_ok?
-        tmp_cv_file.rewind
-        tmp_cv_file
-      else
-        ""
       end
     end
     
@@ -206,15 +192,10 @@ class Arithon::UserService < BaseService
         @mime_type_is_ok ||= false
       end
     end
-      
-    
-    def tmp_cv_file
-      @tmp_cv_file ||= File.open(tmp_cv_path)
-    end
     
     def cv_mime_type
-      if File.exist?(tmp_cv_path)
-        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type rescue ""
+      if @tmp_cv_file.present?
+        @cv_mime_type ||= MimeMagic.by_path(@tmp_cv_file.path).type rescue ""
       else
         ""
       end
