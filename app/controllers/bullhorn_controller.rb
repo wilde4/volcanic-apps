@@ -447,7 +447,7 @@ class BullhornController < ApplicationController
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
-        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         if response.errors.present?
           response.errors.each do |e|
             Honeybadger.notify(
@@ -463,7 +463,7 @@ class BullhornController < ApplicationController
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
-        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "enitity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
         if response.errors.present?
@@ -605,7 +605,7 @@ class BullhornController < ApplicationController
           attributes = {}
           attributes['description'] = candidate_data['description']
           response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
-          create_log(@user, key, 'update_candidate', "enitity/candidate/#{@user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, response.errors.present?)
+          create_log(@user, key, 'update_candidate', "entity/candidate/#{@user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, response.errors.present?)
         end
       end
     end
