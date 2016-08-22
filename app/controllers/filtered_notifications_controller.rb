@@ -18,7 +18,7 @@ class FilteredNotificationsController < ApplicationController
       extra_keys = [:"split_fee.amount", :"split_fee.percentage", :"split_fee.terms"]
     end
 
-    tags = [:name, :job_title, :job_link, :"job.job_location", :"job.job_description", :"job.salary_low", :"job.salary_high", :"job.salary_free", :"job.contact_name", :"job.contact_email"].concat(extra_keys)
+    tags = [:name, :job_title, :job_link, :"job.job_location", :"job.job_description", :"job.salary_low", :"job.salary_high", :"job.salary_free", :"job.contact_name", :"job.contact_email", :"job.client_name", :"job.client_phone_number", :"job.client_email"].concat(extra_keys)
 
     notifications = { filtered_job_announcement: {
                         description: "a Filtered Notification is sent",
