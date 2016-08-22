@@ -69,8 +69,7 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     notify_honeybadger(e)
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_settings', response: e.message, error: true, internal: true
-    @net_error = log.id
+    @net_error = create_log(@bullhorn_setting, @key, 'save_settings', nil, nil, e.message, true, true)
   end
 
   def save_user
@@ -110,8 +109,8 @@ class BullhornController < ApplicationController
   rescue StandardError => e
     notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_user', response: e.message, error: true, internal: true
-    render json: { success: false, status: "Error ID: #{log.id}" }
+    log_id = create_log(@bullhorn_setting, @key, 'save_user', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def get_user
@@ -213,8 +212,8 @@ class BullhornController < ApplicationController
   rescue StandardError => e
     notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'upload_cv', response: e.message, error: true, internal: true
-    render json: { success: false, status: "Error ID: #{log.id}" }
+    log_id = create_log(@bullhorn_setting, @key, 'upload_cv', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def job_application
@@ -245,8 +244,8 @@ class BullhornController < ApplicationController
   rescue StandardError => e
     notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'job_application', response: e.message, error: true, internal: true
-    render json: { success: false, status: "Error ID: #{log.id}" }
+    log_id = create_log(@bullhorn_setting, @key, 'job_application', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def jobs
@@ -298,8 +297,8 @@ class BullhornController < ApplicationController
   rescue StandardError => e
     notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'new_search', response: e.message, error: true, internal: true
-    render json: { success: false, status: "Error ID: #{log.id}" }
+    log_id = create_log(@bullhorn_setting, @key, 'new_search', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
 
@@ -596,7 +595,7 @@ class BullhornController < ApplicationController
 
         file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
         logger.info "--- file_response = #{file_response.inspect}"
-        @user.app_logs.create key: key, name: 'put_candidate_file', endpoint: "file/candidate/#{@user.bullhorn_uid}", message: { attributes: @file_attributes }.to_s, response: file_response.to_s, error: file_response.errors.present?
+        create_log(@user, key, 'put_candidate_file', "file/candidate/#{@user.bullhorn_uid}", { attributes: @file_attributes.except('fileContent') }.to_s, file_response.to_s, file_response.errors.present?)
 
         # PARSE FILE
         candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
@@ -606,7 +605,7 @@ class BullhornController < ApplicationController
           attributes = {}
           attributes['description'] = candidate_data['description']
           response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
-          @user.app_logs.create key: key, name: 'update_candidate', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+          create_log(@user, key, 'update_candidate', "enitity/candidate/#{@user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, response.errors.present?)
         end
       end
     end
@@ -764,7 +763,7 @@ class BullhornController < ApplicationController
       client.conn.options.timeout = 50 # Oliver will reap a unicorn process if it's waiting for longer than 60 seconds, so we'll only wait for 50
       res = client.conn.get path, client_params
       obj = client.decorate_response JSON.parse(res.body)
-      @bullhorn_setting.app_logs.create key: @key, name: 'get_fields', endpoint: path, message: client_params.to_s, response: obj.to_s, error: obj.errors.present?
+      create_log(@bullhorn_setting, @key, 'get_fields', path, client_params.to_s, obj.to_s, obj.errors.present?)
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
       # Get nested address fields
@@ -802,9 +801,8 @@ class BullhornController < ApplicationController
 
       @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
     rescue StandardError => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
-      log = @bullhorn_setting.app_logs.create key: @key, name: 'get_fields', endpoint: path, response: e.message, error: true, internal: true
       notify_honeybadger(e)
-      @net_error = log.id
+      @net_error = create_log(@bullhorn_setting, @key, 'get_fields', nil, nil, e.message, true, true)
     end
 
     def get_country_name(country_id)
