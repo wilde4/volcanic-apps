@@ -68,8 +68,8 @@ class BullhornController < ApplicationController
       get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     end
   rescue StandardError => e
-    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_settings', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_settings', response: e.message, error: true, internal: true
     @net_error = log.id
   end
 
@@ -108,9 +108,9 @@ class BullhornController < ApplicationController
       end
     end
   rescue StandardError => e
+    notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log = @bullhorn_setting.app_logs.create key: @key, name: 'save_user', response: e.message, error: true, internal: true
-    notify_honeybadger(e)
     render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
@@ -211,9 +211,9 @@ class BullhornController < ApplicationController
       end
     end
   rescue StandardError => e
+    notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log = @bullhorn_setting.app_logs.create key: @key, name: 'upload_cv', response: e.message, error: true, internal: true
-    notify_honeybadger(e)
     render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
@@ -243,9 +243,9 @@ class BullhornController < ApplicationController
       render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
     end
   rescue StandardError => e
+    notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log = @bullhorn_setting.app_logs.create key: @key, name: 'job_application', response: e.message, error: true, internal: true
-    notify_honeybadger(e)
     render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
@@ -296,9 +296,9 @@ class BullhornController < ApplicationController
       render json: { success: false, status: "Note was not created in Bullhorn." }
     end
   rescue StandardError => e
+    notify_honeybadger(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
     log = @bullhorn_setting.app_logs.create key: @key, name: 'new_search', response: e.message, error: true, internal: true
-    notify_honeybadger(e)
     render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
