@@ -8,11 +8,12 @@ class TalentRoverApp
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
+      @key = reg_host
+      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
       unless settings.present? && settings.settings["Feed URL"].present?
         puts "No Feed URL configured - skipping"
         next
       end
-      @key = reg_host
       @job_data = get_xml
       parse_jobs
       prune_jobs if get_prune_jobs_setting
