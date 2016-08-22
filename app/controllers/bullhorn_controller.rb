@@ -68,7 +68,7 @@ class BullhornController < ApplicationController
       get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     end
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'save_settings', nil, nil, e.message, true, true)
   end
 
@@ -107,7 +107,7 @@ class BullhornController < ApplicationController
       end
     end
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'save_user', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
@@ -210,7 +210,7 @@ class BullhornController < ApplicationController
       end
     end
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'upload_cv', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
@@ -242,7 +242,7 @@ class BullhornController < ApplicationController
       render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
     end
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'job_application', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
@@ -295,7 +295,7 @@ class BullhornController < ApplicationController
       render json: { success: false, status: "Note was not created in Bullhorn." }
     end
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'new_search', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
@@ -801,7 +801,7 @@ class BullhornController < ApplicationController
 
       @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
     rescue StandardError => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
-      notify_honeybadger(e)
+      Honeybadger.notify(e)
       @net_error = create_log(@bullhorn_setting, @key, 'get_fields', nil, nil, e.message, true, true)
     end
 

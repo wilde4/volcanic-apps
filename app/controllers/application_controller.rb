@@ -94,7 +94,7 @@ protected
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, response: response, error: error, internal: internal
     log.id
   rescue StandardError => e
-    notify_honeybadger(e)
+    Honeybadger.notify(e)
   end
 
 end
