@@ -424,7 +424,7 @@ class BullhornController < ApplicationController
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
-        @user.app_logs.create key: key, name: 'Post user to Bullhorn', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         if response.errors.present?
           response.errors.each do |e|
             Honeybadger.notify(
@@ -440,7 +440,7 @@ class BullhornController < ApplicationController
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
-        @user.app_logs.create key: key, name: 'Post user to Bullhorn', endpoint: "enitity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "enitity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
         if response.errors.present?
@@ -556,10 +556,10 @@ class BullhornController < ApplicationController
 
     def upload_cv_to_bullhorn_2(user, client, params)
       @user = user
+      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if params[:user_profile][:upload_path].present?
         if Rails.env.development?
-          key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
           cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
         else
           # UPLOAD PATHS USE CLOUDFRONT URL
@@ -572,6 +572,7 @@ class BullhornController < ApplicationController
 
         file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
         logger.info "--- file_response = #{file_response.inspect}"
+        @user.app_logs.create key: key, name: 'put_candidate_file', endpoint: "file/candidate/#{@user.bullhorn_uid}", message: { attributes: @file_attributes }.to_s, response: file_response.to_s, error: file_response.errors.present?
 
         # PARSE FILE
         candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
@@ -581,6 +582,7 @@ class BullhornController < ApplicationController
           attributes = {}
           attributes['description'] = candidate_data['description']
           response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+          @user.app_logs.create key: key, name: 'update_candidate', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         end
       end
     end
@@ -738,6 +740,7 @@ class BullhornController < ApplicationController
       client.conn.options.timeout = 50 # Oliver will reap a unicorn process if it's waiting for longer than 60 seconds, so we'll only wait for 50
       res = client.conn.get path, client_params
       obj = client.decorate_response JSON.parse(res.body)
+      @bullhorn_setting.app_logs.create key: @key, name: 'get_fields', endpoint: path, message: client_params.to_s, response: obj.to_s, error: obj.errors.present?
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
       # Get nested address fields
