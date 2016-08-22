@@ -68,8 +68,9 @@ class BullhornController < ApplicationController
       get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     end
   rescue StandardError => e
-    @bullhorn_setting.app_logs.create key: @key, name: 'save_settings', response: e.message, error: true, internal: true
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_settings', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    @net_error = log.id
   end
 
   def save_user
@@ -108,8 +109,9 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    @bullhorn_setting.app_logs.create key: @key, name: 'save_user', response: e.message, error: true, internal: true
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'save_user', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
   def get_user
@@ -210,8 +212,9 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    @bullhorn_setting.app_logs.create key: @key, name: 'upload_cv', response: e.message, error: true, internal: true
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'upload_cv', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
   def job_application
@@ -241,8 +244,9 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    @bullhorn_setting.app_logs.create key: @key, name: 'job_application', response: e.message, error: true, internal: true
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'job_application', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
   def jobs
@@ -293,8 +297,9 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
-    @bullhorn_setting.app_logs.create key: @key, name: 'new_search', response: e.message, error: true, internal: true
+    log = @bullhorn_setting.app_logs.create key: @key, name: 'new_search', response: e.message, error: true, internal: true
     notify_honeybadger(e)
+    render json: { success: false, status: "Error ID: #{log.id}" }
   end
 
 
