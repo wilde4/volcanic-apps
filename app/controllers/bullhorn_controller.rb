@@ -334,6 +334,7 @@ class BullhornController < ApplicationController
 
     def post_user_to_bullhorn_2(user, client, params)
       settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      key = Key.find_by(app_dataset_id: params[:user][:dataset_id], app_name: params[:controller])
       field_mappings = settings.bullhorn_field_mappings.user
 
       attributes = {
@@ -423,6 +424,7 @@ class BullhornController < ApplicationController
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
+        @user.app_logs.create key: key, name: 'Post user to Bullhorn', endpoint: "enitity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         if response.errors.present?
           response.errors.each do |e|
             Honeybadger.notify(
@@ -438,6 +440,7 @@ class BullhornController < ApplicationController
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
+        @user.app_logs.create key: key, name: 'Post user to Bullhorn', endpoint: "enitity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
         if response.errors.present?
