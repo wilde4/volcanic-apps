@@ -9,6 +9,11 @@ class EclipseApp
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
+      settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
+      unless settings.present? && settings.settings["Feed URL"].present?
+        puts "No Feed URL configured - skipping"
+        next
+      end
       parse_jobs
     end
 
