@@ -36,7 +36,6 @@ class Arithon::UserService < BaseService
     @contact_attributes               = map_contact_attributes
     # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
     @response = send_request("PushCandidate", @contact_attributes)
-    delete_tmp_cv_file
     Rails.logger.info "--- @response: #{@response.inspect}"
     
     # update user details
@@ -59,7 +58,6 @@ class Arithon::UserService < BaseService
     Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
     # post contact attributes
     @response = send_request("PushCandidate", @contact_attributes)
-    delete_tmp_cv_file
     Rails.logger.info "--- @response = #{@response.inspect}"
     # update user details
   rescue => e
@@ -148,6 +146,7 @@ class Arithon::UserService < BaseService
         request[:request][:data].merge!(file_info_hash) if data.present?
         @response = JSON.parse(RestClient.post(API_ENDPOINT, file_request_hash(request))) # All responses from API return a 200, even those that fail, actual response code is sent in body
         @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: file_request_hash(request).to_s, response: @response.to_s, error: @response["code"] != 200
+        delete_tmp_cv_file
       else
         @response =  HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
         @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: { body: request }.to_s, response: @response.to_s, error: @response["code"] != 200
