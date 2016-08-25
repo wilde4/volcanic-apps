@@ -3,7 +3,7 @@ class SplitFeeController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :edit, :job_form, :job_create]
+  before_action :set_key, only: [:index, :edit, :job_form, :job_create, :shared_candidate_form]
 
   def activate_app
     key = Key.new
@@ -101,6 +101,15 @@ class SplitFeeController < ApplicationController
     end
     render nothing: true, status: 200 and return
   end
+
+
+  def shared_candidate_form
+    @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
+    @salary_bands = @split_fee_setting.salary_bands.lines    
+    @user = JSON.parse(params[:data][:user])
+    render layout: false
+  end
+
 
   def current_split_fee
     value = SplitFee.where(app_dataset_id: params[:dataset_id]).where("expiry_date >= ?", Time.now).sum(:split_fee_value)

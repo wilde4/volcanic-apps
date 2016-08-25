@@ -6,7 +6,7 @@ class FilteredNotificationsController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:send_notification, :job_form, :app_notifications]
+  before_action :set_key, only: [:send_notification, :job_form, :app_notifications, :shared_candidate_form]
 
   after_filter :setup_access_control_origin, only: [:modal_content]
 
@@ -33,6 +33,10 @@ class FilteredNotificationsController < ApplicationController
   end
 
   def job_form
+
+  end
+
+  def shared_candidate_form
 
   end
 
@@ -72,8 +76,22 @@ class FilteredNotificationsController < ApplicationController
       end
 
       @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
+    elsif params[:user].present?
+      data[:discipline] = []
+      data[:key_location] = []
+      data[:search_origin] = "filtered_notifications"
+      data[:per_page] = 1000
 
+      if params[:user][:extra][:filtered_notifications].present?
+        dataset_id = params[:user][:extra][:filtered_notifications][:dataset_id]
+
+        @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
+      end
+
+      @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
     end
+
+
 
 
 

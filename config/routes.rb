@@ -293,6 +293,8 @@ Apps::Application.routes.draw do
     post 'job_expire'       => 'split_fee#job_expire'
     post 'job_destroy'      => 'split_fee#job_destroy'
 
+    get 'shared_candidate_form' => 'split_fee#shared_candidate_form'
+
     get 'current_split_fee' => 'split_fee#current_split_fee'
     get 'get_split_fee'     => 'split_fee#get_split_fee'
   end
@@ -302,7 +304,10 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'filtered_notifications#deactivate_app'
     get "app_notifications" => 'filtered_notifications#app_notifications'
     post "send_notification" => 'filtered_notifications#send_notification'
+    
     get "job_form"          => 'filtered_notifications#job_form'
+    get "shared_candidate_form" => 'filtered_notifications#shared_candidate_form'
+
     post "modal_content"    => 'filtered_notifications#modal_content'
     patch "modal_content"    => 'filtered_notifications#modal_content'
   end
