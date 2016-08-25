@@ -4,7 +4,7 @@
       %input.sr-only{name: "job[extra][filtered_notifications][client_ids][]", value: client["id"], type: "checkbox", checked: true} 
       .client-box
         %img{src: client["logo"]}    
-        -# = client["name"]
+        = client["name"]
         .client-link
           = link_to client['url'], target: "_blank" do
             %i.fa.fa-external-link 

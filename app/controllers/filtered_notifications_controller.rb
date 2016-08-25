@@ -43,17 +43,17 @@ class FilteredNotificationsController < ApplicationController
   def send_notification
     # response = post_to_api("notifications", "trigger_single_notification", {user_id: 181126, notification: "filtered_job_announcement"})
     if params[:job].present? && params[:job][:extra].present? and params[:job][:extra][:filtered_notifications].present?
-
       client_ids = params[:job][:extra][:filtered_notifications][:client_ids]
-
-
       if client_ids.is_a?(Array)
         FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
-
         response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_job_announcement", job_id: params[:job][:id]})
-      end
-      # 485 482
-
+      end      
+    elsif params[:user].present? && params[:user][:extra].present? and params[:user][:extra][:filtered_notifications].present?
+      client_ids = params[:user][:extra][:filtered_notifications][:client_ids]
+      if client_ids.is_a?(Array)
+        # FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
+        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_candidate_announcement", user_id: params[:user][:id]})
+      end   
     end
     render json: { success: true }
   end
@@ -77,7 +77,8 @@ class FilteredNotificationsController < ApplicationController
 
       @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
     elsif params[:user].present?
-      data[:discipline] = []
+      disciplines = params[:user][:discipline_ids]
+      data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
       data[:key_location] = []
       data[:search_origin] = "filtered_notifications"
       data[:per_page] = 1000
@@ -90,9 +91,6 @@ class FilteredNotificationsController < ApplicationController
 
       @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
     end
-
-
-
 
 
 
