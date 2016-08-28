@@ -66,6 +66,17 @@ ActiveRecord::Schema.define(version: 20160714101038) do
     t.datetime "updated_at"
   end
 
+  create_table "bond_adapt_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "username"
+    t.string   "password"
+    t.string   "domain"
+    t.string   "domain_profile"
+    t.string   "endpoint"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "bullhorn_app_settings", force: true do |t|
     t.integer  "dataset_id"
     t.string   "encrypted_bh_username"

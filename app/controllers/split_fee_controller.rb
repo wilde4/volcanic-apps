@@ -84,6 +84,24 @@ class SplitFeeController < ApplicationController
     render nothing: true, status: 200 and return
   end
 
+  def job_expire
+    job_id = params[:job][:id]
+    split_fee = SplitFee.find_by(job_id: job_id)
+    if split_fee.present?
+      split_fee.update_attributes(expiry_date: Date.yesterday)
+    end
+    render nothing: true, status: 200 and return
+  end
+
+  def job_destroy
+    job_id = params[:job][:id]
+    split_fee = SplitFee.find_by(job_id: job_id)
+    if split_fee.present?
+      split_fee.update_attributes(expiry_date: Date.yesterday)
+    end
+    render nothing: true, status: 200 and return
+  end
+
   def current_split_fee
     value = SplitFee.where(app_dataset_id: params[:dataset_id]).where("expiry_date >= ?", Time.now).sum(:split_fee_value)
     respond_to do |format|

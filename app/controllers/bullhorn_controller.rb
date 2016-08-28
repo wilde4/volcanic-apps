@@ -5,7 +5,7 @@ class BullhornController < ApplicationController
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :job_application]
+  before_action :set_key, only: [:index, :job_application, :save_user, :upload_cv, :new_search, :jobs]
   before_action :check_authenticated, except: [:index, :save_settings]
 
   # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
@@ -67,6 +67,9 @@ class BullhornController < ApplicationController
       end
       get_fields(params[:bullhorn_app_setting][:dataset_id]) if @bullhorn_setting.authorised?
     end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @net_error = create_log(@bullhorn_setting, @key, 'save_settings', nil, nil, e.message, true, true)
   end
 
   def save_user
@@ -103,6 +106,11 @@ class BullhornController < ApplicationController
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
     end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'save_user', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def get_user
@@ -201,6 +209,11 @@ class BullhornController < ApplicationController
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
     end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'upload_cv', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def job_application
@@ -228,6 +241,11 @@ class BullhornController < ApplicationController
     else
       render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
     end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'job_application', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def jobs
@@ -276,6 +294,11 @@ class BullhornController < ApplicationController
     else
       render json: { success: false, status: "Note was not created in Bullhorn." }
     end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'new_search', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
 
@@ -334,15 +357,14 @@ class BullhornController < ApplicationController
 
     def post_user_to_bullhorn_2(user, client, params)
       settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      key = Key.find_by(app_dataset_id: params[:user][:dataset_id], app_name: params[:controller])
       field_mappings = settings.bullhorn_field_mappings.user
 
       attributes = {
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
         'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        'status' => settings.status_text.present? ? settings.status_text : 'New Lead',
-        'email' => user.email,
-        'source' => settings.source_text.present? ? settings.source_text : 'Company Website'
+        'email' => user.email
       }
 
       if user.linkedin_profile.present?
@@ -425,6 +447,7 @@ class BullhornController < ApplicationController
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
+        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         if response.errors.present?
           response.errors.each do |e|
             Honeybadger.notify(
@@ -435,9 +458,12 @@ class BullhornController < ApplicationController
           end
         end
       else
+        attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
+        attributes['source'] = settings.source_text.present? ? settings.source_text : 'Company Website'
         logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
         logger.info "--- response = #{response.inspect}"
+        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
         if response.errors.present?
@@ -553,10 +579,10 @@ class BullhornController < ApplicationController
 
     def upload_cv_to_bullhorn_2(user, client, params)
       @user = user
+      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
       logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if params[:user_profile][:upload_path].present?
         if Rails.env.development?
-          key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
           cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
         else
           # UPLOAD PATHS USE CLOUDFRONT URL
@@ -569,6 +595,7 @@ class BullhornController < ApplicationController
 
         file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
         logger.info "--- file_response = #{file_response.inspect}"
+        create_log(@user, key, 'put_candidate_file', "file/candidate/#{@user.bullhorn_uid}", { attributes: @file_attributes.except('fileContent') }.to_s, file_response.to_s, file_response.errors.present?)
 
         # PARSE FILE
         candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
@@ -578,6 +605,7 @@ class BullhornController < ApplicationController
           attributes = {}
           attributes['description'] = candidate_data['description']
           response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+          create_log(@user, key, 'update_candidate', "entity/candidate/#{@user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, response.errors.present?)
         end
       end
     end
@@ -735,6 +763,7 @@ class BullhornController < ApplicationController
       client.conn.options.timeout = 50 # Oliver will reap a unicorn process if it's waiting for longer than 60 seconds, so we'll only wait for 50
       res = client.conn.get path, client_params
       obj = client.decorate_response JSON.parse(res.body)
+      create_log(@bullhorn_setting, @key, 'get_fields', path, client_params.to_s, obj.to_s, obj.errors.present?)
       @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
       # Get nested address fields
@@ -772,9 +801,8 @@ class BullhornController < ApplicationController
 
       @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
     rescue StandardError => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
-      log = @bullhorn_setting.app_logs.create key: @key, name: 'get_fields', endpoint: path, response: e.message, error: true, internal: true
-      notify_honeybadger(e)
-      @net_error = log.id
+      Honeybadger.notify(e)
+      @net_error = create_log(@bullhorn_setting, @key, 'get_fields', nil, nil, e.message, true, true)
     end
 
     def get_country_name(country_id)

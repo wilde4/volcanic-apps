@@ -36,7 +36,6 @@ class Arithon::UserService < BaseService
     @contact_attributes               = map_contact_attributes
     # Rails.logger.info "--- @contact_attributes 4: #{@contact_attributes}"
     @response = send_request("PushCandidate", @contact_attributes)
-    delete_tmp_cv_file
     Rails.logger.info "--- @response: #{@response.inspect}"
     
     # update user details
@@ -59,7 +58,6 @@ class Arithon::UserService < BaseService
     Rails.logger.info "--- @contact_attributes = #{@contact_attributes.inspect}"
     # post contact attributes
     @response = send_request("PushCandidate", @contact_attributes)
-    delete_tmp_cv_file
     Rails.logger.info "--- @response = #{@response.inspect}"
     # update user details
   rescue => e
@@ -94,27 +92,22 @@ class Arithon::UserService < BaseService
   private
     
     def build_tmp_cv_file
-      make_dir
-      File.open(tmp_cv_path, "wb") do |file|
-        file.write(open(cv_path).read)
+
+      # Save file into tempfile from S3
+      uri = URI.parse(cv_path)
+      io = uri.open
+      encoding = io.read.encoding
+      Rails.logger.info " --- Encoding: #{encoding}"
+      filename_array = upload_name.split('.')
+      extension = filename_array.pop
+      filename = filename_array.join('.')
+      @tmp_cv_file = Tempfile.new(["#{filename}-", ".#{extension}"], Rails.root.join('tmp'), encoding: encoding).tap do |f|
+        io.rewind
+        f.write(io.read)
       end
-    end
-    
-    def cv_tmp_folder
-      @cv_tmp_folder ||= "#{Rails.root}/tmp/arithon_cvs"
-    end
-    
-    def make_dir
-      FileUtils.mkdir_p(user_id_tmp_folder_path) unless File.directory?(user_id_tmp_folder_path)
-    end
-    
-    
-    def tmp_cv_path
-      @tmp_cv_path ||= "#{user_id_tmp_folder_path}/#{upload_name}"
-    end
-    
-    def user_id_tmp_folder_path
-     @user_id_tmp_folder_path ||= "#{cv_tmp_folder}/#{@user.user_data['id']}"
+      @tmp_cv_file.rewind
+
+
     end
     
     def cv_path
@@ -139,8 +132,8 @@ class Arithon::UserService < BaseService
     end
     
     def delete_tmp_cv_file
-      File.delete(tmp_cv_path) if File.exist?(tmp_cv_path)
-      FileUtils.rm_rf(user_id_tmp_folder_path) if File.directory?(user_id_tmp_folder_path) && user_id_tmp_folder_path.include?("/tmp/arithon_cvs")
+      @tmp_cv_file.close
+      @tmp_cv_file.unlink
     end
 
     def send_request(command, data=nil)
@@ -153,6 +146,7 @@ class Arithon::UserService < BaseService
         request[:request][:data].merge!(file_info_hash) if data.present?
         @response = JSON.parse(RestClient.post(API_ENDPOINT, file_request_hash(request))) # All responses from API return a 200, even those that fail, actual response code is sent in body
         @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: file_request_hash(request).to_s, response: @response.to_s, error: @response["code"] != 200
+        delete_tmp_cv_file
       else
         @response =  HTTParty.post(API_ENDPOINT, { body: request }) # All responses from API return a 200, even those that fail, actual response code is sent in body
         @user.app_logs.create key: @key, name: command, endpoint: API_ENDPOINT, message: { body: request }.to_s, response: @response.to_s, error: @response["code"] != 200
@@ -162,7 +156,7 @@ class Arithon::UserService < BaseService
     
     def file_request_hash(request)
       if mime_type_is_ok?
-        { authorise: request[:authorise], request: request[:request], attachedFile: file_to_attach }
+        { authorise: request[:authorise], request: request[:request], attachedFile: @tmp_cv_file }
       else
         { authorise: request[:authorise], request: request[:request] }
       end
@@ -183,18 +177,9 @@ class Arithon::UserService < BaseService
     
     def file_info_hash
       if mime_type_is_ok?
-        {file: { name: upload_name, type: cv_mime_type }}
+        {file: { name: @tmp_cv_file.path.split('/').last, type: cv_mime_type }}
       else
         {}
-      end
-    end
-    
-    def file_to_attach
-      if mime_type_is_ok?
-        tmp_cv_file.rewind
-        tmp_cv_file
-      else
-        ""
       end
     end
     
@@ -206,15 +191,10 @@ class Arithon::UserService < BaseService
         @mime_type_is_ok ||= false
       end
     end
-      
-    
-    def tmp_cv_file
-      @tmp_cv_file ||= File.open(tmp_cv_path)
-    end
     
     def cv_mime_type
-      if File.exist?(tmp_cv_path)
-        @cv_mime_type ||= MimeMagic.by_path(tmp_cv_path).type 
+      if @tmp_cv_file.present?
+        @cv_mime_type ||= MimeMagic.by_path(@tmp_cv_file.path).type rescue ""
       else
         ""
       end

@@ -235,6 +235,14 @@ Apps::Application.routes.draw do
     get  "callback"         => 'arithon#callback', as: :arithon_callback
   end
 
+  scope :bond_adapt do
+    post "activate_app"     => 'bond_adapt#activate_app'
+    post "deactivate_app"   => 'bond_adapt#deactivate_app'
+    get  "index"            => 'bond_adapt#index'
+    post "save_settings"    => 'bond_adapt#save_settings'
+    post "save_user"        => 'bond_adapt#save_user'
+  end
+
   scope :job_board do
     post "activate_app"     => 'job_board#activate_app'
     post "deactivate_app"   => 'job_board#deactivate_app'
@@ -282,6 +290,8 @@ Apps::Application.routes.draw do
 
     get 'job_form'          => 'split_fee#job_form'
     post 'job_create'       => 'split_fee#job_create'
+    post 'job_expire'       => 'split_fee#job_expire'
+    post 'job_destroy'      => 'split_fee#job_destroy'
 
     get 'current_split_fee' => 'split_fee#current_split_fee'
     get 'get_split_fee'     => 'split_fee#get_split_fee'
