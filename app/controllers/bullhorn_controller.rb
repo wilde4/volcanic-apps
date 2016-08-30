@@ -6,7 +6,7 @@ class BullhornController < ApplicationController
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
   before_action :set_key, only: [:index, :job_application, :save_user, :upload_cv, :new_search, :jobs]
-  before_action :check_authenticated, except: [:index, :save_settings]
+  before_action :check_authenticated, except: [:index, :save_settings, :activate_app, :deactivate_app]
 
   # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
 
