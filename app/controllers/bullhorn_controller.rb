@@ -1029,7 +1029,8 @@ class BullhornController < ApplicationController
     end
 
     def check_authenticated
-      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      dataset_id = params[:user][:dataset_id] || params[:dataset_id]
+      settings = BullhornAppSetting.find_by(dataset_id: dataset_id)
       unless settings.present? && settings.authorised?
         render json: { error: "Bullhorn app has not been configured." }, status: 403 and return
       end
