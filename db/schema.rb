@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160714101038) do
+ActiveRecord::Schema.define(version: 20160901100359) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -340,6 +340,15 @@ ActiveRecord::Schema.define(version: 20160714101038) do
   end
 
   add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
+
+  create_table "pages_created_per_months", force: true do |t|
+    t.date     "date"
+    t.integer  "site_id"
+    t.integer  "created_pages"
+    t.integer  "total_pages"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"

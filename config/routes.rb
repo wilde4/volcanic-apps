@@ -9,6 +9,15 @@ Apps::Application.routes.draw do
   get 'get-images', :to => "flickr#get_images", :as => :get_images
   get 'author', :to => "google_plus#author", :as => :author
 
+  
+
+  scope :pages_created_per_month do
+    get 'get_pages_created'  => 'pages_created_per_month#get_pages_created', as: :pages_created_per_month
+    get 'calculate_pages_created'  => 'pages_created_per_month#calculate_pages_created', as: :calculate_pages_created
+  end
+
+
+
   scope :referrals do
     get 'index'                 => 'referral#index',                as: :referrals_index
     post "create_referral"      => 'referral#create_referral',      as: :create_referral
