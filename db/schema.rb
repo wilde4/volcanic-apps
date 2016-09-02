@@ -13,17 +13,6 @@
 
 ActiveRecord::Schema.define(version: 20160901100359) do
 
-  create_table "achievements", force: true do |t|
-    t.integer "user_id"
-    t.boolean "signed_up",         default: false
-    t.boolean "downloaded_app",    default: false
-    t.boolean "uploaded_cv",       default: false
-    t.boolean "liked_job",         default: false
-    t.boolean "shared_social",     default: false
-    t.boolean "completed_profile", default: false
-    t.string  "level"
-  end
-
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
     t.string   "loggable_type"
@@ -44,6 +33,17 @@ ActiveRecord::Schema.define(version: 20160901100359) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "apps", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level"
   end
 
   create_table "arithon_settings", force: true do |t|
@@ -342,10 +342,9 @@ ActiveRecord::Schema.define(version: 20160901100359) do
   add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
 
   create_table "pages_created_per_months", force: true do |t|
-    t.date     "date"
-    t.integer  "site_id"
-    t.integer  "created_pages"
-    t.integer  "total_pages"
+    t.string   "url"
+    t.date     "date_added"
+    t.date     "date_deleted"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

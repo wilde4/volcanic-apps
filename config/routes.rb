@@ -14,6 +14,9 @@ Apps::Application.routes.draw do
   scope :pages_created_per_month do
     get 'get_pages_created'  => 'pages_created_per_month#get_pages_created', as: :pages_created_per_month
     get 'calculate_pages_created'  => 'pages_created_per_month#calculate_pages_created', as: :calculate_pages_created
+    post 'update_settings'  => 'pages_created_per_month#update_settings'
+    post "activate_app"     => 'pages_created_per_month#activate_app'
+    post "deactivate_app"   => 'pages_created_per_month#deactivate_app'
   end
 
 
