@@ -17,6 +17,7 @@ class PagesCreatedPerMonthController < ApplicationController
         SELECT COUNT(*)
         FROM `pages_created_per_months`
         WHERE `pages_created_per_months`.`date_deleted` IS NULL
+        AND `pages_created_per_months`.`dataset_id` = #{params[:the_dataset_id]}
         ) as 'Total_Pages',
         
         (
@@ -24,6 +25,7 @@ class PagesCreatedPerMonthController < ApplicationController
         FROM `pages_created_per_months`
         WHERE `pages_created_per_months`.`date_deleted` IS NOT NULL 
         AND `pages_created_per_months`.`date_added` BETWEEN '#{date.beginning_of_month}' AND '#{date.end_of_month}'
+        AND `pages_created_per_months`.`dataset_id` = #{params[:the_dataset_id]}
         ) as 'Deleted_Pages',
         
         (
@@ -31,11 +33,11 @@ class PagesCreatedPerMonthController < ApplicationController
         FROM `pages_created_per_months`
         WHERE `pages_created_per_months`.`date_deleted` IS NULL   
         AND `pages_created_per_months`.`date_added` BETWEEN '#{date.beginning_of_month}' AND '#{date.end_of_month}'
+        AND `pages_created_per_months`.`dataset_id` = #{params[:the_dataset_id]}
         ) as 'Created_Pages'
 
       
       FROM `pages_created_per_months`
-      WHERE `pages_created_per_months`.`dataset_id` = #{params[:the_dataset_id]}
       GROUP BY date_format(`pages_created_per_months`.`date_added`, '%Y-%m-01')
       LIMIT 1;
     "
@@ -92,7 +94,7 @@ class PagesCreatedPerMonthController < ApplicationController
         existing_urls = []
         existing_urls_deleted = []
 
-        PagesCreatedPerMonth.all.each do |page|
+        PagesCreatedPerMonth.where(dataset_id: params[:dataset_id]).each do |page|
           page.date_deleted.blank? ? (existing_urls << page.url) : (existing_urls_deleted << page.url)
         end
 
