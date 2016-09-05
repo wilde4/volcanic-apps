@@ -74,7 +74,7 @@ class PagesCreatedPerMonthController < ApplicationController
 
   def calculate_pages_created
 
-    url = AppSetting.find_by(params[:dataset_id])
+    url = AppSetting.find_by(dataset_id: params[:dataset_id])
     url = (!url.nil? ? url.settings["sitemap"] : nil)
 
     return if url.nil?
@@ -148,8 +148,16 @@ class PagesCreatedPerMonthController < ApplicationController
 
       if response_code == 200
         params[:no_render] = true
+
+        settings = AppSetting.find_by(dataset_id: params[:dataset_id])
+
+        if settings.present?
+          settings.update(settings: params[:settings])
+        else
+          settings = AppSetting.create(dataset_id: params[:dataset_id], settings: params[:settings])
+        end
         calculate_pages_created
-        super
+        render json: { success: true, message: 'Updated App Settings.' }
       else
         render json: { success: false, error: "<b>Error Occurred:</b> URL is invalid" }
       end
