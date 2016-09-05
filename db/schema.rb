@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160901100359) do
+ActiveRecord::Schema.define(version: 20160905083826) do
 
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
@@ -347,6 +347,7 @@ ActiveRecord::Schema.define(version: 20160901100359) do
     t.date     "date_deleted"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "dataset_id"
   end
 
   create_table "referrals", force: true do |t|

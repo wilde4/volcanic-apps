@@ -35,6 +35,7 @@ class PagesCreatedPerMonthController < ApplicationController
 
       
       FROM `pages_created_per_months`
+      WHERE `pages_created_per_months`.`dataset_id` = #{params[:the_dataset_id]}
       GROUP BY date_format(`pages_created_per_months`.`date_added`, '%Y-%m-01')
       LIMIT 1;
     "
@@ -42,13 +43,27 @@ class PagesCreatedPerMonthController < ApplicationController
     
     records_array = ActiveRecord::Base.connection.execute(sql)
 
+    if records_array.size > 0
 
-    json = { 
-      date:          params[:date],
-      total_pages:   records_array.first[0],
-      deleted_pages: records_array.first[1],
-      created_pages: records_array.first[2]
-    }
+      json = { 
+        date:          params[:date],
+        total_pages:   records_array.first[0],
+        deleted_pages: records_array.first[1],
+        created_pages: records_array.first[2]
+      }
+
+    else
+
+      json = { 
+        date:          params[:date],
+        total_pages:   0,
+        deleted_pages: 0,
+        created_pages: 0
+      }
+
+    end
+
+
 
 
     respond_to do |format|
@@ -60,7 +75,9 @@ class PagesCreatedPerMonthController < ApplicationController
   def calculate_pages_created
 
     url = AppSetting.find_by(params[:dataset_id])
-    url = (!url.nil? ? url.settings["sitemap"] : "")
+    url = (!url.nil? ? url.settings["sitemap"] : nil)
+
+    return if url.nil?
 
     status =        200
     created_pages = 0
@@ -87,7 +104,8 @@ class PagesCreatedPerMonthController < ApplicationController
         collection.each do |x|
           PagesCreatedPerMonth.create({
             url: x,
-            date_added: Date.today
+            date_added: Date.today,
+            dataset_id: params[:dataset_id]
           }) 
         end
 
