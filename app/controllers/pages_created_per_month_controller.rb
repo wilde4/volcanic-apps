@@ -151,6 +151,8 @@ class PagesCreatedPerMonthController < ApplicationController
       if response_code == 200
         params[:no_render] = true
 
+        PagesCreatedPerMonth.where(dataset_id: params[:dataset_id]).destroy_all
+
         settings = AppSetting.find_by(dataset_id: params[:dataset_id])
 
         if settings.present?
