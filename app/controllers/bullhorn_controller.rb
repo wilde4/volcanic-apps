@@ -444,6 +444,10 @@ class BullhornController < ApplicationController
 
       # CREATE/UPDATE CANDIDATE
       if bullhorn_id.present?
+        candidate = client.candidate(@user.bullhorn_uid, {})
+        if candidate.data.status == 'Inactive'
+          attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
+        end
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         logger.info "--- response = #{response.inspect}"
