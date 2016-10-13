@@ -11,18 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160714101038) do
-
-  create_table "achievements", force: true do |t|
-    t.integer "user_id"
-    t.boolean "signed_up",         default: false
-    t.boolean "downloaded_app",    default: false
-    t.boolean "uploaded_cv",       default: false
-    t.boolean "liked_job",         default: false
-    t.boolean "shared_social",     default: false
-    t.boolean "completed_profile", default: false
-    t.string  "level"
-  end
+ActiveRecord::Schema.define(version: 20160905083826) do
 
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
@@ -44,6 +33,17 @@ ActiveRecord::Schema.define(version: 20160714101038) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "apps", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level"
   end
 
   create_table "arithon_settings", force: true do |t|
@@ -340,6 +340,15 @@ ActiveRecord::Schema.define(version: 20160714101038) do
   end
 
   add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
+
+  create_table "pages_created_per_months", force: true do |t|
+    t.string   "url"
+    t.date     "date_added"
+    t.date     "date_deleted"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "dataset_id"
+  end
 
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
