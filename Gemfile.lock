@@ -1,5 +1,5 @@
 GIT
-  remote: https://github.com/bobop/bullhorn-rest.git
+  remote: https://github.com/volcanic-uk/bullhorn-rest.git
   revision: 2ce1666267802e149ac7af57b5f8fefb626d1b61
   branch: create_candidates
   specs:
