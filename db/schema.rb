@@ -13,6 +13,17 @@
 
 ActiveRecord::Schema.define(version: 20160905083826) do
 
+  create_table "achievements", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level"
+  end
+
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
     t.string   "loggable_type"
@@ -33,17 +44,6 @@ ActiveRecord::Schema.define(version: 20160905083826) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "apps", force: true do |t|
-    t.integer "user_id"
-    t.boolean "signed_up",         default: false
-    t.boolean "downloaded_app",    default: false
-    t.boolean "uploaded_cv",       default: false
-    t.boolean "liked_job",         default: false
-    t.boolean "shared_social",     default: false
-    t.boolean "completed_profile", default: false
-    t.string  "level"
   end
 
   create_table "arithon_settings", force: true do |t|
