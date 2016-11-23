@@ -13,6 +13,8 @@ Apps::Application.routes.draw do
 
   scope :mercury_xrm do
     get 'mercury_xrm_dashboard'  => 'mercury_xrm#mercury_xrm_dashboard'
+    post "activate_app"     => 'pages_created_per_month#activate_app'
+    post "deactivate_app"   => 'pages_created_per_month#deactivate_app'
   end
 
   
