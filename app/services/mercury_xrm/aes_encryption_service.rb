@@ -2,7 +2,7 @@ require "openssl"
 require "digest/sha2"
 require "base64"
 
-class AesEncryptionService
+class MercuryXrm::AesEncryptionService
 
   def self.encrypt_email(email)
     

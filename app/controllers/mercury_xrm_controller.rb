@@ -8,7 +8,7 @@ class MercuryXrmController < ApplicationController
 
   def _encrypt_email(email)
     return "" if email.blank?
-    return ::AesEncryptionService.encrypt_email(email)
+    return AesEncryptionService.encrypt_email(email)
   end
 
   # user dashboard, checks to see if the Mercury XRM App is enabled
