@@ -303,6 +303,7 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'filtered_notifications#activate_app'
     post "deactivate_app"   => 'filtered_notifications#deactivate_app'
     get "app_notifications" => 'filtered_notifications#app_notifications'
+    get "app_notifications_candidate_shared" => 'filtered_notifications#app_notifications_candidate_shared'
     post "send_notification" => 'filtered_notifications#send_notification'
     
     get "job_form"          => 'filtered_notifications#job_form'
@@ -310,6 +311,13 @@ Apps::Application.routes.draw do
 
     post "modal_content"    => 'filtered_notifications#modal_content'
     patch "modal_content"    => 'filtered_notifications#modal_content'
+  end
+
+  scope :candidate_sharing do
+    post "activate_app"     => 'candidate_sharing#activate_app'
+    post "deactivate_app"   => 'candidate_sharing#deactivate_app'
+    get "app_notifications" => 'candidate_sharing#app_notifications'
+    post "send_notification" => 'candidate_sharing#send_notification'
   end
 
   scope :servicedott do

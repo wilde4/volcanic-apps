@@ -32,15 +32,19 @@ class FilteredNotificationsController < ApplicationController
     end
   end
 
-  def job_form
 
+  def job_form
   end
+
 
   def shared_candidate_form
-
   end
 
+
   def send_notification
+
+    puts "\n\n Sending Notification \n\n"
+
     # response = post_to_api("notifications", "trigger_single_notification", {user_id: 181126, notification: "filtered_job_announcement"})
     if params[:job].present? && params[:job][:extra].present? and params[:job][:extra][:filtered_notifications].present?
       client_ids = params[:job][:extra][:filtered_notifications][:client_ids]
@@ -58,9 +62,13 @@ class FilteredNotificationsController < ApplicationController
     render json: { success: true }
   end
 
+
   def modal_content
+
     data = Hash.new
+
     if params[:job].present?
+
       disciplines = params[:job][:discipline_ids]
       key_locations = params[:job][:key_location_ids]
       # puts disciplines
@@ -75,8 +83,10 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
+      @clients = HTTParty.get("http://#{@key.host}:3000/api/v1/clients/search.json", body: data) if @key.present?
+
     elsif params[:user].present?
+
       disciplines = params[:user][:discipline_ids]
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
       data[:key_location] = []
@@ -89,7 +99,17 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
+      data[:per_page] = 1000
+      
+      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
+      if request.env['SERVER_NAME'].eql? "localhost"
+        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
+      else
+        url = "http://#{@key.host}/api/v1/clients/search.json"
+      end
+
+      
+      @clients = HTTParty.get(url, body: data) if @key.present?
     end
 
 
