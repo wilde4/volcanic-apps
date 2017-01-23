@@ -83,7 +83,14 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      @clients = HTTParty.get("http://#{@key.host}:3000/api/v1/clients/search.json", body: data) if @key.present?
+      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
+      if request.env['SERVER_NAME'].eql? "localhost"
+        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
+      else
+        url = "http://#{@key.host}/api/v1/clients/search.json"
+      end
+
+      @clients = HTTParty.get(url, body: data) if @key.present?
 
     elsif params[:user].present?
 
