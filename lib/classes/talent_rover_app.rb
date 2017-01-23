@@ -49,7 +49,7 @@ class TalentRoverApp
           job_payload["job[job_title]"] = job.xpath("#{posting_language}title").text
           job_payload["job[job_description]"] = job.xpath("#{posting_language}clientdesc").text
         else
-          next
+          1
         end
       end
 
@@ -103,7 +103,7 @@ class TalentRoverApp
           payload = {}
           payload["job[api_key]"] = @key.api_key
           payload["job[job_reference]"] = job['job_reference']
-          response = HTTParty.post("http://#{@key.host}/api/v1/jobs/expire.json", { body: payload })
+          response = HTTParty.post("https://#{@key.host}/api/v1/jobs/expire.json", { body: payload })
           puts "#{response.code} - #{response.read_body}"
         rescue Exception => e
           puts "[FAIL] http.request failed to post Expire payload: #{e}"
@@ -139,7 +139,7 @@ private
       #   http.request(request)
       # end
 
-      response = HTTParty.post("http://#{@key.host}/api/v1/jobs.json", { body: payload })
+      response = HTTParty.post("https://#{@key.host}/api/v1/jobs.json", { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200

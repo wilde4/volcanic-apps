@@ -128,7 +128,7 @@ class JobAdderController < ApplicationController
     if Rails.env.development?
       "http://workmates.localhost.volcanic.co:3000"
     else
-      "http://#{@key.host}"
+      "https://#{@key.host}"
     end
   end
 

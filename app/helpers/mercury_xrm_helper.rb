@@ -1,0 +1,2 @@
+module MercuryXrmHelper
+end

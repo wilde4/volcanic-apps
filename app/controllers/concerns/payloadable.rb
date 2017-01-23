@@ -20,7 +20,6 @@ module Payloadable
       else
         endpoint_str = "http://#{@key.host}/api/v1/#{resource}.json"
       end
-
     end
 
     data = {
