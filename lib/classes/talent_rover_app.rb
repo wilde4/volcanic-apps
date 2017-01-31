@@ -49,7 +49,7 @@ class TalentRoverApp
           job_payload["job[job_title]"] = job.xpath("#{posting_language}title").text
           job_payload["job[job_description]"] = job.xpath("#{posting_language}clientdesc").text
         else
-          1
+          next
         end
       end
 
