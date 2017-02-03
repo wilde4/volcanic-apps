@@ -110,7 +110,7 @@ class MacildowieDaxtraController < ApplicationController
         'X-Aplitrak-Time-Recived' => Time.now.to_formatted_s(:long),
         'X-Aplitrak-Job-Type' => @job.job_type,
         'X-Aplitrak-Salary_form' => @job.job["salary_low"],
-        'X-Aplitrak-Itris_discipline' => @job.disciplines.last["name"]
+        'X-Aplitrak-Itris_discipline' => CGI.unescapeHTML(@job.disciplines.last["reference"])
       }
     end
   end
@@ -130,10 +130,8 @@ class MacildowieDaxtraController < ApplicationController
       soi = "S&M - Sales" if sector_of_interest == 'Sales'
       soi = "Proc - Supply Chain" if sector_of_interest == 'Supply Chain'
       soi = "Proc Warehouse / Logistics" if sector_of_interest == 'Warehouse and Logistics'
-      soi = "PRC - Account Management" if sector_of_interest == 'Work for Macildowie - Account Management'
-      soi = "PRC - Perm" if sector_of_interest == 'Work for Macildowie - Perm Recruitment'
-      soi = "PRC - Talent Pooler" if sector_of_interest == 'Work for Macildowie - Talent Pool'
-      soi = "PRC - Temp" if sector_of_interest == 'Work for Macildowie - Temp Recruitment'
+      soi = "PRC - Experienced" if sector_of_interest == 'Work for Macildowie - Experienced'
+      soi = "PRC - Trainee" if sector_of_interest == 'Work for Macildowie - Trainee'
       return soi
     else
       " "
