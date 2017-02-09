@@ -122,16 +122,16 @@ class MacildowieDaxtraController < ApplicationController
       sector_of_interest = @user.registration_answers["sector-of-interest"]
       soi = sector_of_interest
       soi = "Finance" if sector_of_interest == 'Accountancy & Finance'
-      soi = "Clerical − Non−Finance" if sector_of_interest == 'Commercial & Clerical'
-      soi = "HR − Human Resources" if sector_of_interest == 'HR - Human Resources'
-      soi = "HR − L&D & Training" if sector_of_interest == 'HR - L&D & Training'
-      soi = "HR − Recruitment, Talent & Resourcing" if sector_of_interest == 'HR - Recruitment, Talent & Resourcing'
-      soi = "S&M − Marketing" if sector_of_interest == 'Marketing'
-      soi = "S&M − Sales" if sector_of_interest == 'Sales'
-      soi = "Proc − Supply Chain" if sector_of_interest == 'Supply Chain'
+      soi = "Clerical - Non-Finance" if sector_of_interest == 'Commercial & Clerical'
+      soi = "HR - Human Resources" if sector_of_interest == 'HR - Human Resources'
+      soi = "HR - L&D & Training" if sector_of_interest == 'HR - L&D & Training'
+      soi = "HR - Recruitment, Talent & Resourcing" if sector_of_interest == 'HR - Recruitment, Talent & Resourcing'
+      soi = "S&M - Marketing" if sector_of_interest == 'Marketing'
+      soi = "S&M - Sales" if sector_of_interest == 'Sales'
+      soi = "Proc - Supply Chain" if sector_of_interest == 'Supply Chain'
       soi = "Proc Warehouse / Logistics" if sector_of_interest == 'Warehouse and Logistics'
-      soi = "PRC − Experienced" if sector_of_interest == 'Work for Macildowie - Experienced'
-      soi = "PRC − Trainee" if sector_of_interest == 'Work for Macildowie - Trainee'
+      soi = "PRC - Experienced" if sector_of_interest == 'Work for Macildowie - Experienced'
+      soi = "PRC - Trainee" if sector_of_interest == 'Work for Macildowie - Trainee'
       return soi
     else
       " "
