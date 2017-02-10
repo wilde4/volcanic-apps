@@ -9,6 +9,7 @@ class MacildowieDaxtraController < ApplicationController
       if @user.update(email: params[:user][:email], user_group_name: legacy_user_type, user_profile: @user_profile, registration_answers: params[:registration_answer_hash])
         render json: { success: true, user_id: @user.id }
       else
+        create_log(@user, nil, 'save_user', nil, @user.errors.full_messages.join(', '), nil, true, true)
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
     else
@@ -28,6 +29,7 @@ class MacildowieDaxtraController < ApplicationController
       if @user.save
         render json: { success: true, user_id: @user.id }
       else
+        create_log(@user, nil, 'save_user', nil, @user.errors.full_messages.join(', '), nil, true, true)
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
       end
     end
@@ -43,6 +45,7 @@ class MacildowieDaxtraController < ApplicationController
       )
         render json: { success: true, job_id: @job.id }
       else
+        create_log(@job, nil, 'save_job', nil, @job.errors.full_messages.join(', '), nil, true, true)
         render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
       end
     else
@@ -55,6 +58,7 @@ class MacildowieDaxtraController < ApplicationController
       if @job.save
         render json: { success: true, job_id: @job.id }
       else
+        create_log(@job, nil, 'save_job', nil, @job.errors.full_messages.join(', '), nil, true, true)
         render json: { success: false, status: "Error: #{@job.errors.full_messages.join(', ')}" }
       end
     end
@@ -113,6 +117,7 @@ class MacildowieDaxtraController < ApplicationController
         'X-Aplitrak-Itris_discipline' => CGI.unescapeHTML(@job.disciplines.last["reference"])
       }
     end
+    create_log(@user, nil, 'email_data', nil, { headers: @headers }.to_s, nil, false, true)
   end
 
   private

@@ -91,7 +91,7 @@ protected
   end
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
-    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, response: response, error: error, internal: internal
+    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
     log.id
   rescue StandardError => e
     Honeybadger.notify(e)
