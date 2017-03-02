@@ -1,0 +1,14 @@
+.volcanic_apps.mailchimp-app
+  - if @settings.present? && @settings.access_token.present?
+    .row
+      .col-xs-12
+        %h2 Twitter App
+        %h6 Your account is authorised.
+  - else
+    .row
+      .col-xs-12
+        %h2 Twitter App
+        %p
+          Please click the button below to authorize your account.
+        %br
+        = link_to 'Authorize Access', "/auth/twitter?connection_type=twitter", class: 'btn btn-info btn-lg'
