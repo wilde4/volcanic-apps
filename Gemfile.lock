@@ -143,6 +143,15 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (~> 1.2)
+    omniauth (1.4.2)
+      hashie (>= 1.2, < 4)
+      rack (>= 1.0, < 3)
+    omniauth-oauth (1.1.0)
+      oauth
+      omniauth (~> 1.0)
+    omniauth-twitter (1.4.0)
+      omniauth-oauth (~> 1.1)
+      rack
     polyglot (0.3.4)
     pry (0.10.1)
       coderay (~> 1.1.0)
@@ -277,6 +286,8 @@ DEPENDENCIES
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
   oauth2
+  omniauth
+  omniauth-twitter
   pry-byebug
   rails (= 4.0.1)
   rest-client (~> 1.8)
@@ -292,3 +303,6 @@ DEPENDENCIES
   unicorn
   unicorn-worker-killer
   youtube_it
+
+BUNDLED WITH
+   1.11.2
