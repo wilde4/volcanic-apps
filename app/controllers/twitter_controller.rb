@@ -4,7 +4,9 @@ class TwitterController < ApplicationController
   
   def index
     @settings = TwitterAppSetting.find_by dataset_id: params[:data][:dataset_id]
-    consumer = OAuth::Consumer.new(
+    create_settings if @settings.blank?
+
+    consumer  = OAuth::Consumer.new(
                  'fCVbggypYLV6lYKNG338Emj6N', 
                  'aZuJPIM8yTihW21apa6nO0XC00TeLY91ZWhAle9poVms1zLbfK',
                  site: 'https://api.twitter.com',
@@ -21,6 +23,13 @@ class TwitterController < ApplicationController
   end
   
   def callback
+    redirect_to index_url
+  end
+
+  private
+
+  def create_settings
+    TwitterAppSetting.create(dataset_id: params[:data][:dataset_id])
   end
 
 end

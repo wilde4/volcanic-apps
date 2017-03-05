@@ -225,10 +225,11 @@ Apps::Application.routes.draw do
     post "import_user_group"=> 'mail_chimp#import_user_group', as: :mail_chimp_import_user_group
   end
 
-  
   scope :twitter do
     get 'index', to: 'twitter#index'
     get 'callback', to: 'twitter#callback'
+    post 'activate_app', to: 'twitter#activate_app'
+    post 'deactivate_app', to: 'twitter#deactivate_app'
   end
 
   scope :job_adder do
