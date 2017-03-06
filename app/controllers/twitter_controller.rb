@@ -1,29 +1,40 @@
 class TwitterController < ApplicationController
   protect_from_forgery with: :null_session
   after_filter :setup_access_control_origin
-  
-  def index
-    @settings = TwitterAppSetting.find_by dataset_id: params[:data][:dataset_id]
-    create_settings if @settings.blank?
 
-    consumer  = OAuth::Consumer.new(
-                 'fCVbggypYLV6lYKNG338Emj6N', 
-                 'aZuJPIM8yTihW21apa6nO0XC00TeLY91ZWhAle9poVms1zLbfK',
-                 site: 'https://api.twitter.com',
-                 authorize_path: '/oauth/authenticate',
-                 sign_in: true
-               )
+  def index
+    @setting = TwitterAppSetting.find_by dataset_id: params[:data][:dataset_id]
+    create_settings if @setting.blank?
 
     app_id   = params[:data][:id]
-    base_url = params[:data][:base_url]
-    @request_token = consumer.get_request_token({ oauth_callback: "#{base_url}/admin/apps/#{app_id}/callback" })
-    @authorize_url = @request_token.authorize_url
+    @authorize_url = "/users/auth/twitter?app_id=#{app_id}"
 
     render layout: false
   end
   
   def callback
-    redirect_to index_url
+    @setting = TwitterAppSetting.find_by dataset_id: params[:data][:dataset_id]
+
+    data = params[:data]
+    @setting.update_attributes(access_token: data[:access_token], access_token_secret: data[:access_token_secret])
+
+    respond_to do |format|
+      format.json { render json: { success: true, message: 'Updated App Settings.' } }
+    end
+  end
+
+  def post_tweet
+    @setting = TwitterAppSetting.find_by dataset_id: params[:dataset_id]
+
+    client = Twitter::REST::Client.new do |config|
+      config.consumer_key        = 'fCVbggypYLV6lYKNG338Emj6N'
+      config.consumer_secret     = 'aZuJPIM8yTihW21apa6nO0XC00TeLY91ZWhAle9poVms1zLbfK'
+      config.access_token        = @setting.access_token
+      config.access_token_secret = @setting.access_token_secret
+    end
+    client.update("I'm tweeting with @gem!!!")
+
+    render nothing: true, status: 200 and return
   end
 
   private

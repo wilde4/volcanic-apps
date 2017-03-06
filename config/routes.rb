@@ -230,6 +230,7 @@ Apps::Application.routes.draw do
     get 'callback', to: 'twitter#callback'
     post 'activate_app', to: 'twitter#activate_app'
     post 'deactivate_app', to: 'twitter#deactivate_app'
+    post 'post_tweet', to: 'twitter#post_tweet'
   end
 
   scope :job_adder do

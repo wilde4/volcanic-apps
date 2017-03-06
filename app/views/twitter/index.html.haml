@@ -1,5 +1,5 @@
 .volcanic_apps.mailchimp-app
-  - if @settings.present? && @settings.authorization_code.present?
+  - if @setting.present? && @setting.access_token.present?
     .row
       .col-xs-12
         %h2 Twitter App

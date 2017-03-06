@@ -433,7 +433,8 @@ ActiveRecord::Schema.define(version: 20170302175916) do
 
   create_table "twitter_app_settings", force: true do |t|
     t.integer  "dataset_id"
-    t.string   "authorization_code"
+    t.string   "access_token"
+    t.string   "access_token_secret"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

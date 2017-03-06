@@ -36,8 +36,7 @@ gem 'honeybadger'
 gem 'unicorn'
 gem 'unicorn-worker-killer'
 
-gem 'omniauth'
-gem 'omniauth-twitter'
+gem 'twitter'
 
 #Semrush API gem
 gem 'semrush'
