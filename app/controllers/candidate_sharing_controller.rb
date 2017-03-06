@@ -15,7 +15,7 @@ class CandidateSharingController < ApplicationController
 
     puts "\n\n App Notifications from VA \n\n"
 
-    tags = [:name, :first_name, :last_name]
+    tags = [:candidate_first_name, :candidate_last_name, :candidate_name]
 
     notifications = { filtered_candidate_announcement: {
                         description: "a Candidate is shared",
