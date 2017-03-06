@@ -2,13 +2,19 @@
 
 .volcanic_apps.mailchimp-app
   - if @setting.present? && @setting.access_token.present?
+    .alert.alert-success.alert-styled-left.alert-arrow-left.alert-bordered
+      %span.text-semibold Your account is authorised.
+    %h6.content-group.text-semibold
+      Twitter App
+      %small.display-block Post jobs directly to your twitter timeline.
     .row
       .col-xs-8
-        %h6 Your account is authorised.
-        = simple_form_for @setting, url: url, method: :post, remote: true do |f|
-          = f.hidden_field :dataset_id, value: @setting.dataset_id
-          = f.input :tweet
-          = f.submit class: 'btn btn-primary'
+        .panel
+          .panel-body
+            = simple_form_for @setting, url: url, method: :post, remote: true do |f|
+              = f.hidden_field :dataset_id, value: @setting.dataset_id
+              = f.input :tweet, hint: 'Default Tweet: {{job_title}} - {{job_location}} - {{discipline}}', input_html: { class: 'string required form-control', max: 140 }
+              = f.submit 'Save', class: 'btn btn-primary'
       .col-xs-4
         .panel.panel-default
           .panel-heading Available Tags
@@ -17,10 +23,11 @@
               %li {{job_title}}
               %li {{job_location}}
               %li {{discipline}}
+              %li {{job_url}}
   - else
-    .row
-      .col-xs-12
-        %p
-          Please click the button below to authorize your account.
-        %br
-        = link_to 'Authorize Access', @authorize_url, class: 'btn btn-info btn-lg'
+    .alert.alert-info.alert-styled-left.alert-arrow-left.alert-bordered
+      %span.text-semibold Please click the button below to authorize your account.
+    %h6.content-group.text-semibold
+      Twitter App
+      %small.display-block Post jobs directly to your twitter timeline.
+    = link_to 'Authorize Access', @authorize_url, class: 'btn btn-default btn-lg'

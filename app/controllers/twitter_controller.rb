@@ -33,10 +33,7 @@ class TwitterController < ApplicationController
       config.access_token_secret = @setting.access_token_secret
     end
 
-    job = OpenStruct.new params[:job]
-    discipline = params[:disciplines].first[:name] rescue ''
-
-    tweet = parse_tweet(job, discipline)
+    tweet = parse_tweet(params)
     client.update(tweet)
 
     render nothing: true, status: 200 and return
@@ -59,13 +56,21 @@ class TwitterController < ApplicationController
     TwitterAppSetting.create(dataset_id: params[:data][:dataset_id])
   end
 
-  def parse_tweet(job, discipline)
-    return "#{job.job_title} - #{job.job_location} - #{discipline}" unless @setting.tweet.present?
-    tweet = @setting.tweet
-    tweet = tweet.gsub('{{job_title}}', job.job_title)
-    tweet = tweet.gsub('{{job_location}}', job.job_location)
-    tweet = tweet.gsub('{{discipline}}', discipline)
-    tweet
+  def parse_tweet(params)
+    job = OpenStruct.new params[:job]
+    discipline = params[:disciplines].first[:name] rescue ''
+
+    tweet = "#{job.job_title} - #{job.job_location} - #{discipline} #{params[:job_url]}"
+
+    if @setting.tweet.present?
+      tweet = @setting.tweet
+      tweet = tweet.gsub('{{job_title}}', job.job_title)
+      tweet = tweet.gsub('{{job_location}}', job.job_location)
+      tweet = tweet.gsub('{{discipline}}', discipline)
+      tweet = tweet.gsub('{{job_url}}', params[:job_url])
+    end
+
+    tweet.gsub('-  -', '-')
   end
 
 end
