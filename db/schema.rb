@@ -435,6 +435,7 @@ ActiveRecord::Schema.define(version: 20170302175916) do
     t.integer  "dataset_id"
     t.string   "access_token"
     t.string   "access_token_secret"
+    t.string   "tweet"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -4,6 +4,7 @@ class CreateTwitterAppSettings < ActiveRecord::Migration
       t.integer :dataset_id
       t.string :access_token
       t.string :access_token_secret
+      t.string :tweet
       t.timestamps
     end
   end

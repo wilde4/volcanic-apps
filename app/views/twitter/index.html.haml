@@ -1,13 +1,25 @@
+- url = Rails.env.development? ? 'http://localhost:3001/twitter/update' : 'https://apps.volcanic.co/twitter/update'
+
 .volcanic_apps.mailchimp-app
   - if @setting.present? && @setting.access_token.present?
     .row
-      .col-xs-12
-        %h2 Twitter App
+      .col-xs-8
         %h6 Your account is authorised.
+        = simple_form_for @setting, url: url, method: :post, remote: true do |f|
+          = f.hidden_field :dataset_id, value: @setting.dataset_id
+          = f.input :tweet
+          = f.submit class: 'btn btn-primary'
+      .col-xs-4
+        .panel.panel-default
+          .panel-heading Available Tags
+          .panel-body
+            %ul
+              %li {{job_title}}
+              %li {{job_location}}
+              %li {{discipline}}
   - else
     .row
       .col-xs-12
-        %h2 Twitter App
         %p
           Please click the button below to authorize your account.
         %br
