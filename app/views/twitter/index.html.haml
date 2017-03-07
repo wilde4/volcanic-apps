@@ -2,7 +2,7 @@
 
 .volcanic_apps.mailchimp-app
   - if @setting.present? && @setting.access_token.present?
-    .alert.alert-success.alert-styled-left.alert-arrow-left.alert-bordered
+    .alert.alert-info.alert-styled-left.alert-arrow-left.alert-bordered
       %span.text-semibold Your account is authorised.
     %h6.content-group.text-semibold
       Twitter App
@@ -11,10 +11,11 @@
       .col-xs-8
         .panel
           .panel-body
+            #flash_messages
             = simple_form_for @setting, url: url, method: :post, remote: true do |f|
               = f.hidden_field :dataset_id, value: @setting.dataset_id
-              = f.input :tweet, hint: 'Default Tweet: {{job_title}} - {{job_location}} - {{discipline}}', input_html: { class: 'string required form-control', max: 140 }
-              = f.submit 'Save', class: 'btn btn-primary'
+              = f.input :tweet, placeholder: 'Leave blank to use the default tweet', hint: 'Default Tweet: {{job_title}} - {{job_location}} - {{discipline}} {{job_url}}', input_html: { class: 'string required form-control', max: 140 }
+              = f.submit 'Save', class: 'btn btn-primary', data: { disable_with: 'Saving...' }
       .col-xs-4
         .panel.panel-default
           .panel-heading Available Tags

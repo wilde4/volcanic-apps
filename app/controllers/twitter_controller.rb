@@ -47,7 +47,6 @@ class TwitterController < ApplicationController
     else
       flash[:alert]   = "Settings could not be saved. Please try again."
     end
-    render nothing: true, status: 200 and return
   end
 
   private
