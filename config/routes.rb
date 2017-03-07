@@ -232,6 +232,7 @@ Apps::Application.routes.draw do
     post 'deactivate_app', to: 'twitter#deactivate_app'
     post 'post_tweet', to: 'twitter#post_tweet'
     post 'update', to: 'twitter#update'
+    get 'disable', to: 'twitter#disable'
   end
 
   scope :job_adder do
