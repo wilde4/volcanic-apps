@@ -6,7 +6,7 @@ class FilteredNotificationsController < ApplicationController
 
   after_filter :setup_access_control_origin
 
-  before_action :set_key, only: [:send_notification, :job_form, :app_notifications]
+  before_action :set_key, only: [:send_notification, :job_form, :app_notifications, :shared_candidate_form]
 
   after_filter :setup_access_control_origin, only: [:modal_content]
 
@@ -32,31 +32,43 @@ class FilteredNotificationsController < ApplicationController
     end
   end
 
-  def job_form
 
+  def job_form
   end
 
+
+  def shared_candidate_form
+  end
+
+
   def send_notification
+
+    puts "\n\n Sending Notification \n\n"
+
     # response = post_to_api("notifications", "trigger_single_notification", {user_id: 181126, notification: "filtered_job_announcement"})
     if params[:job].present? && params[:job][:extra].present? and params[:job][:extra][:filtered_notifications].present?
-
       client_ids = params[:job][:extra][:filtered_notifications][:client_ids]
-
-
       if client_ids.is_a?(Array)
         FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
-
         response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_job_announcement", job_id: params[:job][:id]})
-      end
-      # 485 482
-
+      end      
+    elsif params[:user].present? && params[:user][:extra].present? and params[:user][:extra][:filtered_notifications].present?
+      client_ids = params[:user][:extra][:filtered_notifications][:client_ids]
+      if client_ids.is_a?(Array)
+        # FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
+        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_candidate_announcement", user_id: params[:user][:id]})
+      end   
     end
     render json: { success: true }
   end
 
+
   def modal_content
+
     data = Hash.new
+
     if params[:job].present?
+
       disciplines = params[:job][:discipline_ids]
       key_locations = params[:job][:key_location_ids]
       # puts disciplines
@@ -71,10 +83,41 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      @clients = HTTParty.get("http://#{@key.host}/api/v1/clients/search.json", body: data) if @key.present?
+      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
+      if request.env['SERVER_NAME'].eql? "localhost"
+        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
+      else
+        url = "http://#{@key.host}/api/v1/clients/search.json"
+      end
 
+      @clients = HTTParty.get(url, body: data) if @key.present?
+
+    elsif params[:user].present?
+
+      disciplines = params[:user][:discipline_ids]
+      data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
+      data[:key_location] = []
+      data[:search_origin] = "filtered_notifications"
+      data[:per_page] = 1000
+
+      if params[:user][:extra][:filtered_notifications].present?
+        dataset_id = params[:user][:extra][:filtered_notifications][:dataset_id]
+
+        @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
+      end
+
+      data[:per_page] = 1000
+      
+      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
+      if request.env['SERVER_NAME'].eql? "localhost"
+        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
+      else
+        url = "http://#{@key.host}/api/v1/clients/search.json"
+      end
+
+      
+      @clients = HTTParty.get(url, body: data) if @key.present?
     end
-
 
 
 
