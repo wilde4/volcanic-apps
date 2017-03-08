@@ -101,20 +101,11 @@ class SplitFeeController < ApplicationController
     render nothing: true, status: 200 and return
   end
 
-
-  def shared_candidate_form
-    @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
-    @user = JSON.parse(params[:data][:user])
-    render layout: false
-  end
-
-
   def current_split_fee
     value = SplitFee.where(app_dataset_id: params[:dataset_id]).where("expiry_date >= ?", Time.now).sum(:split_fee_value)
     respond_to do |format|
       format.json { render json: { success: true, total: value } }
     end
-
   end
 
   def get_split_fee
@@ -124,11 +115,14 @@ class SplitFeeController < ApplicationController
     end
   end
 
+  def shared_candidate_form
+    @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
+    @user = JSON.parse(params[:data][:user])
+    render layout: false
+  end
+
   protected
     def split_fee_setting_params
       params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
     end
-
-  
-
 end
