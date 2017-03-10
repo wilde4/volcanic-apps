@@ -37,7 +37,7 @@ class CandidateSharingController < ApplicationController
     if params[:user].present? && params[:user][:extra].present? and params[:user][:extra][:filtered_notifications].present?
       client_ids = params[:user][:extra][:filtered_notifications][:client_ids]
       if client_ids.is_a?(Array)
-        # FilteredNotificationSending.create(job_id: params[:job][:id], client_ids: client_ids)
+        FilteredNotificationSending.create(user_id: params[:user][:id], client_ids: client_ids)
         response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_candidate_announcement", user_id: params[:user][:id]})
       end   
     end

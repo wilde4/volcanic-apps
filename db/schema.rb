@@ -11,18 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160905083826) do
-
-  create_table "achievements", force: true do |t|
-    t.integer "user_id"
-    t.boolean "signed_up",         default: false
-    t.boolean "downloaded_app",    default: false
-    t.boolean "uploaded_cv",       default: false
-    t.boolean "liked_job",         default: false
-    t.boolean "shared_social",     default: false
-    t.boolean "completed_profile", default: false
-    t.string  "level"
-  end
+ActiveRecord::Schema.define(version: 20170310092552) do
 
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
@@ -44,6 +33,17 @@ ActiveRecord::Schema.define(version: 20160905083826) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
+  end
+
+  create_table "apps", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level"
   end
 
   create_table "arithon_settings", force: true do |t|
@@ -200,6 +200,7 @@ ActiveRecord::Schema.define(version: 20160905083826) do
     t.text     "client_ids"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "user_id"
   end
 
   create_table "inventories", force: true do |t|
@@ -428,6 +429,7 @@ ActiveRecord::Schema.define(version: 20160905083826) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "split_fee_value"
+    t.integer  "user_id"
   end
 
   create_table "text_local_logs", force: true do |t|

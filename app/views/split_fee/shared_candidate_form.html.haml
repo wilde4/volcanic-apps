@@ -1,47 +1,16 @@
 %h4 Split Fee
 .form-group= @split_fee_setting.details.html_safe
--# .form-group
--#   %label Salary Band
--#   %select.form-control#split-fee-band{name: "job[extra][split_fee][salary_band]"}
--#     - @salary_bands.each do |band|
--#       -if @job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? && @job["extra"]["split_fee"]["salary_band"] == band
--#         %option{value: band, selected: "selected"}= band
--#       -else
--#         %option{value: band}= band
 
 .form-group
   .required
     %label.required
       %abbr{title: "Required"} *
       Fee Percentage
-    %input.form-control#split-fee-percentage{type: "number", name: "user[extra][split_fee][fee_percentage]", required: true}
-.form-group
-  %label 
-    Approximate Total Fee:
-    %span#split-fee-approx-total
+    %input.form-control#split-fee-percentage{type: "number", name: "user[extra][split_fee][fee_percentage]", required: true, value: @user.nil? ? "" : @user.fee_percentage}
+
 .form-group
   .required
     %label.required
       %abbr{title: "Required"} *
       Split Fee Terms
-    %textarea.form-control{name: "user[extra][split_fee][terms_of_fee]", required: true, rows: 6}= (@job.present? && @job["extra"].present? && @job["extra"]["split_fee"].present? ? @job["extra"]["split_fee"]["terms_of_fee"] : "")
-
-:javascript
-  $(document).ready(function(){
-    calculateFee();
-    $("#job_salary_high, #split-fee-percentage").change(function(){
-      calculateFee();
-    });
-
-    function calculateFee(){
-      band = $("#job_salary_high").val();
-      percent = $("#split-fee-percentage").val();
-
-      if( band && percent){
-        var fee = (band / 100) * percent;
-        $("span#split-fee-approx-total").text("£" + fee);
-      }
-    };
-
-  });
-  
+    %textarea.form-control{name: "user[extra][split_fee][terms_of_fee]", required: true, rows: 6}= @user.nil? ? "" : @user.terms_of_fee
