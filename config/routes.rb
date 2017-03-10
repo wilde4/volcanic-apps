@@ -313,10 +313,12 @@ Apps::Application.routes.draw do
     post 'job_expire'       => 'split_fee#job_expire'
     post 'job_destroy'      => 'split_fee#job_destroy'
 
-    get 'shared_candidate_form' => 'split_fee#shared_candidate_form'
-
     get 'current_split_fee' => 'split_fee#current_split_fee'
     get 'get_split_fee'     => 'split_fee#get_split_fee'
+
+    get  'shared_candidate_form' =>     'split_fee#shared_candidate_form'
+    post 'shared_candidate_create' =>   'split_fee#shared_candidate_create'
+    post 'shared_candidate_destroy' =>  'split_fee#shared_candidate_destroy'
   end
 
   scope :filtered_notifications do
