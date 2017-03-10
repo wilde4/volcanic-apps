@@ -130,9 +130,10 @@ class SplitFeeController < ApplicationController
 
     if u.nil?
       SplitFee.create(
-        user_id:        params[:user][:id].to_i,
-        terms_of_fee:   params[:user][:split_fee][:terms_of_fee],
-        fee_percentage: params[:user][:split_fee][:fee_percentage].to_i
+        user_id:         params[:user][:id].to_i,
+        app_dataset_id:  params[:apikey][:dataset_id],
+        terms_of_fee:    params[:user][:split_fee][:terms_of_fee],
+        fee_percentage:  params[:user][:split_fee][:fee_percentage].to_i
       )
     else
       u.update_attributes(
