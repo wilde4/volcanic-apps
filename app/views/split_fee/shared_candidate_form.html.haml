@@ -1,13 +1,4 @@
 %h4 Split Fee
-.form-group= @split_fee_setting.details.html_safe
-
-.form-group
-  .required
-    %label.required
-      %abbr{title: "Required"} *
-      Fee Percentage
-    %input.form-control#split-fee-percentage{type: "number", name: "user[extra][split_fee][fee_percentage]", required: true, value: @user.nil? ? "" : @user.fee_percentage}
-
 .form-group
   .required
     %label.required
