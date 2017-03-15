@@ -10,7 +10,14 @@ class TwitterController < ApplicationController
     @client   = get_client if @setting.present? && @setting.access_token.present?
     @base_url = params[:data][:original_url]
     @authorize_url = "/users/auth/twitter?app_authentication=true&app_id=#{app_id}"
+    @client_name   = @client.user.screen_name.dup.insert(0,'@') if @client.present?
 
+    render layout: false
+  rescue Twitter::Error::Unauthorized => e
+    if e.to_s == 'Invalid or expired token.'
+      @setting.destroy
+      @setting = nil
+    end
     render layout: false
   end
   

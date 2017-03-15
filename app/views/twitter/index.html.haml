@@ -4,7 +4,7 @@
 .volcanic_apps.mailchimp-app
   - if @setting.present? && @setting.access_token.present?
     .alert.alert-info.alert-styled-left.alert-arrow-left.alert-bordered
-      %span.text-semibold Your account #{@client.user.screen_name.dup.insert(0,'@')} is authorised.
+      %span.text-semibold Your account #{@client_name} is authorised.
     .row
       .col-xs-8
         %h4.content-group.text-semibold
