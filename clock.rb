@@ -43,8 +43,8 @@ module Clockwork
     BullhornJobImport.delete_jobs
   end
   
-  every(1.day, 'send_activity_logs_to_oliver_james', at: '23:30') do 
-    BondAdapt::ActiveUserService.new(118).send_activity_logs_for_active_users #only used for oliver james hence hard coded 118 app_dataset_id
-  end
+  # every(1.day, 'send_activity_logs_to_oliver_james', at: '23:30') do 
+  #   BondAdapt::ActiveUserService.new(118).send_activity_logs_for_active_users #only used for oliver james hence hard coded 118 app_dataset_id
+  # end
   
 end
