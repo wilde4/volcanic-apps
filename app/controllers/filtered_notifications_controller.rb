@@ -94,9 +94,11 @@ class FilteredNotificationsController < ApplicationController
 
     elsif params[:user].present?
 
+      key_locations = params[:other][:key_locations]
+
       disciplines = params[:user][:discipline_ids]
       data[:discipline_id] = disciplines.reject { |e| e.to_s.empty? }.join("|") if disciplines.present?
-      data[:key_location] = []
+      data[:secondary_key_location_id] = key_locations.reject { |e| e.to_s.empty? }.join("|") if key_locations.present?
       data[:search_origin] = "filtered_notifications"
       data[:per_page] = 1000
 
