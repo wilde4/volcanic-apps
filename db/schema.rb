@@ -13,6 +13,17 @@
 
 ActiveRecord::Schema.define(version: 20170310092552) do
 
+  create_table "achievements", force: true do |t|
+    t.integer "user_id"
+    t.boolean "signed_up",         default: false
+    t.boolean "downloaded_app",    default: false
+    t.boolean "uploaded_cv",       default: false
+    t.boolean "liked_job",         default: false
+    t.boolean "shared_social",     default: false
+    t.boolean "completed_profile", default: false
+    t.string  "level"
+  end
+
   create_table "app_logs", force: true do |t|
     t.integer  "loggable_id"
     t.string   "loggable_type"
@@ -33,25 +44,6 @@ ActiveRecord::Schema.define(version: 20170310092552) do
   create_table "app_settings", force: true do |t|
     t.integer "dataset_id"
     t.text    "settings"
-  end
-
-  create_table "apps", force: true do |t|
-    t.integer "user_id"
-    t.boolean "signed_up",         default: false
-    t.boolean "downloaded_app",    default: false
-    t.boolean "uploaded_cv",       default: false
-    t.boolean "liked_job",         default: false
-    t.boolean "shared_social",     default: false
-    t.boolean "completed_profile", default: false
-    t.string  "level"
-  end
-
-  create_table "arithon_settings", force: true do |t|
-    t.integer  "dataset_id"
-    t.string   "api_key"
-    t.string   "company_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
   end
 
   create_table "arithon_users", force: true do |t|
@@ -437,6 +429,15 @@ ActiveRecord::Schema.define(version: 20170310092552) do
     t.string   "mobile_number"
     t.text     "message"
     t.string   "sender"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "twitter_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "access_token"
+    t.string   "access_token_secret"
+    t.string   "tweet"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
