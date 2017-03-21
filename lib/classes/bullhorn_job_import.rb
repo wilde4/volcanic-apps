@@ -62,7 +62,14 @@ class BullhornJobImport
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
-      if settings.uses_public_filter? && job.isPublic == 0 
+      if settings.uses_public_filter? && job.isPublic == 0
+
+        #make sure the job is deleted if already published in Volcanic
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
+        @job_payload['job[job_reference]'] = job.id
+        post_payload_for_delete(@job_payload)
+
         @non_public_jobs_count = ( @non_public_jobs_count + 1 ) 
         next 
       end
