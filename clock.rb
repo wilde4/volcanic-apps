@@ -18,29 +18,24 @@ module Clockwork
   # every(1.hour, 'hourly.job')
 
   every(1.month, 'send_referral_email.job') do
-    SendReferralEmail.send_funds_email(18)
+    ReferralEmail.perform_async({})
   end
   
   every(1.day, 'get_semrush_data.job') do
-    SemrushAppSettings.all.each do |semrush_setting|
-      if !semrush_setting.has_records? || semrush_setting.day_of_petition? || !semrush_setting.last_petition_at.present?
-        SaveSemrushData.save_data(semrush_setting.id)
-      end
-    end
+    SemrushWorker.perform_async({})
   end
 
   # JOB IMPORTS
   every(1.hour, 'poll_talentrover_feed.job') do
-    TalentRoverApp.poll_jobs_feed
+    TalentRoverWorker.perform_async({})
   end
   
   every(1.hour, 'poll_eclipse_feed.job', at: '**:30') do
-    EclipseApp.poll_jobs_feed
+    EclipseAppWorker.perform_async({})
   end
   
   every(1.hour, 'poll_bullhorn.job', at: '**:45') do
-    BullhornJobImport.import_jobs
-    BullhornJobImport.delete_jobs
+    BullhornWorker.perform_async({})
   end
   
   # every(1.day, 'send_activity_logs_to_oliver_james', at: '23:30') do 
