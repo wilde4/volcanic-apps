@@ -16,10 +16,6 @@ module Clockwork
   # every(10.seconds, 'frequent.job')
   # every(3.minutes, 'less.frequent.job')
   # every(1.hour, 'hourly.job')
-
-  every(1.month, 'send_referral_email.job') do
-    ReferralEmail.perform_async({})
-  end
   
   every(1.day, 'get_semrush_data.job') do
     SemrushWorker.perform_async({})
