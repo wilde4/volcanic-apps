@@ -26,7 +26,7 @@ module Clockwork
   end
 
   # JOB IMPORTS
-  every(1.hour, 'poll_talentrover_feed.job') do
+  every(1.hour, 'poll_talentrover_feed.job', at: '**:15') do
     TalentRoverWorker.perform_async({})
   end
   
