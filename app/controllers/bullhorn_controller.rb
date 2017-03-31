@@ -380,7 +380,8 @@ class BullhornController < ApplicationController
       field_mappings.each do |fm|
         # logger.info "--- fm.bullhorn_field_name = #{fm.bullhorn_field_name}"
         # TIMESTAMPS
-        answer = user.registration_answers[fm.registration_question_reference] rescue nil
+        answer = user.registration_answers["#{fm.registration_question_reference}_array"] || user.registration_answers[fm.registration_question_reference] rescue nil
+        answer.delete_if(&:blank?) if answer.is_a?(Array)
         # logger.info "--- raw answer = #{answer}"
       
         case fm.bullhorn_field_name
