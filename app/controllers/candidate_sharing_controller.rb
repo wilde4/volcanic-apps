@@ -18,7 +18,7 @@ class CandidateSharingController < ApplicationController
     notifications = { filtered_candidate_announcement: {
                         description: "a Candidate is shared",
                         targets: [:user, :custom],
-                        tags: [:'client.name', :'client.phone_number', :'user.name', :candidate_sharing_url],
+                        tags: [:'client.name', :'client.phone_number', :'current_user.name', :candidate_sharing_url],
                         team_shared_candidate: true
                       }
                     }
@@ -37,7 +37,7 @@ class CandidateSharingController < ApplicationController
       client_ids = params[:user][:extra][:filtered_notifications][:client_ids]
       if client_ids.is_a?(Array)
         FilteredNotificationSending.create(user_id: params[:user][:id], client_ids: client_ids)
-        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_candidate_announcement", user_id: params[:user][:id], team_shared_candidate: true})
+        response = post_to_api("notifications", "trigger_clients_notification", {client_ids: client_ids, notification: "filtered_candidate_announcement", user_id: params[:user][:id], team_shared_candidate: true, team_current_user: params[:current_user][:id]})
       end   
     end
     render json: { success: true }
