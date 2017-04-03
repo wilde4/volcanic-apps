@@ -18,7 +18,7 @@ class CandidateSharingController < ApplicationController
     notifications = { filtered_candidate_announcement: {
                         description: "a Candidate is shared",
                         targets: [:user, :custom],
-                        tags: [:'client.name', :'client.phone_number', :'current_user.name', :candidate_sharing_url],
+                        tags: [:member_client, :member_name, :member_phone_number, :candidate_sharing_url],
                         team_shared_candidate: true
                       }
                     }
