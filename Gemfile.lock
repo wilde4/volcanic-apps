@@ -46,6 +46,7 @@ GEM
       jmespath (~> 1.0)
     bootstrap-sass (3.2.0.1)
       sass (~> 3.2)
+    buftok (0.2.0)
     builder (3.1.4)
     byebug (3.5.1)
       columnize (~> 0.8)
@@ -88,6 +89,7 @@ GEM
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
     encryptor (1.3.0)
+    equalizer (0.0.11)
     erubis (2.7.0)
     excon (0.33.0)
     execjs (2.0.2)
@@ -118,8 +120,11 @@ GEM
     honeybadger (1.16.2)
       json
     htmlentities (4.3.2)
+    http (0.6.4)
+      http_parser.rb (~> 0.6.0)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
+    http_parser.rb (0.6.0)
     httparty (0.13.7)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
@@ -143,6 +148,8 @@ GEM
     mandrill-api (1.0.51)
       excon (>= 0.16.0, < 1.0)
       json (>= 1.7.7, < 2.0)
+    memoizable (0.4.2)
+      thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
     mime-types (1.25.1)
     mimemagic (0.3.1)
@@ -151,6 +158,7 @@ GEM
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     mysql2 (0.3.18)
+    naught (1.1.0)
     netrc (0.11.0)
     newrelic_rpm (3.7.2.195)
     nokogiri (1.5.11)
@@ -244,6 +252,17 @@ GEM
       polyglot (>= 0.3.1)
     turbolinks (2.2.2)
       coffee-rails
+    twitter (5.11.0)
+      addressable (~> 2.3)
+      buftok (~> 0.2.0)
+      equalizer (~> 0.0.9)
+      faraday (~> 0.9.0)
+      http (~> 0.6.0)
+      http_parser.rb (~> 0.6.0)
+      json (~> 1.8)
+      memoizable (~> 0.4.0)
+      naught (~> 1.0)
+      simple_oauth (~> 0.2.0)
     tzinfo (0.3.42)
     uglifier (2.5.0)
       execjs (>= 0.3.0)
@@ -315,6 +334,7 @@ DEPENDENCIES
   sqlite3
   stringex
   turbolinks
+  twitter
   uglifier (>= 1.3.0)
   unicorn
   unicorn-worker-killer

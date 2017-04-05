@@ -1,0 +1,45 @@
+- url = Rails.env.development? ? 'http://localhost:3001/twitter/update' : 'https://apps.volcanic.co/twitter/update'
+- disable_url = Rails.env.development? ? 'http://localhost:3001/twitter/disable' : 'https://apps.volcanic.co/twitter/disable'
+
+.volcanic_apps.mailchimp-app
+  - if @setting.present? && @setting.access_token.present?
+    .alert.alert-info.alert-styled-left.alert-arrow-left.alert-bordered
+      %span.text-semibold Your account #{@client_name} is authorised.
+    .row
+      .col-xs-8
+        %h4.content-group.text-semibold
+          Twitter App
+          %small.display-block Post jobs directly to your twitter timeline.
+      .col-xs-4
+        = link_to 'Disable', "#{disable_url}?dataset_id=#{@setting.dataset_id}&callback=#{@base_url}", class: 'btn btn-sm btn-danger pull-right mt-15', data: { confirm: 'Are you sure?' }
+    .row
+      .col-xs-8
+        .panel
+          .panel-body
+            #flash_messages
+            = simple_form_for @setting, url: url, method: :post, remote: true do |f|
+              = f.hidden_field :dataset_id, value: @setting.dataset_id
+              = f.input :tweet, placeholder: 'Leave blank to use the default tweet', hint: 'Default Tweet: {{job_title}} - {{job_location}} - {{discipline}} {{job_url}}', input_html: { class: 'string required form-control', max: 140 }
+              = f.submit 'Save', class: 'btn btn-primary', data: { disable_with: 'Saving...' }
+      .col-xs-4
+        .panel.panel-default
+          .panel-heading Available Tags
+          .panel-body
+            %ul
+              %li {{job_title}}
+              %li {{job_location}}
+              %li {{discipline}}
+              %li {{job_url}}
+  - else
+    .alert.alert-info.alert-styled-left.alert-arrow-left.alert-bordered
+      %span.text-semibold Please click the button below to authorize your account.
+    .row
+      .col-xs-6
+        %h4.content-group.text-semibold
+          Twitter App
+          %small.display-block Post jobs directly to your twitter timeline.
+        = link_to 'Authorize Access', @authorize_url, class: 'btn btn-default btn-lg'
+        .has-error
+          %p.help-block
+            %i.icon-spam
+            Be sure to use your Company Twitter account. If for some reason you authorize a wrong account you always can disable the App and authorize a different account.
