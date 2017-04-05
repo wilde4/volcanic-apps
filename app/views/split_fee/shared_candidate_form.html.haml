@@ -1,0 +1,7 @@
+%h4 Split Fee
+.form-group
+  .required
+    %label.required
+      %abbr{title: "Required"} *
+      Split Fee Terms
+    %textarea.form-control{name: "user[extra][split_fee][terms_of_fee]", required: true, rows: 6}= @user.nil? ? "" : @user.terms_of_fee

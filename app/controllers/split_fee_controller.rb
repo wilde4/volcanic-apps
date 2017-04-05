@@ -3,7 +3,7 @@ class SplitFeeController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
-  before_action :set_key, only: [:index, :edit, :job_form, :job_create]
+  before_action :set_key, only: [:index, :edit, :job_form, :job_create, :shared_candidate_form]
 
   def activate_app
     key = Key.new
@@ -53,7 +53,6 @@ class SplitFeeController < ApplicationController
 
   def job_form
     @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
-    @salary_bands = @split_fee_setting.salary_bands.lines    
     @job = JSON.parse(params[:data][:job])
     render layout: false
   end
@@ -107,7 +106,6 @@ class SplitFeeController < ApplicationController
     respond_to do |format|
       format.json { render json: { success: true, total: value } }
     end
-
   end
 
   def get_split_fee
@@ -117,11 +115,56 @@ class SplitFeeController < ApplicationController
     end
   end
 
+
+
+
+  def shared_candidate_form
+    @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
+    @user = _get_shared_canddiate( JSON.parse(params["data"]["user"])["id"] )
+    render layout: false
+  end
+
+  def shared_candidate_create
+
+    u = _get_shared_canddiate(params[:user][:id])
+
+    if u.nil?
+      SplitFee.create(
+        user_id:         params[:user][:id].to_i,
+        app_dataset_id:  params[:apikey][:dataset_id],
+        terms_of_fee:    params[:user][:split_fee][:terms_of_fee],
+        fee_percentage:  params[:user][:split_fee][:fee_percentage].to_i
+      )
+    else
+      u.update_attributes(
+        terms_of_fee:   params[:user][:split_fee][:terms_of_fee],
+        fee_percentage: params[:user][:split_fee][:fee_percentage].to_i
+      )
+    end
+
+    render nothing: true, status: 200 and return
+  end
+
+  def shared_candidate_destroy
+    
+    u = _get_shared_canddiate(params[:user][:id])
+
+    if !u.nil?
+      u.update_attributes(expiry_date: Date.yesterday)
+    end
+
+    render nothing: true, status: 200 and return
+  end
+
+  # need to add methods for SCF: Create, Delete, Update...
+
   protected
+
+    def _get_shared_canddiate(user_id)
+      return (user_id.nil? ? SplitFee.new : SplitFee.find_by(user_id: user_id))
+    end
+
     def split_fee_setting_params
       params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
     end
-
-  
-
 end
