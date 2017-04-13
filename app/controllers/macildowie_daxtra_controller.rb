@@ -134,7 +134,7 @@ class MacildowieDaxtraController < ApplicationController
       soi = "S&M - Marketing" if sector_of_interest == 'Marketing'
       soi = "S&M - Sales" if sector_of_interest == 'Sales'
       soi = "Proc - Supply Chain" if sector_of_interest == 'Supply Chain'
-      soi = "Proc - Warehouse / Logistics" if sector_of_interest == 'Warehouse and Logistics'
+      soi = "Proc - Warehouse and Logistics" if sector_of_interest == 'Warehouse and Logistics'
       soi = "Proc - Procurement" if sector_of_interest == 'Procurement'
       soi = "PRC - Experienced" if sector_of_interest == 'Work for Macildowie - Experienced'
       soi = "PRC - Trainee" if sector_of_interest == 'Work for Macildowie - Trainee'
