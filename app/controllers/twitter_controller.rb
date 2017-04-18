@@ -35,10 +35,12 @@ class TwitterController < ApplicationController
   def post_tweet
     @setting = TwitterAppSetting.find_by dataset_id: params[:dataset_id]
 
-    if @setting.present? && @setting.access_token.present?
-      client = get_client
-      tweet = parse_tweet(params)
-      client.update(tweet)
+    if params[:job].present? && @setting.present? && @setting.access_token.present?
+      unless @setting.only_featured? && params[:job][:hot] == false
+        client = get_client
+        tweet = parse_tweet(params)
+        client.update(tweet)
+      end
     end
 
     render nothing: true, status: 200 and return
