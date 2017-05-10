@@ -30,7 +30,7 @@ module Clockwork
     EclipseAppWorker.perform_async({})
   end
   
-  every(1.hour, 'poll_bullhorn.job', at: '**:45') do
+  every(2.hours, 'poll_bullhorn.job', at: '**:45') do
     BullhornWorker.perform_async({})
   end
   
