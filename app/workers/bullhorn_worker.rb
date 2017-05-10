@@ -6,8 +6,8 @@ class BullhornWorker
   shoryuken_options queue: queue, body_parser: :json, auto_visibility_timeout: true
 
   def perform(sqs_msg, msg)
-    BullhornJobImport.import_jobs
-    BullhornJobImport.delete_jobs
+    BullhornJobImport.new.import_jobs
+    BullhornJobImport.new.delete_jobs
     sqs_msg.delete
   rescue StandardError => e
     sqs_msg.delete

@@ -1,7 +1,7 @@
-# BullhornJobImport.import_jobs
-# BullhornJobImport.delete_jobs
+# BullhornJobImport.new.import_jobs
+# BullhornJobImport.new.delete_jobs
 class BullhornJobImport
-  def self.import_jobs
+  def import_jobs
     puts '- BEGIN import_jobs'
 
     # Find who has registered to use TR:
@@ -30,7 +30,7 @@ class BullhornJobImport
     puts '- END import_jobs'
   end
 
-  def self.delete_jobs
+  def delete_jobs
     puts '- BEGIN delete_jobs'
 
     # Find who has registered to use TR:
@@ -54,7 +54,7 @@ class BullhornJobImport
     puts '- END delete_jobs'
   end
 
-  def self.parse_jobs(client)
+  def parse_jobs(client)
     settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
     field_mappings = settings.bullhorn_field_mappings.job
     
@@ -162,7 +162,7 @@ class BullhornJobImport
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
   end
 
-  def self.parse_jobs_for_delete(client)
+  def parse_jobs_for_delete(client)
     @job_data = query_job_orders(client, true)
     # jobs = @job_data.xpath("//item")
     
@@ -186,7 +186,7 @@ class BullhornJobImport
 
   private
 
-  def self.query_job_orders(client, is_deleted, custom_fields = [])
+  def query_job_orders(client, is_deleted, custom_fields = [])
     # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Stop when less than 200 received in a query, and return concatenated results
 
@@ -214,7 +214,7 @@ class BullhornJobImport
     complete_data
   end
 
-  def self.post_payload(payload)
+  def post_payload(payload)
     # net = Net::HTTP.new(@key.host, 80)
     # # net = Net::HTTP.new(@key.host, 3000)
     # request = Net::HTTP::Post.new("/api/v1/jobs.json")
@@ -235,7 +235,7 @@ class BullhornJobImport
     end
   end
 
-  def self.post_payload_for_delete(payload)
+  def post_payload_for_delete(payload)
 
     begin
       response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json", { body: payload })
@@ -247,7 +247,7 @@ class BullhornJobImport
     end
   end
 
-  def self.get_country(country_id)
+  def get_country(country_id)
     bullhorn_country_array =  [
       ["United States","1"],
       ["Afghanistan","2185"],
