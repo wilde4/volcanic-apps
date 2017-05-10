@@ -20,6 +20,8 @@
             = simple_form_for @setting, url: url, method: :post, remote: true do |f|
               = f.hidden_field :dataset_id, value: @setting.dataset_id
               = f.input :tweet, placeholder: 'Leave blank to use the default tweet', hint: 'Default Tweet: {{job_title}} - {{job_location}} - {{discipline}} {{job_url}}', input_html: { class: 'string required form-control', max: 140 }
+              .clearfix
+              = f.input :only_featured, input_html: { style: 'top: 0px;' }, label: 'Only post featured jobs'
               = f.submit 'Save', class: 'btn btn-primary', data: { disable_with: 'Saving...' }
       .col-xs-4
         .panel.panel-default
