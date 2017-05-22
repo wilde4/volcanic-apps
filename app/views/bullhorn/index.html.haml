@@ -2,17 +2,4 @@
   .row
     .col-lg-3.col-md-12
     .col-lg-6.col-md-12
-      %h3 This Bullhorn App sync's Candidate, Job and Application data between Volcanic and Bullhorn
-      %hr
-      %p You can contact Bullhorn UK Support on the following number:
-      %p 0800 032 2848
-      - unless @bullhorn_setting.authorised
-        %p= link_to 'Requesting Authentication settings', '#', data: { toggle: "modal", target: "#credentialsInfo"}
-      %hr
-
-      #flash_messages
-
-      .row
-        .col-md-12
-          #settings_form
-            = render partial: 'settings_form'
+      %h3 NEW APP
