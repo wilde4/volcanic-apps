@@ -20,7 +20,7 @@ class BullhornAppSetting < ActiveRecord::Base
 
   def update_authorised_settings
     if auth_settings_changed
-      update_attribute(:authorised,  Bullhorn::ClientService.new(dataset_id: dataset_id).client_authenticated?)
+      update_attribute(:authorised,  Bullhorn::ClientService.new(self).client_authenticated?)
     end
   end
 end

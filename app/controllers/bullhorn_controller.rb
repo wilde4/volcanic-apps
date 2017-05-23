@@ -11,6 +11,8 @@ class BullhornController < ApplicationController
   def index
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
 
+    @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+    get_fields if @bullhorn_service.present?
 
     render layout: false
   end
@@ -29,7 +31,7 @@ class BullhornController < ApplicationController
         flash[:alert] = "Settings could not be saved. Please try again."
       end
 
-    else #CREATE NEW SETTINGs
+    else #CREATE NEW SETTINGS
 
       @bullhorn_setting = BullhornAppSetting.new(bh_params)
 
@@ -42,6 +44,9 @@ class BullhornController < ApplicationController
     end
 
     @bullhorn_setting.update_authorised_settings
+
+    @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+    get_fields if @bullhorn_service.present?
 
 
   rescue StandardError => e
@@ -69,7 +74,16 @@ class BullhornController < ApplicationController
 
     def bh_params
       params.require(:bullhorn_app_setting).permit(:dataset_id, :import_jobs, :linkedin_bullhorn_field, :source_text,
-        :always_create, :cv_type_text, :uses_public_filter, :bh_params, :bh_username, :bh_password, :bh_client_id, :bh_client_secret, :bullhorn_field_mappings)
+        :always_create, :cv_type_text, :uses_public_filter, :bh_params, :bh_username, :bh_password, :bh_client_id, :bh_client_secret, bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attributes])
+    end
+
+    def get_fields
+      @bh_candidate_fields = @bullhorn_service.bullhorn_candidate_fields
+      @volcanic_candidate_fields = @bullhorn_service.volcanic_candidate_fields
+
+      @volcanic_candidate_fields.each do |reference, label|
+        @bullhorn_setting.bullhorn_field_mappings.build(registration_question_reference: reference) unless @bullhorn_setting.bullhorn_field_mappings.find_by(registration_question_reference: reference)
+      end
     end
 
 end
