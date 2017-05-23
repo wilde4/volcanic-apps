@@ -36,8 +36,12 @@
             = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
           .col-md-6
             = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
-
-
+        %hr
+        .row
+          .col-xs-12
+            %h6 Candidate Fields Mappings
+          .col-xs-12
+          
 
 
 

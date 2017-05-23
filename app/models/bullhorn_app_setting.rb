@@ -17,4 +17,10 @@ class BullhornAppSetting < ActiveRecord::Base
   def auth_settings_changed
     previous_changes['encrypted_bh_username'].present? || previous_changes['encrypted_bh_password'].present? || previous_changes['encrypted_bh_client_id'].present? || previous_changes['encrypted_bh_client_secret'].present?
   end
+
+  def update_authorised_settings
+    if auth_settings_changed
+      update_attribute(:authorised,  Bullhorn::ClientService.new(dataset_id: dataset_id).client_authenticated?)
+    end
+  end
 end
