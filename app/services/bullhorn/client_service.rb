@@ -63,7 +63,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_fields.sort! { |x,y| x.first <=> y.first }
 
     @bullhorn_fields
-  rescue StandardError => e 
+  rescue BullhornServiceError => e 
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', nil, nil, e.message, true, true)
   end
@@ -84,7 +84,7 @@ class Bullhorn::ClientService < BaseService
     @volcanic_fields = Hash[@volcanic_fields.sort]
 
     @volcanic_fields
-  rescue StandardError => e
+  rescue BullhornServiceError => e
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'get_volcanic_candidate_fields', nil, nil, e.message, true, true)
   end
@@ -103,8 +103,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_job_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
 
     @bullhorn_job_fields
-
-  rescue StandardError => e
+  rescue BullhornServiceError => e
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', nil, nil, e.message, true, true)
   end
@@ -124,18 +123,206 @@ class Bullhorn::ClientService < BaseService
     # @volcanic_job_fields = Hash[@volcanic_job_fields.sort]
 
     @volcanic_job_fields
-
-  rescue StandardError => e
+  rescue BullhornServiceError => e
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
+  end
+
+
+  def post_user_to_bullhorn(user, params)
+
+      @user = user
+      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+      key = Key.find_by(app_dataset_id: params[:user][:dataset_id], app_name: params[:controller])
+      field_mappings = settings.bullhorn_field_mappings.user
+
+      attributes = {
+        'firstName' => user.user_profile['first_name'],
+        'lastName' => user.user_profile['last_name'],
+        'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
+        'email' => user.email
+      }
+
+      if user.linkedin_profile.present?
+        attributes['description'] = linkedin_description(user)
+      end
+      attributes["#{settings.linkedin_bullhorn_field}"] = user.user_profile['li_publicProfileUrl'] if user.user_profile['li_publicProfileUrl'].present?
+
+      # PREPARE ADDRESS
+      attributes['address'] = {}
+
+      # MAP FIELDS TO FIELDS
+     
+      field_mappings.each do |fm|
+        
+        # TIMESTAMPS
+        answer = user.registration_answers["#{fm.registration_question_reference}_array"] || user.registration_answers[fm.registration_question_reference] rescue nil
+        answer.delete_if(&:blank?) if answer.is_a?(Array)
+       
+      
+        case fm.bullhorn_field_name
+        when 'dateOfBirth', 'dateAvailable' # AND OTHERS
+          # TIMESTAMP NEEDED IN MILLISECONDS
+          answer = (( Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
+          # logger.info "--- processed answer = #{answer}"
+          attributes[fm.bullhorn_field_name] = answer if answer.present?
+        when 'address1', 'address2', 'city', 'state', 'zip'
+          # ADDRESS
+          attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
+        when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
+          answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
+          attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
+        when 'countryID'
+          # ADDRESS COUNTRY
+          attributes['address']['countryID'] = get_country_id(answer) if answer.present?
+        when 'category', 'categoryID'
+          # FIND category ID
+          categories = @client.categories
+         
+          category = categories.data.select{ |c| c.name == answer }.first
+          
+          if category.present?
+             attributes['category'] = {}
+             attributes['category']['id'] = category.id
+             @category_id = category.id
+          end
+        when 'businessSectors'
+          # UPDATE CANDIDATE AFTER CREATION
+        else
+          attributes[fm.bullhorn_field_name] = answer if answer.present?
+        end
+      end
+
+      # GET BULLHORN ID
+      if user.bullhorn_uid.present?
+        bullhorn_id = user.bullhorn_uid
+      else
+        if settings.always_create == true
+
+          bullhorn_id = nil
+        else
+          email_query = "email:\"#{URI::encode(user.email)}\""
+          existing_candidates = @client.search_candidates(query: email_query, sort: 'id')
+
+          # isDeleted BOOLEAN CAN'T BE QUERIED SO NEED TO EXTRACT UNDELETED CANDIDATES
+          active_candidates = existing_candidates.data.select{ |c| c.isDeleted == false }
+
+          if active_candidates.size > 0
+
+            last_candidate = active_candidates.last
+            bullhorn_id = last_candidate.id
+            @user.update(bullhorn_uid: bullhorn_id)
+          else
+
+            bullhorn_id = nil
+          end
+        end
+      end
+
+      # CREATE/UPDATE CANDIDATE
+      if bullhorn_id.present?
+        candidate = @client.candidate(@user.bullhorn_uid, {})
+        if candidate.data.status == 'Inactive'
+          attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
+        end
+
+        response = @client.update_candidate(bullhorn_id, attributes.to_json)
+
+        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        if response.errors.present?
+          response.errors.each do |e|
+            Honeybadger.notify(
+              :error_class => "Bullhorn Error",
+              :error_message => "Bullhorn Error: #{e.inspect}",
+              :parameters => params
+            )
+          end
+        end
+      else
+
+        attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
+        attributes['source'] = settings.source_text.present? ? settings.source_text : 'Company Website'
+
+        response = @client.create_candidate(attributes.to_json)
+
+        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        @user.update(bullhorn_uid: response['changedEntityId'])
+        bullhorn_id = response['changedEntityId']
+        if response.errors.present?
+          response.errors.each do |e|
+            Honeybadger.notify(
+              :error_class => "Bullhorn Error",
+              :error_message => "Bullhorn Error: #{e.inspect}",
+              :parameters => params
+            )
+          end
+        end
+      end
+      
+      if bullhorn_id.present?
+        #categoies
+        send_category(bullhorn_id, @client)
+        # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
+        # FIND businessSector ID
+        # 'businessSectors'
+        if user.registration_answers.present?
+          business_sectors = @client.business_sectors
+
+          answer = user.registration_answers['businessSectors']
+          bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
+
+          if bs_mapping.present?
+            business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
+
+            if business_sector.present?
+              bs_response = @client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+              
+            end
+          end
+        end
+
+      end
+      
+  end
+
+
+
+  def linkedin_description(user)
+      string = '<h1>Curriculum Vitae</h1>' +
+        "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
+
+      if user.linkedin_profile['positions'].present?
+        string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+        user.linkedin_profile['positions'].each do |position|
+          string = string + '<p>'
+
+          company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
+          title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
+          start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
+          end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
+          summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
+          company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
+
+          string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
+        end
+      end
+      return string
+  end
+
+  def send_category(bullhorn_id, client)
+    if @category_id.present?
+      Bullhorn::SendCategoryService.new(bullhorn_id, client, @category_id).send_category_to_bullhorn
+    end
   end
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
     log.id
-  rescue StandardError => e
+  rescue BullhornServiceError => e
     Honeybadger.notify(e)
   end
+
+  class BullhornServiceError < StandardError; end
 
 
 end
