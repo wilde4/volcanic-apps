@@ -97,7 +97,7 @@ class BullhornController < ApplicationController
 
 
       if @bullhorn_service.present?
-        @bullhorn_service.post_user_to_bullhorn(@user, params, @bullhorn_setting)
+        @bullhorn_service.post_user_to_bullhorn(@user, params)
         # @bullhorn_service.upload_cv_to_bullhorn_2(@user, params)
       end
      

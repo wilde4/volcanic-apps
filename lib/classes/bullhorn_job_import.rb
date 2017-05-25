@@ -1,11 +1,40 @@
 # BullhornJobImport.new.import_jobs
 # BullhornJobImport.new.delete_jobs
 class BullhornJobImport
+
   def import_jobs
+    
     puts '- BEGIN import_jobs'
 
     # Find who has registered to use TR:
     registered_hosts = Key.where(app_name: 'bullhorn')
+
+    # TEST !!!!!!!!!!!
+    registered_hosts = Key.where(id: 27)
+
+    registered_hosts.each do |reg_host|
+      puts "Polling for: #{reg_host.host}"
+      @key = reg_host
+
+      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+      if @bullhorn_service.present?
+        @bullhorn_service.import_client_jobs
+      end
+
+    end
+
+    puts '- END import_jobs'
+  end
+
+  def import_jobs_old
+    
+    puts '- BEGIN import_jobs'
+
+    # Find who has registered to use TR:
+    registered_hosts = Key.where(app_name: 'bullhorn')
+    registered_hosts = Key.where(id: 27)
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
@@ -19,6 +48,7 @@ class BullhornJobImport
           client_secret: settings.bh_client_secret
         )
         parse_jobs(client)
+
         # @job_data = query_job_orders(client, false)
         # @job_data.each do |j|
         #   puts "--- #{j.id}"
@@ -54,7 +84,7 @@ class BullhornJobImport
     puts '- END delete_jobs'
   end
 
-  def parse_jobs(client)
+  def parse_jobs_old(client)
     settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
     field_mappings = settings.bullhorn_field_mappings.job
     
