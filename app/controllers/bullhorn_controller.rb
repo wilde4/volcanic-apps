@@ -13,7 +13,10 @@ class BullhornController < ApplicationController
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
 
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
-    get_fields if @bullhorn_service.present?
+
+    if @bullhorn_service.present? && @bullhorn_service.client_authenticated?
+      get_fields
+    end
 
     render layout: false
   end
@@ -57,6 +60,7 @@ class BullhornController < ApplicationController
     @bullhorn_setting.update_authorised_settings
 
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+    debugger
     get_fields if @bullhorn_service.present?
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -97,7 +101,7 @@ class BullhornController < ApplicationController
 
 
       if @bullhorn_service.present?
-        @bullhorn_service.post_user_to_bullhorn(@user, params)
+        @bullhorn_service.post_user_to_bullhorn(@user, params,)
         # @bullhorn_service.upload_cv_to_bullhorn_2(@user, params)
       end
      
