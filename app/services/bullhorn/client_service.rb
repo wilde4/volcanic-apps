@@ -38,7 +38,7 @@ class Bullhorn::ClientService < BaseService
 
     res = @client.conn.get path, client_params
     obj = @client.decorate_response JSON.parse(res.body)
-    create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', path, client_params.to_s, obj.to_s, obj.errors.present?)
+    create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', path, client_params.to_s, nil, obj.errors.present?)
 
     @bullhorn_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }
 
@@ -129,159 +129,155 @@ class Bullhorn::ClientService < BaseService
   end
 
 
-  def post_user_to_bullhorn(user, params)
+  def post_user_to_bullhorn(user, params, bullhorn_settings)
 
-      @user = user
-      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-      key = Key.find_by(app_dataset_id: params[:user][:dataset_id], app_name: params[:controller])
-      field_mappings = settings.bullhorn_field_mappings.user
+    field_mappings = bullhorn_settings.bullhorn_field_mappings.user
 
-      attributes = {
-        'firstName' => user.user_profile['first_name'],
-        'lastName' => user.user_profile['last_name'],
-        'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
-        'email' => user.email
-      }
+    attributes = {
+      'firstName' => user.user_profile['first_name'],
+      'lastName' => user.user_profile['last_name'],
+      'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
+      'email' => user.email
+    }
 
-      if user.linkedin_profile.present?
-        attributes['description'] = linkedin_description(user)
-      end
-      attributes["#{settings.linkedin_bullhorn_field}"] = user.user_profile['li_publicProfileUrl'] if user.user_profile['li_publicProfileUrl'].present?
+    if user.linkedin_profile.present?
+      attributes['description'] = linkedin_description(user)
+    end
+    attributes["#{bullhorn_settings.linkedin_bullhorn_field}"] = user.user_profile['li_publicProfileUrl'] if user.user_profile['li_publicProfileUrl'].present?
 
-      # PREPARE ADDRESS
-      attributes['address'] = {}
+    # PREPARE ADDRESS
+    attributes['address'] = {}
 
-      # MAP FIELDS TO FIELDS
-     
-      field_mappings.each do |fm|
-        
-        # TIMESTAMPS
-        answer = user.registration_answers["#{fm.registration_question_reference}_array"] || user.registration_answers[fm.registration_question_reference] rescue nil
-        answer.delete_if(&:blank?) if answer.is_a?(Array)
-       
+    # MAP FIELDS TO FIELDS
+    field_mappings.each do |fm|
       
-        case fm.bullhorn_field_name
-        when 'dateOfBirth', 'dateAvailable' # AND OTHERS
-          # TIMESTAMP NEEDED IN MILLISECONDS
-          answer = (( Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
-          # logger.info "--- processed answer = #{answer}"
-          attributes[fm.bullhorn_field_name] = answer if answer.present?
-        when 'address1', 'address2', 'city', 'state', 'zip'
-          # ADDRESS
-          attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
-        when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
-          answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
-          attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
-        when 'countryID'
-          # ADDRESS COUNTRY
-          attributes['address']['countryID'] = get_country_id(answer) if answer.present?
-        when 'category', 'categoryID'
-          # FIND category ID
-          categories = @client.categories
-         
-          category = categories.data.select{ |c| c.name == answer }.first
-          
-          if category.present?
-             attributes['category'] = {}
-             attributes['category']['id'] = category.id
-             @category_id = category.id
-          end
-        when 'businessSectors'
-          # UPDATE CANDIDATE AFTER CREATION
-        else
-          attributes[fm.bullhorn_field_name] = answer if answer.present?
+      # TIMESTAMPS
+      answer = user.registration_answers["#{fm.registration_question_reference}_array"] || user.registration_answers[fm.registration_question_reference] rescue nil
+      answer.delete_if(&:blank?) if answer.is_a?(Array)
+     
+    
+      case fm.bullhorn_field_name
+      when 'dateOfBirth', 'dateAvailable' # AND OTHERS
+        # TIMESTAMP NEEDED IN MILLISECONDS
+        answer = (( Date.parse(answer) + 12.hours ).to_time.to_i.to_f * 1000.0).to_i rescue nil
+        # logger.info "--- processed answer = #{answer}"
+        attributes[fm.bullhorn_field_name] = answer if answer.present?
+      when 'address1', 'address2', 'city', 'state', 'zip'
+        # ADDRESS
+        attributes['address'][fm.bullhorn_field_name] = answer if answer.present?
+      when 'salaryLow', 'salary', 'dayRate', 'dayRateLow', 'hourlyRate', 'hourlyRateLow'
+        answer_integer = answer.gsub(/[^0-9\.]/,'').to_i rescue nil
+        attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
+      when 'countryID'
+        # ADDRESS COUNTRY
+        attributes['address']['countryID'] = get_country_id(answer) if answer.present?
+      when 'category', 'categoryID'
+        # FIND category ID
+        categories = @client.categories
+       
+        category = categories.data.select{ |c| c.name == answer }.first
+        
+        if category.present?
+           attributes['category'] = {}
+           attributes['category']['id'] = category.id
+           @category_id = category.id
         end
-      end
-
-      # GET BULLHORN ID
-      if user.bullhorn_uid.present?
-        bullhorn_id = user.bullhorn_uid
+      when 'businessSectors'
+        # UPDATE CANDIDATE AFTER CREATION
       else
-        if settings.always_create == true
+        attributes[fm.bullhorn_field_name] = answer if answer.present?
+      end
+    end
+
+    # GET BULLHORN ID
+    if user.bullhorn_uid.present?
+      bullhorn_id = user.bullhorn_uid
+    else
+      if bullhorn_settings.always_create == true
+
+        bullhorn_id = nil
+      else
+        email_query = "email:\"#{URI::encode(user.email)}\""
+        existing_candidates = @client.search_candidates(query: email_query, sort: 'id')
+
+        # isDeleted BOOLEAN CAN'T BE QUERIED SO NEED TO EXTRACT UNDELETED CANDIDATES
+        active_candidates = existing_candidates.data.select{ |c| c.isDeleted == false }
+
+        if active_candidates.size > 0
+
+          last_candidate = active_candidates.last
+          bullhorn_id = last_candidate.id
+          user.update(bullhorn_uid: bullhorn_id)
+        else
 
           bullhorn_id = nil
-        else
-          email_query = "email:\"#{URI::encode(user.email)}\""
-          existing_candidates = @client.search_candidates(query: email_query, sort: 'id')
+        end
+      end
+    end
 
-          # isDeleted BOOLEAN CAN'T BE QUERIED SO NEED TO EXTRACT UNDELETED CANDIDATES
-          active_candidates = existing_candidates.data.select{ |c| c.isDeleted == false }
+    # CREATE/UPDATE CANDIDATE
+    if bullhorn_id.present?
+      candidate = @client.candidate(user.bullhorn_uid, {})
+      if candidate.data.status == 'Inactive'
+        attributes['status'] = bullhorn_settings.status_text.present? ? bullhorn_settings.status_text : 'New Lead'
+      end
 
-          if active_candidates.size > 0
+      response = @client.update_candidate(bullhorn_id, attributes.to_json)
 
-            last_candidate = active_candidates.last
-            bullhorn_id = last_candidate.id
-            @user.update(bullhorn_uid: bullhorn_id)
-          else
+      user.app_logs.create key: @key, name: 'update_candidate', endpoint: "entity/candidate/#{user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+      if response.errors.present?
+        response.errors.each do |e|
+          Honeybadger.notify(
+            :error_class => "Bullhorn Error",
+            :error_message => "Bullhorn Error: #{e.inspect}",
+            :parameters => params
+          )
+        end
+      end
+    else
 
-            bullhorn_id = nil
+      attributes['status'] = bullhorn_settings.status_text.present? ? bullhorn_settings.status_text : 'New Lead'
+      attributes['source'] = bullhorn_settings.source_text.present? ? bullhorn_settings.source_text : 'Company Website'
+
+      response = @client.create_candidate(attributes.to_json)
+
+      user.app_logs.create key: @key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+      user.update(bullhorn_uid: response['changedEntityId'])
+      bullhorn_id = response['changedEntityId']
+      if response.errors.present?
+        response.errors.each do |e|
+          Honeybadger.notify(
+            :error_class => "Bullhorn Error",
+            :error_message => "Bullhorn Error: #{e.inspect}",
+            :parameters => params
+          )
+        end
+      end
+    end
+    
+    if bullhorn_id.present?
+      #categoies
+      send_category(bullhorn_id, @client)
+      # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
+      # FIND businessSector ID
+      # 'businessSectors'
+      if user.registration_answers.present?
+        business_sectors = @client.business_sectors
+
+        answer = user.registration_answers['businessSectors']
+        bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
+
+        if bs_mapping.present?
+          business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
+
+          if business_sector.present?
+            bs_response = @client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
+
           end
         end
       end
 
-      # CREATE/UPDATE CANDIDATE
-      if bullhorn_id.present?
-        candidate = @client.candidate(@user.bullhorn_uid, {})
-        if candidate.data.status == 'Inactive'
-          attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
-        end
-
-        response = @client.update_candidate(bullhorn_id, attributes.to_json)
-
-        @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
-        if response.errors.present?
-          response.errors.each do |e|
-            Honeybadger.notify(
-              :error_class => "Bullhorn Error",
-              :error_message => "Bullhorn Error: #{e.inspect}",
-              :parameters => params
-            )
-          end
-        end
-      else
-
-        attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
-        attributes['source'] = settings.source_text.present? ? settings.source_text : 'Company Website'
-
-        response = @client.create_candidate(attributes.to_json)
-
-        @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
-        @user.update(bullhorn_uid: response['changedEntityId'])
-        bullhorn_id = response['changedEntityId']
-        if response.errors.present?
-          response.errors.each do |e|
-            Honeybadger.notify(
-              :error_class => "Bullhorn Error",
-              :error_message => "Bullhorn Error: #{e.inspect}",
-              :parameters => params
-            )
-          end
-        end
-      end
-      
-      if bullhorn_id.present?
-        #categoies
-        send_category(bullhorn_id, @client)
-        # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
-        # FIND businessSector ID
-        # 'businessSectors'
-        if user.registration_answers.present?
-          business_sectors = @client.business_sectors
-
-          answer = user.registration_answers['businessSectors']
-          bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
-
-          if bs_mapping.present?
-            business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
-
-            if business_sector.present?
-              bs_response = @client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-              
-            end
-          end
-        end
-
-      end
+    end
       
   end
 
