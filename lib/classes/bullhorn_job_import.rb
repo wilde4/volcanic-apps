@@ -9,9 +9,6 @@ class BullhornJobImport
     # Find who has registered to use TR:
     registered_hosts = Key.where(app_name: 'bullhorn')
 
-    # TEST !!!!!!!!!!!
-    registered_hosts = Key.where(id: 27)
-
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
       @key = reg_host
@@ -26,6 +23,30 @@ class BullhornJobImport
     end
 
     puts '- END import_jobs'
+  end
+
+  def delete_jobs
+    puts '- BEGIN delete_jobs'
+
+    # Find who has registered to use TR:
+    registered_hosts = Key.where(app_name: 'bullhorn')
+
+    registered_hosts.each do |reg_host|
+      puts "Polling for: #{reg_host.host}"
+      @key = reg_host
+      settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      if settings.present? && settings['import_jobs'].present? && settings['import_jobs'] == true
+        client =  Bullhorn::Rest::Client.new(
+          username: settings.bh_username,
+          password: settings.bh_password,
+          client_id: settings.bh_client_id,
+          client_secret: settings.bh_client_secret
+        )
+        parse_jobs_for_delete(client)
+      end
+    end
+
+    puts '- END delete_jobs'
   end
 
   def import_jobs_old
@@ -60,7 +81,7 @@ class BullhornJobImport
     puts '- END import_jobs'
   end
 
-  def delete_jobs
+  def delete_jobs_old
     puts '- BEGIN delete_jobs'
 
     # Find who has registered to use TR:

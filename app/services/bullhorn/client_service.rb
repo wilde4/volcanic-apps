@@ -309,12 +309,14 @@ class Bullhorn::ClientService < BaseService
 
         default_job_playload_attributes(job)
 
-        # MAX SALARY and SALARY FREE are set to configurable custom fields:
-        field_mappings.each do |fm|
-          puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
+        #ONLY USE CUSTOM MAPPINGS IF THE APP IS NOT USING THE DEFAULT MAPPINGS
+        if @bullhorn_setting.custom_job_mapping?
+          field_mappings.each do |fm|
+            puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
 
-          @job_payload["job[#{fm.job_attribute}]"] = job.send(fm.bullhorn_field_name)
-          
+            @job_payload["job[#{fm.job_attribute}]"] = job.send(fm.bullhorn_field_name)
+            
+          end
         end
 
         puts "--- job.isOpen = #{job.isOpen}"
@@ -342,6 +344,28 @@ class Bullhorn::ClientService < BaseService
 
     puts "Total data size = #{@job_data.length} jobs"
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
+  end
+
+  def delete_client_jobs(client)
+    @job_data = query_job_orders(client, true)
+    # jobs = @job_data.xpath("//item")
+    
+    
+
+    
+
+    @job_data.each do |job|
+      if job.isDeleted || job.status == 'Archive'
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
+        @job_payload['job[job_reference]'] = job.id
+
+        # puts "--- @job_payload = #{@job_payload.inspect}"
+        post_payload_for_delete(@job_payload)
+      end
+    end
+
+    puts "Total data size = #{@job_data.length} jobs"
   end
 
 
@@ -415,7 +439,6 @@ class Bullhorn::ClientService < BaseService
     begin
       
       url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
-      debugger
       response = HTTParty.post(url, { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
