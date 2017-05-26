@@ -5,7 +5,7 @@
   = f.input :dataset_id, as: :hidden
   .panel{class: @bullhorn_setting.authorised? ? 'panel-success' : 'panel-danger'}
     .panel-heading
-      %h6.panel-title 
+      %h5.panel-title 
         1. Authentication Settings
         - if @bullhorn_setting.authorised?
           %i.icon-checkmark
@@ -24,102 +24,11 @@
   -# BULLHORN MAPPINGS AND OPTIONS IF THE CLIENT IS AUTHENTICATED
   - if @bullhorn_setting.authorised
     -# CANDIDATE SETTINGS
-    .panel.panel-default
-      .panel-heading 
-        %h6.panel-title 2. Candidate Settings
-      .panel-body
-        .row
-          .col-md-6
-            = f.input :source_text, input_html: { class: 'form-control', value: f.object.source_text.present? ? f.object.source_text : 'Company Website' }
-
-            = f.input :status_text, input_html: { class: 'form-control', value: f.object.status_text.present? ? f.object.status_text : 'New Lead' }
-
-            = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
-          .col-md-6
-            = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
-        %hr
-        .row
-          .col-xs-12
-            %h6 Candidate Fields Mappings
-            - if @bh_candidate_fields.blank?
-              .alert.alert-danger
-                Retrieving the latest data for your candidate fields from Bullhorn took too long, please refresh the page to try again. If the problem persists please contact Volcanic support.
-                (Error ID: #{@net_error})
-            - else
-              %p
-                Here you can set how registration fields within your Volcanic website correspond to fields within your Bullhorn application.
-                Only the data set up here will be sent to Bullhorn when a Candidate registers.
-              %a.btn.btn-primary{"aria-controls" => "collapse-candidate-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-candidate-fields"}
-                Open mappings
-              #collapse-candidate-fields.collapse
-                .mappings
-                  %table.table
-                    %thead
-                      %th Volcanic Candidate Field
-                      %th
-                      %th Bullhorn Candidate Field
-                    %tbody
-                      %tr
-                        %td LinkedIn Public URL
-                        %td.text-center
-                          %i.icon-arrow-right16
-                        %td= f.input :linkedin_bullhorn_field, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
-                      = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
-                        %tr
-                          %td
-                            - if @volcanic_candidate_fields[bfm.object.registration_question_reference].present?
-                              = @volcanic_candidate_fields[bfm.object.registration_question_reference]
-                            - else
-                              = bfm.object.registration_question_reference
-                              %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
-                            = bfm.input :registration_question_reference, as: :hidden
-                          %td.text-center
-                            %i.icon-arrow-right16
-                          %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+    = render partial: 'candidate_settings', locals: {f: f}
+    
     -# JOB SETTINGS
-    .panel.panel-default
-      .panel-heading 
-        %h6.panel-title 3. Vacancy Settings
-      .panel-body
-        .row
-          .col-xs-12
-            %p This App can import Vacancies from Bullhorn to your Volcanic website. Vacancies are imported every hour at a quarter to the hour.
-            %p Applications made to these Vacancies through the website are automatically updated in Bullhorn. 
-            %p This option should not be selected if your website already uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
-            = f.input :import_jobs, input_html: { class: 'form-control' }
-            
-            - if @bullhorn_setting.import_jobs?
-              %hr
-              = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, input_html: { class: 'form-control' }
-          .col-xs-12
-            %h6 Vacancies Fields Mappings
-            %p
-              Here you can set how registration fields within your Volcanic website correspond to fields within your Bullhorn vacancies.
-            %a.btn.btn-primary{"aria-controls" => "collapse-jobs-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-jobs-fields"}
-              Open mappings
-            #collapse-jobs-fields.collapse
-              .mappings
-                %table.table
-                  %thead
-                    %th Bullhorn Vacancy Field
-                    %th
-                    %th Volcanic Vacancy Field
-                  %tbody
-                    = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.registration_question_reference.nil? } do |bfm|
-                      %tr
-                        %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
-                        %td.text-center
-                          %i.icon-arrow-right16
-                        %td
-                          - if @volcanic_job_fields[bfm.object.job_attribute].present?
-                            = @volcanic_job_fields[bfm.object.job_attribute]
-                          - else
-                            = bfm.object.job_attribute
-                            %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
-                          = bfm.input :job_attribute, as: :hidden
-                      
-                      
-
+    = render partial: 'job_settings', locals: {f: f}
+    
 
 
 

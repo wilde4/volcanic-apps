@@ -60,7 +60,6 @@ class BullhornController < ApplicationController
     @bullhorn_setting.update_authorised_settings
 
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
-    debugger
     get_fields if @bullhorn_service.present?
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -138,8 +137,22 @@ class BullhornController < ApplicationController
   private
 
     def bh_params
-      params.require(:bullhorn_app_setting).permit(:dataset_id, :import_jobs, :linkedin_bullhorn_field, :source_text,
-        :always_create, :cv_type_text, :uses_public_filter, :bh_params, :bh_username, :bh_password, :bh_client_id, :bh_client_secret, bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute])
+      params.require(:bullhorn_app_setting).permit(
+        :dataset_id,
+        :import_jobs,
+        :linkedin_bullhorn_field,
+        :source_text,
+        :always_create,
+        :cv_type_text,
+        :uses_public_filter,
+        :bh_params,
+        :bh_username,
+        :bh_password,
+        :bh_client_id,
+        :bh_client_secret,
+        :custom_job_mapping,
+        bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
+        )
     end
 
     def get_fields
