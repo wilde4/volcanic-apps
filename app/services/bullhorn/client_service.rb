@@ -131,6 +131,7 @@ class Bullhorn::ClientService < BaseService
   end
 
 
+  #SEND CANDIDATE INFO TO BULLHORN USING THE GEM
   def post_user_to_bullhorn(user, params)
 
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.user
@@ -283,6 +284,7 @@ class Bullhorn::ClientService < BaseService
       
   end
 
+  #FETCH CLIENT'S BLUHORN JOBS TO IMPORT INTO VOLCANIC
   def import_client_jobs
 
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
@@ -346,13 +348,9 @@ class Bullhorn::ClientService < BaseService
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
   end
 
-  def delete_client_jobs(client)
-    @job_data = query_job_orders(client, true)
-    # jobs = @job_data.xpath("//item")
-    
-    
-
-    
+  #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
+  def delete_client_jobs
+    @job_data = query_job_orders(true) 
 
     @job_data.each do |job|
       if job.isDeleted || job.status == 'Archive'
@@ -417,7 +415,9 @@ class Bullhorn::ClientService < BaseService
     #TESTING
     while results == 5
       if is_deleted
-        jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
+        # jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
+
+        jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 2, start: offset)
       else
         # jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
 
@@ -500,8 +500,6 @@ class Bullhorn::ClientService < BaseService
     @job_payload['job[salary_per]'] = salary_per
 
     @job_payload['job[job_description]'] = job.publicDescription.present? ? job.publicDescription : job.description
-
-
   end
 
   def get_country(country_id)

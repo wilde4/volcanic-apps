@@ -24,7 +24,8 @@
             Here you can set how registration fields within your Volcanic website correspond to fields within your Bullhorn application.
             Only the data set up here will be sent to Bullhorn when a Candidate registers.
           %a.btn.btn-primary{"aria-controls" => "collapse-candidate-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-candidate-fields"}
-            Open mappings
+            Mappings
+            %i.fa.fa-lg.fa-angle-down
           #collapse-candidate-fields.collapse
             .mappings
               %table.table
@@ -50,3 +51,15 @@
                       %td.text-center
                         %i.icon-arrow-right16
                       %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+:javascript
+  $( "a.btn" ).click(function() {
+    console.log('clicked');
+    if ($(this).find( "i" ).hasClass('fa-rotate-180')){
+      console.log('yes');
+      $(this).find( "i" ).removeClass('fa-rotate-180');
+    }else{
+      console.log('no');
+      $(this).find( "i" ).addClass('fa-rotate-180');
+    }
+    
+  });
