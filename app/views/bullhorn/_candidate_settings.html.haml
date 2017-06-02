@@ -53,12 +53,9 @@
                       %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
 :javascript
   $( "a.btn" ).click(function() {
-    console.log('clicked');
     if ($(this).find( "i" ).hasClass('fa-rotate-180')){
-      console.log('yes');
       $(this).find( "i" ).removeClass('fa-rotate-180');
     }else{
-      console.log('no');
       $(this).find( "i" ).addClass('fa-rotate-180');
     }
     

@@ -40,11 +40,11 @@
                 %tbody
                   = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.registration_question_reference.nil? } do |bfm|
                     %tr
-                      %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+                      %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: 'form-control' }, selected: default_job_attribute(bfm.object.job_attribute)
                       %td.text-center
                         %i.icon-arrow-right16
                       %td
-                        - if @volcanic_job_fields[bfm.object.job_attribute].present?
+                        - if @volcanic_job_fields.present? && @volcanic_job_fields[bfm.object.job_attribute].present?
                           = @volcanic_job_fields[bfm.object.job_attribute]
                         - else
                           = bfm.object.job_attribute

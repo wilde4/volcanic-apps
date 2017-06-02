@@ -101,7 +101,6 @@ class BullhornController < ApplicationController
 
       if @bullhorn_service.present?
         @bullhorn_service.post_user_to_bullhorn(@user, params,)
-        # @bullhorn_service.upload_cv_to_bullhorn_2(@user, params)
       end
      
 
@@ -156,6 +155,7 @@ class BullhornController < ApplicationController
     end
 
     def get_fields
+      
       @bh_candidate_fields        = @bullhorn_service.bullhorn_candidate_fields
       @bh_job_fields              = @bullhorn_service.bullhorn_job_fields
       @volcanic_candidate_fields  = @bullhorn_service.volcanic_candidate_fields
