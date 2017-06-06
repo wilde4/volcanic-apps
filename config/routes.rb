@@ -366,4 +366,6 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'prs#deactivate_app'
     get  "index"            => 'prs#index'
   end
+
+  resources :app_logs
 end
