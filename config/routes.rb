@@ -212,6 +212,7 @@ Apps::Application.routes.draw do
     post 'create_country'   => 'reed_global#create_country'
     post 'destroy_country'  => 'reed_global#destroy_country'
     post 'create_mapping'   => 'reed_global#create_mapping'
+    post 'destroy_mapping'  => 'reed_global#destroy_mapping'
     get 'job_disciplines'   => 'reed_global#job_disciplines'
   end
   

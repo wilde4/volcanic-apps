@@ -49,6 +49,16 @@ class ReedGlobalController < ApplicationController
     end
   end
 
+  def destroy_mapping
+    @reed_mapping = ReedMapping.find_by reed_country_id: params[:reed_country_id], id: params[:id]
+    @reed_mapping.destroy
+    @country = @reed_mapping.reed_country
+    @reed_countries = ReedCountry.where dataset_id: @country.dataset_id
+    @reed_country = ReedCountry.new dataset_id: @country.dataset_id
+    @reed_mapping = ReedMapping.new
+    flash[:notice] = "Mapping deleted."
+  end
+
   def job_disciplines
     @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
     job_functions = params[:job][:job_functions].split(',')
