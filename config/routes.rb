@@ -210,7 +210,8 @@ Apps::Application.routes.draw do
     post 'activate_app'     => 'reed_global#activate_app'
     post 'deactivate_app'   => 'reed_global#deactivate_app'
     post 'create_country'   => 'reed_global#create_country'
-    post 'destroy_country'   => 'reed_global#destroy_country'
+    post 'destroy_country'  => 'reed_global#destroy_country'
+    post 'create_mapping'   => 'reed_global#create_mapping'
   end
   
   scope :semrush do

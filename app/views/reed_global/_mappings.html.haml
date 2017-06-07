@@ -1,17 +1,9 @@
-.panel-group#countries
+.panel-group#country-groups
   - reed_countries.each do |country|
     .panel
       .panel-heading
-        %h4= link_to country.name, "#country-group#{country.id}", data: { toggle: 'collapse', parent: "#countries"}
+        %h4= link_to country.name, "#country-group#{country.id}", data: { toggle: 'collapse', parent: "#country-groups"}
 
       .panel-collapse.collapse{ id: "country-group#{country.id}" }
-        .panel-body
-          .row
-            .col-xs-12
-              - country.mappings_by_discipline(@disciplines).each do |discipline_name, mappings|
-                .well
-                  - if mappings.present?
-                    %h6
-                      = discipline_name
-                    - mappings.each do |mapping|
-                      %p= mapping.job_function_name_from_api_response(@job_functions)
+        %div{id: "country#{country.id}"}
+          = render partial: 'country', locals: { country: country }

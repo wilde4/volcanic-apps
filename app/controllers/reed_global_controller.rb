@@ -11,6 +11,7 @@ class ReedGlobalController < ApplicationController
   def index
     @reed_countries = ReedCountry.where dataset_id: params[:data][:dataset_id]
     @reed_country = ReedCountry.new dataset_id: params[:data][:dataset_id]
+    @reed_mapping = ReedMapping.new
     render layout: false
   end
 
@@ -19,6 +20,7 @@ class ReedGlobalController < ApplicationController
     if @reed_country.save
       flash[:notice] = "#{@reed_country.name} created."
       @reed_country = ReedCountry.new dataset_id: params[:reed_country][:dataset_id]
+      @reed_mapping = ReedMapping.new
       @reed_countries = ReedCountry.where dataset_id: params[:reed_country][:dataset_id]
     else
       flash[:alert]  = "Country could not be created. Please try again."
@@ -29,7 +31,22 @@ class ReedGlobalController < ApplicationController
     @reed_country = ReedCountry.find_by dataset_id: params[:dataset_id], id: params[:id]
     @reed_country.destroy
     @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
+    @reed_country = ReedCountry.new dataset_id: params[:dataset_id]
+    @reed_mapping = ReedMapping.new
     flash[:notice] = "#{@reed_country.name} deleted."
+  end
+
+  def create_mapping
+    @reed_mapping = ReedMapping.new params[:reed_mapping].permit!
+    if @reed_mapping.save
+      flash[:notice] = "Mapping created."
+      @country = @reed_mapping.reed_country
+      @reed_country = ReedCountry.new dataset_id: params[:reed_mapping][:dataset_id]
+      @reed_mapping = ReedMapping.new
+      @reed_countries = ReedCountry.where dataset_id: params[:reed_mapping][:dataset_id]
+    else
+      flash[:alert]  = "Mapping could not be created. Please try again."
+    end
   end
 
   private

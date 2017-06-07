@@ -1,0 +1,6 @@
+- if mappings.present?
+  .well
+    %h6
+      %b= discipline_name
+    - mappings.each do |mapping|
+      %p= mapping.job_function_name_from_api_response(@job_functions)

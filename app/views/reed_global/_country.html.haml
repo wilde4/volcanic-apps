@@ -1,0 +1,38 @@
+- url = Rails.env.development? ? 'http://localhost:3001/reed_global/create_mapping' : 'https://apps.volcanic.co/reed_global/create_mapping'
+.panel-body
+  .row
+    .col-xs-12
+
+      = simple_form_for @reed_mapping, url: url, method: :post, remote: true do |f|
+        = f.input :reed_country_id, as: :hidden, input_html: { value: country.id }
+        .row
+          .col-md-6
+            = f.input :discipline_id, collection: discipline_options, input_html: { class: 'form-control' }
+          .col-md-6
+            = f.input :job_function_id, collection: job_function_options, input_html: { class: 'form-control' }
+        .row
+          .col-md-12
+            = link_to 'Add', '#', id: "mapping-country#{country.id}-submit-btn", class: 'btn btn-primary'
+  
+  .row
+    .col-xs-12
+      %h3 Mapped Disciplines and Job Functions
+      - country.mappings_by_discipline(@disciplines).each do |discipline_name, mappings|
+        = render partial: 'country_mappings', locals: { discipline_name: discipline_name, mappings: mappings }
+
+:javascript
+  $("#mapping-country#{country.id}-submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#country-group#{country.id} form").submit();
+  });
+
+  $('#country-group#{country.id} form').keyup(function(event) {
+    if(event.keyCode === 13) {
+      $("#mapping-country#{country.id}-submit-btn").trigger("click");
+    }
+  });
+
+  $("#mapping-country#{country.id}-submit-btn").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
