@@ -133,7 +133,6 @@ class Bullhorn::ClientService < BaseService
 
   #SEND CANDIDATE INFO TO BULLHORN USING THE GEM
   def post_user_to_bullhorn(user, params)
-
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.user
 
     attributes = {
@@ -143,6 +142,8 @@ class Bullhorn::ClientService < BaseService
       'email' => user.email
     }
 
+    puts ' ---------------------------------------------- attributes set'
+
     if user.linkedin_profile.present?
       attributes['description'] = linkedin_description(user)
     end
@@ -151,6 +152,7 @@ class Bullhorn::ClientService < BaseService
     # PREPARE ADDRESS
     attributes['address'] = {}
 
+    puts ' ---------------------------------------------- before mappings loop'
     # MAP FIELDS TO FIELDS
     field_mappings.each do |fm|
       
@@ -192,6 +194,8 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
+    puts ' ---------------------------------------------- after mappings loop'
+
     # GET BULLHORN ID
     if user.bullhorn_uid.present?
       bullhorn_id = user.bullhorn_uid
@@ -218,6 +222,8 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
+    puts " ---------------------------------------------- bullhorn id #{bullhorn_id if bullhorn_id.present?}"
+
     # CREATE/UPDATE CANDIDATE
     if bullhorn_id.present?
       candidate = @client.candidate(user.bullhorn_uid, {})
@@ -228,6 +234,9 @@ class Bullhorn::ClientService < BaseService
       response = @client.update_candidate(bullhorn_id, attributes.to_json)
 
       user.app_logs.create key: @key, name: 'update_candidate', endpoint: "entity/candidate/#{user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+
+      puts " ---------------------------------------------- updated user #{bullhorn_id}"
+
       if response.errors.present?
         response.errors.each do |e|
           Honeybadger.notify(
@@ -242,10 +251,13 @@ class Bullhorn::ClientService < BaseService
       attributes['status'] = @bullhorn_setting.status_text.present? ? @bullhorn_setting.status_text : 'New Lead'
       attributes['source'] = @bullhorn_setting.source_text.present? ? @bullhorn_setting.source_text : 'Company Website'
 
+
       response = @client.create_candidate(attributes.to_json)
 
       user.app_logs.create key: @key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+      puts " ---------------------------------------------- created user"
       user.update(bullhorn_uid: response['changedEntityId'])
+      puts " ---------------------------------------------- updated user after created"
       bullhorn_id = response['changedEntityId']
       if response.errors.present?
         response.errors.each do |e|
@@ -442,8 +454,17 @@ class Bullhorn::ClientService < BaseService
       response = HTTParty.post(url, { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
+
+
+      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+      else
+        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+      end
+
       return response.code.to_i == 200
     rescue Exception => e
+      create_log(@bullhorn_setting, @key, 'post_job_to_volcanic', url, e.to_s, true, true)
       puts "[FAIL] http.request failed to post payload: #{e}"
     end
   end
@@ -451,9 +472,17 @@ class Bullhorn::ClientService < BaseService
   def post_payload_for_delete(payload)
 
     begin
-      response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+      url = "#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json"
+      response = HTTParty.post(url, { body: payload })
 
       puts "#{response.code} - #{response.read_body}"
+      
+      if response['response'].present? && response['response']['status'] == 'error' && response['response']['reason'].present?
+        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+      else
+        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+      end
+
       return response.code.to_i == 200
     rescue Exception => e
       puts "[FAIL] http.request failed to post payload: #{e}"

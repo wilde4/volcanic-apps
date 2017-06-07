@@ -100,7 +100,7 @@ class BullhornController < ApplicationController
 
 
       if @bullhorn_service.present?
-        @bullhorn_service.post_user_to_bullhorn(@user, params,)
+        @bullhorn_service.post_user_to_bullhorn(@user, params)
       end
      
 
