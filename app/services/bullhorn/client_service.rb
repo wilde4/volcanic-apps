@@ -455,9 +455,11 @@ class Bullhorn::ClientService < BaseService
 
       puts "#{response.code} - #{response.read_body}"
 
-
+      # CREATE APP LOGS
       if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+      elsif response['response'].present? && response['response']['reason'].present?
+        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
       else
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
       end
@@ -477,7 +479,10 @@ class Bullhorn::ClientService < BaseService
 
       puts "#{response.code} - #{response.read_body}"
       
-      if response['response'].present? && response['response']['status'] == 'error' && response['response']['reason'].present?
+      # CREATE APP LOGS
+      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+      elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
       else
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
