@@ -3,7 +3,7 @@ class ReedGlobalController < ApplicationController
   respond_to :json
 
   before_action :set_key, only: [:index]
-  before_action :get_remote_data
+  before_action :get_remote_data, except: :job_disciplines
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
@@ -46,6 +46,35 @@ class ReedGlobalController < ApplicationController
       @reed_countries = ReedCountry.where dataset_id: params[:reed_mapping][:dataset_id]
     else
       flash[:alert]  = "Mapping could not be created. Please try again."
+    end
+  end
+
+  def job_disciplines
+    @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
+    job_functions = params[:job][:job_functions].split(',')
+    country_reference = params[:job][:extra_categorisation]
+    reed_country = @reed_countries.find_by country_reference: country_reference
+    if reed_country.present?
+      @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
+      discipline_ids = job_functions.map do |jf|
+
+        job_function = @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
+        job_function ||= @job_functions.find { |job_function| job_function['reference'] == jf.strip }
+
+        if job_function.present?
+          mappings = reed_country.mappings.where job_function_id: job_function['id']
+          mappings.map(&:discipline_id) if mappings.present?
+        end
+
+      end.flatten.compact
+
+      if discipline_ids.present?
+        render json: { success: true, params: { discipline: discipline_ids.join(',') } }
+      else
+        render json: {}
+      end
+    else
+      render json: {}
     end
   end
 
