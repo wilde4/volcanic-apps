@@ -205,6 +205,14 @@ Apps::Application.routes.draw do
     post 'new_search'       => 'bullhorn#new_search'
   end
   
+  scope :reed_global do
+    get 'index'             => 'reed_global#index'
+    post 'activate_app'     => 'reed_global#activate_app'
+    post 'deactivate_app'   => 'reed_global#deactivate_app'
+    post 'create_country'   => 'reed_global#create_country'
+    post 'destroy_country'   => 'reed_global#destroy_country'
+  end
+  
   scope :semrush do
     get 'index'             => 'semrush#index'
     post 'activate_app'     => 'semrush#activate_app'
