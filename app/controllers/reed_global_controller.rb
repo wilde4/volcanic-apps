@@ -31,11 +31,15 @@ class ReedGlobalController < ApplicationController
 
   def destroy_country
     @reed_country = ReedCountry.find_by dataset_id: params[:dataset_id], id: params[:id]
-    @reed_country.destroy
+    if @reed_country.mappings.present?
+      flash[:alert]  = "You can't delete #{@reed_country.name} as it has mappings set against it."
+    else
+      @reed_country.destroy
+      flash[:notice] = "#{@reed_country.name} deleted."
+    end
     @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
     @reed_country = ReedCountry.new dataset_id: params[:dataset_id]
     @reed_mapping = ReedMapping.new
-    flash[:notice] = "#{@reed_country.name} deleted."
   end
 
   def create_mapping
