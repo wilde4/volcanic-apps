@@ -94,7 +94,7 @@ class ReedGlobalController < ApplicationController
     if Rails.env.development?
       "http://awesome-recruitment.localhost.volcanic.co:3000"
     else
-      "https://#{@key.host}"
+      "#{@key.protocol}#{@key.host}"
     end
   end
 
