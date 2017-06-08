@@ -4,6 +4,7 @@
     .col-xs-12
 
       = simple_form_for @reed_mapping, url: url, method: :post, remote: true do |f|
+        = hidden_field_tag :dataset_id, country.dataset_id
         = f.input :reed_country_id, as: :hidden, input_html: { value: country.id }
         .row
           .col-md-6

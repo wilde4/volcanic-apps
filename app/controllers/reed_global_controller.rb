@@ -2,7 +2,7 @@ class ReedGlobalController < ApplicationController
   protect_from_forgery with: :null_session, except: [:save_settings]
   respond_to :json
 
-  before_action :set_key, only: [:index]
+  before_action :set_key, except: [:activate_app, :deactivate_app]
   before_action :get_remote_data, except: [:job_disciplines, :activate_app, :deactivate_app]
 
   # Controller requires cross-domain POST XHRs
@@ -16,14 +16,16 @@ class ReedGlobalController < ApplicationController
   end
 
   def create_country
+    @reed_mapping = ReedMapping.new
     @reed_country = ReedCountry.new params[:reed_country].permit!
     if @reed_country.save
       flash[:notice] = "#{@reed_country.name} created."
       @reed_country = ReedCountry.new dataset_id: params[:reed_country][:dataset_id]
-      @reed_mapping = ReedMapping.new
       @reed_countries = ReedCountry.where dataset_id: params[:reed_country][:dataset_id]
     else
       flash[:alert]  = "Country could not be created. Please try again."
+      @reed_country = ReedCountry.new dataset_id: params[:reed_country][:dataset_id]
+      @reed_countries = ReedCountry.where dataset_id: params[:reed_country][:dataset_id]
     end
   end
 
@@ -37,15 +39,17 @@ class ReedGlobalController < ApplicationController
   end
 
   def create_mapping
+    @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
+    @reed_country = ReedCountry.new dataset_id: params[:dataset_id]
     @reed_mapping = ReedMapping.new params[:reed_mapping].permit!
     if @reed_mapping.save
       flash[:notice] = "Mapping created."
       @country = @reed_mapping.reed_country
-      @reed_country = ReedCountry.new dataset_id: params[:reed_mapping][:dataset_id]
       @reed_mapping = ReedMapping.new
-      @reed_countries = ReedCountry.where dataset_id: params[:reed_mapping][:dataset_id]
     else
       flash[:alert]  = "Mapping could not be created. Please try again."
+      @country = @reed_mapping.reed_country
+      @reed_mapping = ReedMapping.new
     end
   end
 
@@ -92,7 +96,7 @@ class ReedGlobalController < ApplicationController
 
   def host_endpoint
     if Rails.env.development?
-      "http://awesome-recruitment.localhost.volcanic.co:3000"
+      "#{@key.protocol}#{@key.host}:3000"
     else
       "#{@key.protocol}#{@key.host}"
     end
