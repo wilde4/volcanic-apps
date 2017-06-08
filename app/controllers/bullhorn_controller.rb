@@ -150,6 +150,7 @@ class BullhornController < ApplicationController
         :bh_client_id,
         :bh_client_secret,
         :custom_job_mapping,
+        :expire_closed_jobs,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )
     end

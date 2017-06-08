@@ -58,11 +58,17 @@ class BullhornJobImport
       @key = reg_host
 
       @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
-      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-      if @bullhorn_service.present?
-        @bullhorn_service.expire_client_jobs
+      if @bullhorn_setting.expire_closed_jobs?
+        @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+        if @bullhorn_service.present?
+          @bullhorn_service.expire_client_jobs
+        end
+      else
+        puts " --------- Expire Bullhorn's Closed jobs setting not activated for #{reg_host.host}"
       end
+
     end
 
     puts '- END expire_jobs'

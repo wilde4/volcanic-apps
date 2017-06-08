@@ -378,7 +378,7 @@ class Bullhorn::ClientService < BaseService
         @job_payload["job[api_key]"] = @key.api_key
         @job_payload['job[job_reference]'] = job.id
 
-        puts "----------------------- expire payload = #{@job_payload.inspect}"
+        # puts "----------------------- expire payload = #{@job_payload.inspect}"
 
         post_payload_for_expire(@job_payload)
       end
@@ -472,7 +472,7 @@ class Bullhorn::ClientService < BaseService
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else
+      else #SUCCESS
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
       end
 
@@ -496,8 +496,8 @@ class Bullhorn::ClientService < BaseService
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else
-        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+      else #SUCCESS
+        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
       end
 
       return response.code.to_i == 200
@@ -520,8 +520,8 @@ class Bullhorn::ClientService < BaseService
         create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else
-        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+      else #SUCCESS
+        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
       end
 
       return response.code.to_i == 200
