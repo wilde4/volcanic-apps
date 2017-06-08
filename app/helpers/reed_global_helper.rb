@@ -10,8 +10,8 @@ module ReedGlobalHelper
 
   def select_js
     @reed_countries.map do |country|
-      str = "$('#disciplines_#{country.id}').select2({placeholder: 'Pick specialism...'});"
-      str += "$('#job_functions_#{country.id}').select2({placeholder: 'Pick sector...'});"
+      str = "$('#disciplines_#{country.id}').select2({placeholder: 'Pick specialist sector...'});"
+      str += "$('#job_functions_#{country.id}').select2({placeholder: 'Pick discipline...'});"
     end.join("\n")
   end
 end

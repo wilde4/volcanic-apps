@@ -8,9 +8,9 @@
         = f.input :reed_country_id, as: :hidden, input_html: { value: country.id }
         .row
           .col-md-6
-            = f.input :discipline_id, label: 'Specialism', collection: discipline_options, input_html: { class: 'form-control', id: "disciplines_#{country.id}" }
+            = f.input :discipline_id, label: 'Specialist Sector', collection: discipline_options, input_html: { class: 'form-control', id: "disciplines_#{country.id}" }
           .col-md-6
-            = f.input :job_function_id, label: 'Sector', collection: job_function_options(country), input_html: { class: 'form-control', multiple: true, id: "job_functions_#{country.id}" }
+            = f.input :job_function_id, label: 'Discipline', collection: job_function_options(country), input_html: { class: 'form-control', multiple: true, id: "job_functions_#{country.id}" }
         .row
           .col-md-12
             = link_to 'Add', '#', id: "mapping-country#{country.id}-submit-btn", class: 'btn btn-primary'
@@ -18,7 +18,7 @@
   - if country.mappings.present?
     .row
       .col-xs-12
-        %h3 Mapped Sectors by Specialism
+        %h3 Mapped Disciplines by Specialist Sectors
         - country.mappings_by_discipline(@disciplines).each do |discipline_name, mappings|
           = render partial: 'country_mappings', locals: { discipline_name: discipline_name, mappings: mappings }
   - else
