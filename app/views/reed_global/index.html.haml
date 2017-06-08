@@ -2,7 +2,7 @@
   .row
     .col-lg-3.col-md-12
     .col-lg-6.col-md-12
-      %h3 This Reed App maps job functions to disciplines by country for Reed Global's sites
+      %h3 This Reed App maps Sectors to Specialisms by country for Reed Global's sites
       %hr
 
       #flash_messages
@@ -28,3 +28,8 @@
                 .panel-body
                   #countries
                     = render partial: 'countries', locals: { reed_countries: @reed_countries }
+    
+:javascript
+  $('#country-groups').on('shown.bs.collapse', function () {
+    #{select_js}
+  })

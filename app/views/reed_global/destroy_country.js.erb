@@ -1,4 +1,7 @@
 $("#flash_messages").html("<%= escape_javascript(render :partial => 'shared/flashes', :locals => { :flash => flash }) %>");
 $("#countries").html("<%= escape_javascript(render :partial => 'countries', :locals => { :reed_countries => @reed_countries }) %>");
 $("#mappings").html("<%= escape_javascript(render :partial => 'mappings', :locals => { :reed_countries => @reed_countries }) %>");
+$('#country-groups').on('shown.bs.collapse', function () {
+<%= select_js.html_safe %>
+});
 $('html, body').animate({ scrollTop: 0 }, 0);

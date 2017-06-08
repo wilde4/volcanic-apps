@@ -1,7 +1,14 @@
 - url = Rails.env.development? ? 'http://localhost:3001/reed_global/destroy_country' : 'https://apps.volcanic.co/reed_global/destroy_country'
 %table.table
-  - reed_countries.each do |country|
+  %thead
     %tr
-      %td= country.name
+      %td Name
+      %td Reference
       %td
-        .pull-right= link_to 'Delete', "#{url}?dataset_id=#{country.dataset_id}&id=#{country.id}", class: 'delete-country', data: { confirm: "Are you sure you want to delete #{country.name}?" }, method: :post, remote: true
+  %tbody
+    - reed_countries.each do |country|
+      %tr
+        %td= country.name
+        %td= country.country_reference
+        %td
+          .pull-right= link_to 'Delete', "#{url}?dataset_id=#{country.dataset_id}&id=#{country.id}", class: 'delete-country', data: { confirm: "Are you sure you want to delete #{country.name}?" }, method: :post, remote: true

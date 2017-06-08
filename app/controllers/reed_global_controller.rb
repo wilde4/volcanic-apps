@@ -45,15 +45,23 @@ class ReedGlobalController < ApplicationController
   def create_mapping
     @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
     @reed_country = ReedCountry.new dataset_id: params[:dataset_id]
-    @reed_mapping = ReedMapping.new params[:reed_mapping].permit!
-    if @reed_mapping.save
-      flash[:notice] = "Mapping created."
-      @country = @reed_mapping.reed_country
-      @reed_mapping = ReedMapping.new
+
+    params[:reed_mapping][:job_function_id].delete ""
+    params[:reed_mapping][:job_function_id].each do |job_function_id|
+      mapping = ReedMapping.new(reed_country_id: params[:reed_mapping][:reed_country_id], job_function_id: job_function_id, discipline_id: params[:reed_mapping][:discipline_id])
+      @failure = true unless mapping.save
+    end
+
+    @country = ReedCountry.find_by id: params[:reed_mapping][:reed_country_id]
+    @reed_mapping = ReedMapping.new
+
+
+    if params[:reed_mapping][:job_function_id].blank?
+      flash[:alert]  = "You must select at least one Sector."
+    elsif @failure
+      flash[:alert]  = "Some mappings could not be created. Please review and try again."
     else
-      flash[:alert]  = "Mapping could not be created. Please try again."
-      @country = @reed_mapping.reed_country
-      @reed_mapping = ReedMapping.new
+      flash[:notice] = "Mapping created."
     end
   end
 

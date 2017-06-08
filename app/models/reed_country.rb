@@ -14,4 +14,8 @@ class ReedCountry < ActiveRecord::Base
     mappings_hash
   end
 
+  def mapped_job_function_ids
+    mappings.map(&:job_function_id)
+  end
+
 end

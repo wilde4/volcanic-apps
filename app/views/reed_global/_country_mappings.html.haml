@@ -3,9 +3,9 @@
   .well
     %h6
       %b= discipline_name
-    - mappings.each do |mapping|
-      .row
-        .col-xs-8
-          = mapping.job_function_name_from_api_response(@job_functions)
-        .col-xs-4
-          = link_to 'Delete', "#{url}?dataset_id=#{mapping.reed_country.dataset_id}&reed_country_id=#{mapping.reed_country_id}&id=#{mapping.id}", class: 'delete-mapping', data: { confirm: "Are you sure you want to delete this mapping?" }, method: :post, remote: true
+    %table.table
+      - mappings.each do |mapping|
+        %tr
+          %td= mapping.job_function_name_from_api_response(@job_functions)
+          %td
+            .pull-right= link_to 'Delete', "#{url}?dataset_id=#{mapping.reed_country.dataset_id}&reed_country_id=#{mapping.reed_country_id}&id=#{mapping.id}", class: 'delete-mapping', data: { confirm: "Are you sure you want to delete this mapping?" }, method: :post, remote: true
