@@ -8,8 +8,6 @@ module BullhornHelper
       return 'discipline_list'
     when 'job_reference'
       return 'id'
-    when 'job_location'
-      return 'address'
     when 'job_type'
       return 'employmentType'
     when 'salary_low'

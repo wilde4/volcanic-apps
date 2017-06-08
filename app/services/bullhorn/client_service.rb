@@ -142,8 +142,6 @@ class Bullhorn::ClientService < BaseService
       'email' => user.email
     }
 
-    puts ' ---------------------------------------------- attributes set'
-
     if user.linkedin_profile.present?
       attributes['description'] = linkedin_description(user)
     end
@@ -152,7 +150,6 @@ class Bullhorn::ClientService < BaseService
     # PREPARE ADDRESS
     attributes['address'] = {}
 
-    puts ' ---------------------------------------------- before mappings loop'
     # MAP FIELDS TO FIELDS
     field_mappings.each do |fm|
       
@@ -194,8 +191,6 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
-    puts ' ---------------------------------------------- after mappings loop'
-
     # GET BULLHORN ID
     if user.bullhorn_uid.present?
       bullhorn_id = user.bullhorn_uid
@@ -222,8 +217,6 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
-    puts " ---------------------------------------------- bullhorn id #{bullhorn_id if bullhorn_id.present?}"
-
     # CREATE/UPDATE CANDIDATE
     if bullhorn_id.present?
       candidate = @client.candidate(user.bullhorn_uid, {})
@@ -234,8 +227,6 @@ class Bullhorn::ClientService < BaseService
       response = @client.update_candidate(bullhorn_id, attributes.to_json)
 
       user.app_logs.create key: @key, name: 'update_candidate', endpoint: "entity/candidate/#{user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
-
-      puts " ---------------------------------------------- updated user #{bullhorn_id}"
 
       if response.errors.present?
         response.errors.each do |e|
@@ -255,9 +246,8 @@ class Bullhorn::ClientService < BaseService
       response = @client.create_candidate(attributes.to_json)
 
       user.app_logs.create key: @key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
-      puts " ---------------------------------------------- created user"
       user.update(bullhorn_uid: response['changedEntityId'])
-      puts " ---------------------------------------------- updated user after created"
+
       bullhorn_id = response['changedEntityId']
       if response.errors.present?
         response.errors.each do |e|
@@ -453,15 +443,13 @@ class Bullhorn::ClientService < BaseService
       url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
       response = HTTParty.post(url, { body: payload })
 
-      puts "#{response.code} - #{response.read_body}"
-
       # CREATE APP LOGS
       if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
       else
-        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
       end
 
       return response.code.to_i == 200
