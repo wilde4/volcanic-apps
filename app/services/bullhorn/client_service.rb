@@ -291,7 +291,7 @@ class Bullhorn::ClientService < BaseService
 
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
     
-    @job_data = query_job_orders(false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
+    @job_data = query_job_orders(false, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
@@ -368,6 +368,25 @@ class Bullhorn::ClientService < BaseService
     puts "Total data size = #{@job_data.length} jobs"
   end
 
+  #FETCH CLIENT'S BLUHORN JOBS TO EXPIRE FROM VOLCANIC
+  def expire_client_jobs
+    @job_data = query_job_orders(false, true) 
+
+    @job_data.each do |job|
+      if !job.isOpen
+        @job_payload = Hash.new
+        @job_payload["job[api_key]"] = @key.api_key
+        @job_payload['job[job_reference]'] = job.id
+
+        puts "----------------------- expire payload = #{@job_payload.inspect}"
+
+        post_payload_for_expire(@job_payload)
+      end
+    end
+
+    puts "Total data size = #{@job_data.length} jobs"
+  end
+
 
   private
 
@@ -399,7 +418,7 @@ class Bullhorn::ClientService < BaseService
     end
   end
 
-  def query_job_orders(is_deleted, custom_fields = [])
+  def query_job_orders(is_deleted, is_closed = false, custom_fields = [])
     # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Stop when less than 200 received in a query, and return concatenated results
 
@@ -420,6 +439,11 @@ class Bullhorn::ClientService < BaseService
         # jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
 
         jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 2, start: offset)
+      elsif is_closed
+        # jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
+
+        jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 2, start: offset)
+
       else
         # jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
 
@@ -447,7 +471,7 @@ class Bullhorn::ClientService < BaseService
       if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
-        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
       else
         create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
       end
@@ -469,7 +493,7 @@ class Bullhorn::ClientService < BaseService
       
       # CREATE APP LOGS
       if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
-        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
       elsif response['response'].present? && response['response']['reason'].present?
         create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
       else
@@ -481,6 +505,31 @@ class Bullhorn::ClientService < BaseService
       puts "[FAIL] http.request failed to post payload: #{e}"
     end
   end
+
+
+  def post_payload_for_expire(payload)
+
+    begin
+      url = "#{@key.protocol}#{@key.host}/api/v1/jobs/expire.json"
+      response = HTTParty.post(url, { body: payload })
+
+      puts "#{response.code} - #{response.read_body}"
+      
+      # CREATE APP LOGS
+      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+      elsif response['response'].present? && response['response']['reason'].present?
+        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+      else
+        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, nil, true)
+      end
+
+      return response.code.to_i == 200
+    rescue Exception => e
+      puts "[FAIL] http.request failed to post payload: #{e}"
+    end
+  end
+
 
   def default_job_playload_attributes(job)
 

@@ -1,5 +1,6 @@
 # BullhornJobImport.new.import_jobs
 # BullhornJobImport.new.delete_jobs
+# BullhornJobImport.new.expire_jobs
 class BullhornJobImport
 
   def import_jobs
@@ -44,6 +45,27 @@ class BullhornJobImport
     end
 
     puts '- END delete_jobs'
+  end
+
+  def expire_jobs
+    puts '- BEGIN expire_jobs'
+
+    # Find who has registered to use TR:
+    registered_hosts = Key.where(app_name: 'bullhorn')
+
+    registered_hosts.each do |reg_host|
+      puts "Polling for: #{reg_host.host}"
+      @key = reg_host
+
+      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+      if @bullhorn_service.present?
+        @bullhorn_service.expire_client_jobs
+      end
+    end
+
+    puts '- END expire_jobs'
   end
 
 end
