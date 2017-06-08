@@ -1,0 +1,9 @@
+.panel-group#country-groups
+  - reed_countries.each do |country|
+    .panel
+      .panel-heading
+        %h4= link_to country.name, "#country-group#{country.id}", data: { toggle: 'collapse', parent: "#country-groups"}
+
+      .panel-collapse.collapse{ id: "country-group#{country.id}" }
+        %div{id: "country#{country.id}"}
+          = render partial: 'country', locals: { country: country }

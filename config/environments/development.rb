@@ -28,6 +28,6 @@ Apps::Application.configure do
   config.assets.debug = true
 
 
-  config.logger = Logger.new(STDOUT)
+  # config.logger = Logger.new(STDOUT)
   
 end

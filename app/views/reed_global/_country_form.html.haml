@@ -1,0 +1,32 @@
+- url = Rails.env.development? ? 'http://localhost:3001/reed_global/create_country' : 'https://apps.volcanic.co/reed_global/create_country'
+= simple_form_for reed_country, url: url, method: :post, remote: true do |f|
+  = f.input :dataset_id, as: :hidden
+  .panel
+    .panel-heading
+      %h6 Add a country
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :name, input_html: { class: 'form-control' }
+        .col-md-6
+          = f.input :country_reference, as: :string, input_html: { class: 'form-control' }
+      .row
+        .col-md-12
+          = link_to 'Add', '#', id: 'country-submit-btn', class: 'btn btn-primary app-show-loader'
+
+:javascript
+  $("#country-submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#country_form form").submit();
+  });
+
+  $('#country_form form').keyup(function(event) {
+    if(event.keyCode === 13) {
+      $("#country-submit-btn").trigger("click");
+    }
+  });
+
+  $(".app-show-loader").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
