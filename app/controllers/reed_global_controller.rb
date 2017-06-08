@@ -3,7 +3,7 @@ class ReedGlobalController < ApplicationController
   respond_to :json
 
   before_action :set_key, only: [:index]
-  before_action :get_remote_data, except: :job_disciplines
+  before_action :get_remote_data, except: [:job_disciplines, :activate_app, :deactivate_app]
 
   # Controller requires cross-domain POST XHRs
   after_filter :setup_access_control_origin
