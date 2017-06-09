@@ -66,7 +66,7 @@ class BullhornJobImport
           @bullhorn_service.expire_client_jobs
         end
       else
-        puts " --------- Expire Bullhorn's Closed jobs setting not activated for #{reg_host.host}"
+        puts " --------- Expire Bullhorn's Closed jobs setting not active for #{reg_host.host}"
       end
 
     end

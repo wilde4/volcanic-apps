@@ -98,22 +98,56 @@ class BullhornController < ApplicationController
       @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
       @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-
       if @bullhorn_service.present?
         @bullhorn_service.post_user_to_bullhorn(@user, params)
       end
-     
 
       render json: { success: true, user_id: @user.id }
     else
       render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
     end
-
-
   rescue StandardError => e
     Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'save_user', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
+  end
+
+  def job_application
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+    @job_reference = params[:job][:job_reference]
+
+    candidate = {
+      'id' => @user.bullhorn_uid
+    }
+    job_order = {
+      'id' => @job_reference
+    }
+
+    attributes = {
+      'candidate' => candidate,
+      'isDeleted' => 'false',
+      'jobOrder' => job_order,
+      'status' => 'New Lead'
+    }
+
+    if @user.present? && @job_reference.present?
+      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+      
+      @response = @bullhorn_service.send_job_application(attributes) if @bullhorn_service.present?
+
+    end
+    
+    if @response.changedEntityId.present?
+      render json: { success: true, job_submission_id: response.changedEntityId }
+    else
+      render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
+    end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'job_application', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
   end
 

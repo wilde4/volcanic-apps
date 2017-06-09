@@ -401,6 +401,23 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'expire_client_jobs', nil, nil, e.message, true, false)
   end
 
+  #SEND JOB APPLICATION TO BULLHORN
+  def send_job_application(attributes)
+    @response = @client.create_job_submission(attributes.to_json)
+    puts "--- response = #{@response.inspect}"
+
+    if @response.changedEntityId.present?
+      create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, @response, false, false)
+    else
+      create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, @response, true, false)
+    end
+
+    return @response
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, e.message, true, false)
+  end
+
   private
 
   def linkedin_description(user)
