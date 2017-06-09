@@ -146,10 +146,57 @@ class BullhornController < ApplicationController
     end
   rescue StandardError => e
     Honeybadger.notify(e)
-    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
     log_id = create_log(@bullhorn_setting, @key, 'job_application', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
   end
+
+  def new_search
+
+    # create candidate object
+    user_id = params[:search][:user_id] || params[:user][:user][:id]
+    @user = BullhornUser.find_by(user_id: user_id)
+    candidate = {
+      'id' => @user.bullhorn_uid
+    }
+
+    # contruct comment based on received search params
+    search = params[:search]
+    job_type = params[:job_type].present? ? params[:job_type] : "N/A"
+    disciplines = params[:disciplines].present? ? params[:disciplines].map{|d| d[:name] if d[:name].present?}.join(", ") : "N/A"
+    comment = "Keyword: #{search[:query]}</br> Location: #{search[:location]}</br> Job type: #{job_type}</br> Discipline(s): #{disciplines}"
+
+    # create note entity
+    attributes = {
+      'action' => 'Job search on website',
+      'comments' => comment,
+      'isDeleted' => 'false',
+      'personReference' => candidate
+    }
+
+    # create note
+    if @user.present? && comment.present?
+      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+      
+      @response = @bullhorn_service.send_search(attributes, @user) if @bullhorn_service.present?
+
+    end
+    logger.info "--- note_response = #{@response.inspect}"
+
+    # check response and create note entity
+    if @response.changedEntityId.present?
+      render json: { success: true, status: "Note created in Bullhorn" }
+    else
+      render json: { success: false, status: "Note was not created in Bullhorn." }
+    end
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+    log_id = create_log(@bullhorn_setting, @key, 'new_search', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
+  end
+
 
 
   def deactivate_app

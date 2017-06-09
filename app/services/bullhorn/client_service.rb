@@ -418,6 +418,30 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, e.message, true, false)
   end
 
+  #SEND NEW SEARCH TO BULLHORN
+  def send_search(attributes, user)
+    
+    @response = @client.create_note(attributes.to_json)
+
+    if @response.changedEntityId.present?
+
+      # assign note id to local variable
+      note_id = @response.changedEntityId
+
+      # create note entity object
+      create_note_entity(note_id, user)
+
+      create_log(@bullhorn_setting, @key, 'send_search', nil, nil, @response, false, false)
+    else
+      create_log(@bullhorn_setting, @key, 'send_search', nil, nil, @response, true, false)
+    end
+
+    return @response
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'send_search', nil, nil, e.message, true, false)
+  end
+
   private
 
   def linkedin_description(user)
@@ -788,6 +812,24 @@ class Bullhorn::ClientService < BaseService
     array_item = bullhorn_country_array.select{ |name, id| id == country_id }
     if array_item.present?
       array_item.first[0]
+    end
+  end
+
+  def create_note_entity(note_id, user)
+    # create note entity attributes object
+    attributes = {
+      'note' => { 'id' => note_id },
+      'targetEntityID' => user.bullhorn_uid,
+      'targetEntityName' => 'User'
+    }
+
+    # create note entity
+    @response = @client.create_note_entity(attributes.to_json)
+
+    if @response.changedEntityId.present?
+      create_log(@bullhorn_setting, @key, 'create_note_entity', nil, nil, @response, false, false)
+    else
+      create_log(@bullhorn_setting, @key, 'create_note_entity', nil, nil, @response, true, false)
     end
   end
 
