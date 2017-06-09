@@ -15,7 +15,6 @@ class Bullhorn::ClientService < BaseService
     else
       false
     end
-
   rescue
     false
   end
@@ -98,11 +97,13 @@ class Bullhorn::ClientService < BaseService
 
     res = @client.conn.get path, client_params
     obj = @client.decorate_response JSON.parse(res.body)
-    create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, client_params.to_s, obj, obj.errors.present?)
 
     # @bullhorn_job_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
 
     @bullhorn_job_fields = obj['fields'].map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
+
+    create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, client_params.to_s, @bullhorn_job_fields, obj.errors.present?)
+
 
     @bullhorn_job_fields
   rescue BullhornServiceError => e
@@ -129,7 +130,6 @@ class Bullhorn::ClientService < BaseService
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
   end
-
 
   #SEND CANDIDATE INFO TO BULLHORN USING THE GEM
   def post_user_to_bullhorn(user, params)
@@ -262,7 +262,6 @@ class Bullhorn::ClientService < BaseService
       end
     end
     
-   puts "---------------------------------------------"
 
     if bullhorn_id.present?
       #categoies
@@ -354,6 +353,9 @@ class Bullhorn::ClientService < BaseService
 
     puts "Total data size = #{@job_data.length} jobs"
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'import_client_jobs', nil, nil, e.message, true, false)
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
@@ -372,6 +374,9 @@ class Bullhorn::ClientService < BaseService
     end
 
     puts "Total data size = #{@job_data.length} jobs"
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'delete_client_jobs', nil, nil, e.message, true, false)
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO EXPIRE FROM VOLCANIC
@@ -391,8 +396,10 @@ class Bullhorn::ClientService < BaseService
     end
 
     puts "Total data size = #{@job_data.length} jobs"
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'expire_client_jobs', nil, nil, e.message, true, false)
   end
-
 
   private
 
@@ -471,74 +478,65 @@ class Bullhorn::ClientService < BaseService
   end
 
   def post_payload(payload)
-    begin
-      
-      url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
-      response = HTTParty.post(url, { body: payload })
+    
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
+    response = HTTParty.post(url, { body: payload })
 
-      # CREATE APP LOGS
-      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
-        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
-      elsif response['response'].present? && response['response']['reason'].present?
-        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else #SUCCESS
-        create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
-      end
-
-      return response.code.to_i == 200
-    rescue Exception => e
-      create_log(@bullhorn_setting, @key, 'post_job_to_volcanic', url, e.to_s, true, true)
-      puts "[FAIL] http.request failed to post payload: #{e}"
+    # CREATE APP LOGS
+    if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+    elsif response['response'].present? && response['response']['reason'].present?
+      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+    else #SUCCESS
+      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
     end
+
+    return response.code.to_i == 200
+  rescue BullhornServiceError => e
+    create_log(@bullhorn_setting, @key, 'post_job_to_volcanic', url, e.to_s, true, true)
+    puts "[FAIL] http.request failed to post payload: #{e}"
   end
 
   def post_payload_for_delete(payload)
 
-    begin
-      url = "#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json"
-      response = HTTParty.post(url, { body: payload })
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json"
+    response = HTTParty.post(url, { body: payload })
 
-      puts "#{response.code} - #{response.read_body}"
-      
-      # CREATE APP LOGS
-      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
-        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
-      elsif response['response'].present? && response['response']['reason'].present?
-        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else #SUCCESS
-        create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
-      end
-
-      return response.code.to_i == 200
-    rescue Exception => e
-      puts "[FAIL] http.request failed to post payload: #{e}"
+    puts "#{response.code} - #{response.read_body}"
+    
+    # CREATE APP LOGS
+    if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+      create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+    elsif response['response'].present? && response['response']['reason'].present?
+      create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+    else #SUCCESS
+      create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
     end
-  end
 
+    return response.code.to_i == 200
+  rescue BullhornServiceError => e
+    puts "[FAIL] http.request failed to post payload: #{e}"
+  end
 
   def post_payload_for_expire(payload)
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs/expire.json"
+    response = HTTParty.post(url, { body: payload })
 
-    begin
-      url = "#{@key.protocol}#{@key.host}/api/v1/jobs/expire.json"
-      response = HTTParty.post(url, { body: payload })
-
-      puts "#{response.code} - #{response.read_body}"
-      
-      # CREATE APP LOGS
-      if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
-        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
-      elsif response['response'].present? && response['response']['reason'].present?
-        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
-      else #SUCCESS
-        create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
-      end
-
-      return response.code.to_i == 200
-    rescue Exception => e
-      puts "[FAIL] http.request failed to post payload: #{e}"
+    puts "#{response.code} - #{response.read_body}"
+    
+    # CREATE APP LOGS
+    if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+      create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+    elsif response['response'].present? && response['response']['reason'].present?
+      create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+    else #SUCCESS
+      create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
     end
-  end
 
+    return response.code.to_i == 200
+  rescue BullhornServiceError => e
+    puts "[FAIL] http.request failed to post payload: #{e}"
+  end
 
   def default_job_playload_attributes(job)
 
