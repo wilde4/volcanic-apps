@@ -14,14 +14,14 @@
           %hr
           %h6 Published Vacancies Filter
           %p
-            = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, input_html: { class: 'form-control' }, label: false
+            = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, label: false
           %p
             = f.input :expire_closed_jobs, input_html: { class: 'form-control'}, label: 'Expire "Closed" jobs', hint: 'Expire jobs in the site if they are marked as "Closed" in Bullhorn. Jobs will not be deleted.'
           
           %hr
           %h6 Vacancies Fields Mappings
           %p
-            = f.collection_radio_buttons :custom_job_mapping, [[false, 'Default'], [true, 'Custom']], :first, :last, item_wrapper_class: :radio
+            = f.collection_radio_buttons :custom_job_mapping, [[false, 'Default'], [true, 'Custom']], :first, :last, item_wrapper_class: :radio, label: false
           %hr
           
           #custom-mapping{class: "#{@bullhorn_setting.custom_job_mapping? ? 'show' : 'hide' }"}

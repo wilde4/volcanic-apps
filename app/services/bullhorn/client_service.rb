@@ -65,7 +65,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_fields
   rescue BullhornServiceError => e 
     Honeybadger.notify(e)
-    @net_error = create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', nil, nil, e.message, true, true)
+    create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', nil, nil, e.message, true, false)
   end
 
   # GETS VOLCANIC CANDIDATES FIELDS VIA API
@@ -86,7 +86,7 @@ class Bullhorn::ClientService < BaseService
     @volcanic_fields
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
-    @net_error = create_log(@bullhorn_setting, @key, 'get_volcanic_candidate_fields', nil, nil, e.message, true, true)
+    create_log(@bullhorn_setting, @key, 'get_volcanic_candidate_fields', url, nil, e.message, true, true)
   end
 
   # GETS BULLHORN JOB FIELDS VIA API USING THE GEM
@@ -98,7 +98,7 @@ class Bullhorn::ClientService < BaseService
 
     res = @client.conn.get path, client_params
     obj = @client.decorate_response JSON.parse(res.body)
-    create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, client_params.to_s, nil, obj.errors.present?)
+    create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, client_params.to_s, obj, obj.errors.present?)
 
     # @bullhorn_job_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
 
@@ -107,7 +107,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_job_fields
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
-    @net_error = create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', nil, nil, e.message, true, true)
+    create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, nil, e.message, true, false)
   end
 
   # GETS VOLCANIC JOB FIELDS VIA API
@@ -127,7 +127,7 @@ class Bullhorn::ClientService < BaseService
     @volcanic_job_fields
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
-    @net_error = create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
+    create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
   end
 
 
@@ -236,6 +236,7 @@ class Bullhorn::ClientService < BaseService
             :parameters => params
           )
         end
+        create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, params, response.errors, true, true)
       end
     else
 
@@ -256,13 +257,16 @@ class Bullhorn::ClientService < BaseService
             :error_message => "Bullhorn Error: #{e.inspect}",
             :parameters => params
           )
+          create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, params, response.errors, true, true)
         end
       end
     end
     
+   puts "---------------------------------------------"
+
     if bullhorn_id.present?
       #categoies
-      send_category(bullhorn_id, @client)
+      send_category(bullhorn_id)
       # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
       # FIND businessSector ID
       # 'businessSectors'
@@ -283,7 +287,9 @@ class Bullhorn::ClientService < BaseService
       end
 
     end
-      
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, nil, e.message, true, false)
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO IMPORT INTO VOLCANIC
@@ -416,6 +422,9 @@ class Bullhorn::ClientService < BaseService
     if @category_id.present?
       Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_id).send_category_to_bullhorn
     end
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'send_category_to_bullhorn', nil, nil, e.message, true, false)
   end
 
   def query_job_orders(is_deleted, is_closed = false, custom_fields = [])
