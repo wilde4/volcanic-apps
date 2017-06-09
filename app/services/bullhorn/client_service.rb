@@ -132,7 +132,7 @@ class Bullhorn::ClientService < BaseService
   end
 
   #SEND CANDIDATE INFO TO BULLHORN USING THE GEM
-  def post_user_to_bullhorn(user, params)
+  def post_user_to_bullhorn(user, params, attrs = {})
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.user
 
     attributes = {
@@ -140,7 +140,7 @@ class Bullhorn::ClientService < BaseService
       'lastName' => user.user_profile['last_name'],
       'name' => "#{user.user_profile['first_name']} #{user.user_profile['last_name']}",
       'email' => user.email
-    }
+    }.merge(attrs)
 
     if user.linkedin_profile.present?
       attributes['description'] = linkedin_description(user)
@@ -442,28 +442,71 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'send_search', nil, nil, e.message, true, false)
   end
 
+
+  def parse_cv(params, content_type, cv, ct)
+    # TRY UP TO 10 TIMES AS PER SUPPORT:
+    # http://supportforums.bullhorn.com/viewtopic.php?t=15011
+    10.times do
+      require 'tempfile'
+      file = Tempfile.new(params[:user_profile][:upload_name])
+      file.binmode
+      file.write(cv)
+      file.rewind
+      parse_attributes = {
+        'file' => file.path,
+        'ct' => ct
+      }
+      candidate_response = @client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
+
+      if candidate_response['candidate'].present?
+        # STOP LOOP AND RETURN
+        return candidate_response['candidate']
+      end
+    end
+    false # return false if this has not returned a candidate_response after 10 tries
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
+  end
+
+
+  def send_candidate_file(user, file_attributes)
+    @file_response = @client.put_candidate_file(user.bullhorn_uid, file_attributes.to_json)
+
+    if @file_response['fileId'].present?
+      create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
+      return true
+    else
+      create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, true, false)
+      return false
+    end
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'put_candidate_file', nil, nil, e.message, true, false)
+  end
+
   private
 
   def linkedin_description(user)
-      string = '<h1>Curriculum Vitae</h1>' +
-        "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
+    string = '<h1>Curriculum Vitae</h1>' +
+      "<h2>#{user.user_profile['first_name']} #{user.user_profile['last_name']}</h2>"
 
-      if user.linkedin_profile['positions'].present?
-        string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
-        user.linkedin_profile['positions'].each do |position|
-          string = string + '<p>'
+    if user.linkedin_profile['positions'].present?
+      string = string + '<h3>PREVIOUS EXPERIENCE</h3>'
+      user.linkedin_profile['positions'].each do |position|
+        string = string + '<p>'
 
-          company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
-          title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
-          start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
-          end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
-          summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
-          company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
+        company_name = position['company_name'].present? ? 'Company: ' + position['company_name'] + '<br />' : "Company: N/A<br />"
+        title = position['title'].present? ? 'Position: ' + position['title'] + '<br />' : "Position: N/A<br />"
+        start_date = position['start_date'].present? ? 'Start Date: ' + position['start_date'] + '<br />' : "Start Date: N/A<br />"
+        end_date = position['end_date'].present? ? 'End Date: ' + position['end_date'] + '<br />' : "End Date: N/A<br />"
+        summary = position['summary'].present? ? 'Summary: ' + position['summary'] + '<br />' : "Summary: N/A<br />"
+        company_industry = position['company_industry'].present? ? 'Company Industry: ' + position['company_industry'] + '<br />' : "Company Industry: N/A<br />"
 
-          string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
-        end
+        string = string + company_name + title + start_date + end_date + summary + company_industry + '</p>'
       end
-      return string
+    end
+    return string
   end
 
   def send_category(bullhorn_id)
