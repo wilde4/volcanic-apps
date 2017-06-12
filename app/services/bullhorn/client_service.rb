@@ -419,10 +419,29 @@ class Bullhorn::ClientService < BaseService
   end
 
   #SEND NEW SEARCH TO BULLHORN
-  def send_search(attributes, user)
-    
+  def send_search(user, params)
+
+    candidate = {
+      'id' => user.bullhorn_uid
+    }
+
+    # contruct comment based on received search params
+    search = params[:search]
+    job_type = params[:job_type].present? ? params[:job_type] : "N/A"
+    disciplines = params[:disciplines].present? ? params[:disciplines].map{|d| d[:name] if d[:name].present?}.join(", ") : "N/A"
+    comment = "Keyword: #{search[:query]}</br> Location: #{search[:location]}</br> Job type: #{job_type}</br> Discipline(s): #{disciplines}"
+
+    # create note entity
+    attributes = {
+      'action' => 'Job search on website',
+      'comments' => comment,
+      'isDeleted' => 'false',
+      'personReference' => candidate
+    }
+
     @response = @client.create_note(attributes.to_json)
 
+    # check response and create note entity
     if @response.changedEntityId.present?
 
       # assign note id to local variable
@@ -431,9 +450,9 @@ class Bullhorn::ClientService < BaseService
       # create note entity object
       create_note_entity(note_id, user)
 
-      create_log(@bullhorn_setting, @key, 'send_search', nil, nil, @response, false, false)
+      create_log(@bullhorn_setting, @key, 'send_search_successfull', nil, nil, @response, false, false)
     else
-      create_log(@bullhorn_setting, @key, 'send_search', nil, nil, @response, true, false)
+      create_log(@bullhorn_setting, @key, 'send_search_failed', nil, nil, @response, true, false)
     end
 
     return @response
@@ -442,8 +461,7 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'send_search', nil, nil, e.message, true, false)
   end
 
-
-
+  # PARSE AND SEND CANDIDATE'S CV TO BULLHORN
   def send_candidate_cv(user, params)
 
     if Rails.env.development?
@@ -515,7 +533,7 @@ class Bullhorn::ClientService < BaseService
     end
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'send_category_to_bullhorn', nil, nil, e.message, true, false)
+    create_log(@bullhorn_setting, @key, 'send_category', nil, nil, e.message, true, false)
   end
 
   def query_job_orders(is_deleted, is_closed = false, custom_fields = [])
@@ -577,7 +595,7 @@ class Bullhorn::ClientService < BaseService
 
     return response.code.to_i == 200
   rescue BullhornServiceError => e
-    create_log(@bullhorn_setting, @key, 'post_job_to_volcanic', url, e.to_s, true, true)
+    create_log(@bullhorn_setting, @key, 'post_payload', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
 
@@ -599,6 +617,8 @@ class Bullhorn::ClientService < BaseService
 
     return response.code.to_i == 200
   rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'post_payload_for_delete', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
 
@@ -619,6 +639,8 @@ class Bullhorn::ClientService < BaseService
 
     return response.code.to_i == 200
   rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'post_payload_for_expire', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
 

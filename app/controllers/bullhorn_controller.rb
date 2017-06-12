@@ -152,39 +152,20 @@ class BullhornController < ApplicationController
   end
 
   def new_search
-
     # create candidate object
     user_id = params[:search][:user_id] || params[:user][:user][:id]
     @user = BullhornUser.find_by(user_id: user_id)
-    candidate = {
-      'id' => @user.bullhorn_uid
-    }
 
-    # contruct comment based on received search params
-    search = params[:search]
-    job_type = params[:job_type].present? ? params[:job_type] : "N/A"
-    disciplines = params[:disciplines].present? ? params[:disciplines].map{|d| d[:name] if d[:name].present?}.join(", ") : "N/A"
-    comment = "Keyword: #{search[:query]}</br> Location: #{search[:location]}</br> Job type: #{job_type}</br> Discipline(s): #{disciplines}"
-
-    # create note entity
-    attributes = {
-      'action' => 'Job search on website',
-      'comments' => comment,
-      'isDeleted' => 'false',
-      'personReference' => candidate
-    }
-
-    # create note
-    if @user.present? && comment.present?
+    if @user.present?
       @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
       @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
       
-      @response = @bullhorn_service.send_search(attributes, @user) if @bullhorn_service.present?
-
+      @response = @bullhorn_service.send_search(@user, params) if @bullhorn_service.present?
     end
+
     logger.info "--- note_response = #{@response.inspect}"
 
-    # check response and create note entity
+    # check response
     if @response.changedEntityId.present?
       render json: { success: true, status: "Note created in Bullhorn" }
     else
