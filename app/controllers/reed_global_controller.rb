@@ -89,7 +89,7 @@ class ReedGlobalController < ApplicationController
         job_function ||= @job_functions.find { |job_function| job_function['name'] == jf.strip }
 
         if job_function.present?
-          mappings = reed_country.mappings.where job_function_id: job_function['id']
+          mappings = reed_country.mappings.where job_function_id: [job_function['id'], job_function['parent_id']].compact
           mappings.map(&:discipline_id) if mappings.present?
         end
 
