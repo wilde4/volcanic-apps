@@ -36,7 +36,7 @@
 
 
 
-  = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary show-loader'
+  = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
 
 
 = render partial: 'credentials_info'
@@ -53,7 +53,7 @@
     }
   });
 
-  $(".show-loader").click(function(e){
+  $("#submit-btn").click(function(e){
     $(this).addClass("disabled");
     $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
   });
