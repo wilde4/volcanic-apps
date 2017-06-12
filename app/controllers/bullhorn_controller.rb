@@ -200,33 +200,12 @@ class BullhornController < ApplicationController
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
-      
-      if Rails.env.development?
-        key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-        cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
-      else
-        # UPLOAD PATHS USE CLOUDFRONT URL
-        cv_url = params[:user_profile][:upload_path]
-      end
 
-      # @file_attributes COME FROM THIS
-      extract_file_attributes(cv_url, params)
-
-      if @user.present? && @file_attributes.present?
+      if @user.present?
         @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
         @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-        @file_response = @bullhorn_service.send_candidate_file(@user, @file_attributes)
-
-        # PARSE FILE
-        candidate_data = @bullhorn_service.parse_cv(params, @content_type, @cv, @ct)
-
-        # ADD TO CANDIDATE DESCRIPTION
-        if candidate_data.present? && candidate_data['description'].present?
-          attributes = {}
-          attributes['description'] = candidate_data['description']
-          @bullhorn_service.post_user_to_bullhorn(@user, nil, attributes)
-        end
+        @file_response = @bullhorn_service.send_candidate_cv(@user, params)
       end
 
       if @file_response == true
@@ -243,7 +222,6 @@ class BullhornController < ApplicationController
     log_id = create_log(@bullhorn_setting, @key, 'upload_cv', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
   end
-
 
 
   def deactivate_app
@@ -323,39 +301,5 @@ class BullhornController < ApplicationController
       registration_answers
     end
 
-    def extract_file_attributes(cv_url, params)
-      require 'open-uri'
-      require 'base64'
-      settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-      @cv = open(cv_url).read
-      # UPOAD FILE
-      base64_cv = Base64.encode64(@cv)
-      @content_type = params[:user_profile][:upload_name].split('.').last
-      # text, html, pdf, doc, docx, rtf, or odt.
-      case @content_type
-      when 'doc'
-        @ct = 'application/msword'
-      when 'docx'
-        @ct = 'application/vnd.openxmlformatsofficedocument.wordprocessingml.document'
-      when 'txt'
-        @ct = 'text/plain'
-      when 'html'
-        @ct = 'text/html'
-      when 'pdf'
-        @ct = 'application/pdf'
-      when 'rtf'
-        @ct = 'application/rtf'
-      when 'odt'
-        @ct = 'application/vnd.oasis.opendocument.text'
-      end
-      @file_attributes = {
-        'externalID' => 'CV',
-        'fileType' => 'SAMPLE',
-        'name' => params[:user_profile][:upload_name],
-        'fileContent' => base64_cv,
-        'contentType' => @ct,
-        'type' => settings.cv_type_text.present? ? settings.cv_type_text : 'CV'
-      }
-    end   
 
 end

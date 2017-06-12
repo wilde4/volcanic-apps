@@ -443,35 +443,35 @@ class Bullhorn::ClientService < BaseService
   end
 
 
-  def parse_cv(params, content_type, cv, ct)
-    # TRY UP TO 10 TIMES AS PER SUPPORT:
-    # http://supportforums.bullhorn.com/viewtopic.php?t=15011
-    10.times do
-      require 'tempfile'
-      file = Tempfile.new(params[:user_profile][:upload_name])
-      file.binmode
-      file.write(cv)
-      file.rewind
-      parse_attributes = {
-        'file' => file.path,
-        'ct' => ct
-      }
-      candidate_response = @client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
 
-      if candidate_response['candidate'].present?
-        # STOP LOOP AND RETURN
-        return candidate_response['candidate']
+  def send_candidate_cv(user, params)
+
+    if Rails.env.development?
+      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+      cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+    else
+      # UPLOAD PATHS USE CLOUDFRONT URL
+      cv_url = params[:user_profile][:upload_path]
+    end
+
+    # @file_attributes COME FROM THIS
+    extract_file_attributes(cv_url, params)
+
+    if @file_attributes.present?
+
+      @file_response = @client.put_candidate_file(user.bullhorn_uid, @file_attributes.to_json)
+
+      # PARSE FILE
+      candidate_data = parse_cv(params, @content_type, @cv, @ct)
+
+      # ADD TO CANDIDATE DESCRIPTION
+      if candidate_data.present? && candidate_data['description'].present?
+        attributes = {}
+        attributes['description'] = candidate_data['description']
+        post_user_to_bullhorn(user, nil, attributes)
       end
     end
-    false # return false if this has not returned a candidate_response after 10 tries
-  rescue BullhornServiceError => e
-    Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
-  end
 
-
-  def send_candidate_file(user, file_attributes)
-    @file_response = @client.put_candidate_file(user.bullhorn_uid, file_attributes.to_json)
 
     if @file_response['fileId'].present?
       create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
@@ -482,7 +482,7 @@ class Bullhorn::ClientService < BaseService
     end
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'put_candidate_file', nil, nil, e.message, true, false)
+    create_log(@bullhorn_setting, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
   end
 
   private
@@ -875,6 +875,67 @@ class Bullhorn::ClientService < BaseService
       create_log(@bullhorn_setting, @key, 'create_note_entity', nil, nil, @response, true, false)
     end
   end
+
+  def extract_file_attributes(cv_url, params)
+    require 'open-uri'
+    require 'base64'
+    settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
+    @cv = open(cv_url).read
+    # UPOAD FILE
+    base64_cv = Base64.encode64(@cv)
+    @content_type = params[:user_profile][:upload_name].split('.').last
+    # text, html, pdf, doc, docx, rtf, or odt.
+    case @content_type
+    when 'doc'
+      @ct = 'application/msword'
+    when 'docx'
+      @ct = 'application/vnd.openxmlformatsofficedocument.wordprocessingml.document'
+    when 'txt'
+      @ct = 'text/plain'
+    when 'html'
+      @ct = 'text/html'
+    when 'pdf'
+      @ct = 'application/pdf'
+    when 'rtf'
+      @ct = 'application/rtf'
+    when 'odt'
+      @ct = 'application/vnd.oasis.opendocument.text'
+    end
+    @file_attributes = {
+      'externalID' => 'CV',
+      'fileType' => 'SAMPLE',
+      'name' => params[:user_profile][:upload_name],
+      'fileContent' => base64_cv,
+      'contentType' => @ct,
+      'type' => settings.cv_type_text.present? ? settings.cv_type_text : 'CV'
+    }
+  end
+
+  def parse_cv(params, content_type, cv, ct)
+    # TRY UP TO 10 TIMES AS PER SUPPORT:
+    # http://supportforums.bullhorn.com/viewtopic.php?t=15011
+    10.times do
+      require 'tempfile'
+      file = Tempfile.new(params[:user_profile][:upload_name])
+      file.binmode
+      file.write(cv)
+      file.rewind
+      parse_attributes = {
+        'file' => file.path,
+        'ct' => ct
+      }
+      candidate_response = @client.parse_to_candidate_as_file(content_type.upcase, 'html', parse_attributes)
+
+      if candidate_response['candidate'].present?
+        # STOP LOOP AND RETURN
+        return candidate_response['candidate']
+      end
+    end
+    false # return false if this has not returned a candidate_response after 10 tries
+  rescue BullhornServiceError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
+  end 
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
