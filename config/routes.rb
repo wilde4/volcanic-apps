@@ -203,6 +203,7 @@ Apps::Application.routes.draw do
     post 'deactivate_app'   => 'bullhorn#deactivate_app'
     post 'update_settings'  => 'bullhorn#update_settings'
     post 'new_search'       => 'bullhorn#new_search'
+    get 'report'            => 'bullhorn#report'
   end
   
   scope :semrush do

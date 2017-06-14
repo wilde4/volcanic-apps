@@ -226,7 +226,8 @@ class Bullhorn::ClientService < BaseService
 
       response = @client.update_candidate(bullhorn_id, attributes.to_json)
 
-      user.app_logs.create key: @key, name: 'update_candidate', endpoint: "entity/candidate/#{user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+
+      create_log(user, @key, 'update_candidate', "entity/candidate/#{user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
 
       if response.errors.present?
         response.errors.each do |e|
@@ -246,7 +247,7 @@ class Bullhorn::ClientService < BaseService
 
       response = @client.create_candidate(attributes.to_json)
 
-      user.app_logs.create key: @key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+      create_log(user, @key, 'create_candidate', "entity/candidate", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
       user.update(bullhorn_uid: response['changedEntityId'])
 
       bullhorn_id = response['changedEntityId']

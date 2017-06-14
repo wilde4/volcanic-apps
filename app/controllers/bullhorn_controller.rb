@@ -218,6 +218,54 @@ class BullhornController < ApplicationController
     end
   end
 
+  def report
+    key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+    if params[:filter]
+      this_period_start = params[:filter][:start_date].to_date
+      this_period_end = params[:filter][:end_date].to_date + 1.day
+      all_logs = key.app_logs.where(created_at: this_period_start..this_period_end)
+    else
+      all_logs = key.app_logs
+    end
+    user_requests = all_logs.where(loggable_type: 'BullhornUser')
+    user_creates = user_requests.where(name: 'create_candidate', error: false)
+    user_updates = user_requests.where(name: 'update_candidate', error: false)
+    user_failures = user_requests.where(error: true)
+    @report = { 
+      layout: {
+        overview: {
+          data_name: :requests,
+          chart_name: 'Requests',
+          charts: [:total, :success, :failure]
+        },
+        circle_charts: [
+          {
+            data_name: :users,
+            chart_name: 'Users',
+            charts: [:created, :updated, :failed]
+          }
+        ]
+      },
+      report_data: {
+        requests: {
+          total: all_logs.count,
+          success: all_logs.where(error: false).count,
+          failure: all_logs.where(error: true).count
+        },
+        users: {
+          total: user_requests.count,
+          created: user_creates.count,
+          updated: user_updates.count,
+          failed: user_failures.count
+        }
+      }
+    }
+
+    respond_to do |format|
+      format.json { render json: @report }
+    end
+  end
+
 
 
   private
