@@ -5,7 +5,7 @@ module ReedGlobalHelper
   end
 
   def job_function_options(country)
-    @job_functions.map { |job_function| [job_function['name'], job_function['id']] unless country.mapped_job_function_ids.include?(job_function['id']) }.compact
+    @job_functions.map { |job_function| [job_function['name'], job_function['id']] }
   end
 
   def select_js
