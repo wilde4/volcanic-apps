@@ -86,7 +86,7 @@ class ReedGlobalController < ApplicationController
 
         job_function = @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
         job_function ||= @job_functions.find { |job_function| job_function['reference'] == jf.strip }
-        job_function ||= @job_functions.find { |job_function| job_function['name'] == jf.strip }
+        job_function ||= @job_functions.find { |job_function| job_function['name'].downcase == jf.strip.downcase }
 
         if job_function.present?
           mappings = reed_country.mappings.where job_function_id: job_function['id']
