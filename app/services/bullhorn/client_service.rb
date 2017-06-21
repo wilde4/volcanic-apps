@@ -3,7 +3,7 @@ class Bullhorn::ClientService < BaseService
   def initialize(bullhorn_setting)
     @bullhorn_setting = bullhorn_setting
     @client = setup_client
-    @key = Key.find_by(app_dataset_id: bullhorn_setting.dataset_id, app_name: 'bullhorn')
+    @key = Key.find_by(app_dataset_id: bullhorn_setting.dataset_id, app_name: 'bullhorn_v2')
   end
 
   # CHECK IF THE CLIENT HAVE ACCES TO THE API

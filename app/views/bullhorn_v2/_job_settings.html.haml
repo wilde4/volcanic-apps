@@ -1,0 +1,145 @@
+.panel.panel-default
+  .panel-heading 
+    %h5.panel-title 3. Vacancy Settings
+  .panel-body
+    .row
+      .col-xs-12
+        %p This App can import Vacancies from Bullhorn to your Volcanic website. Vacancies are imported every hour at a quarter to the hour.
+        %p Applications made to these Vacancies through the website are automatically updated in Bullhorn. 
+        %p This option should not be selected if your website already uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
+        = f.input :import_jobs, input_html: { class: 'form-control' }
+        
+      - if @bullhorn_setting.import_jobs?
+        .col-xs-12
+          %hr
+          %h6 Published Vacancies Filter
+          %p
+            = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, label: false
+          %p
+            = f.input :expire_closed_jobs, input_html: { class: 'form-control'}, label: 'Expire "Closed" jobs', hint: 'Expire jobs in the site if they are marked as "Closed" in Bullhorn. Jobs will not be deleted.'
+          
+          %hr
+          %h6 Vacancies Fields Mappings
+          %p
+            = f.collection_radio_buttons :custom_job_mapping, [[false, 'Default'], [true, 'Custom']], :first, :last, item_wrapper_class: :radio, label: false
+          %hr
+          
+          #custom-mapping{class: "#{@bullhorn_setting.custom_job_mapping? ? 'show' : 'hide' }"}
+            %p
+              Here you can set how Job fields within your Volcanic website correspond to fields within your Bullhorn vacancies.
+            .alert.alert-info.no-border
+              Any mapping you set here will override any previous default mapping. To remove any custom mapping just set it to blank before saving.
+            -#%a.btn.btn-primary{"aria-controls" => "collapse-jobs-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-jobs-fields"}
+            -# Open mappings
+            -##collapse-jobs-fields.collapse
+
+            .mappings
+              %table.table
+                %thead
+                  %th Bullhorn Vacancy Field
+                  %th
+                  %th Volcanic Job Field
+                %tbody
+                  = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.registration_question_reference.nil? } do |bfm|
+                    %tr
+                      %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: 'form-control' }, selected: default_job_attribute(bfm.object.job_attribute)
+                      %td.text-center
+                        %i.icon-arrow-right16
+                      %td
+                        - if @volcanic_job_fields.present? && @volcanic_job_fields[bfm.object.job_attribute].present?
+                          = @volcanic_job_fields[bfm.object.job_attribute]
+                        - else
+                          = bfm.object.job_attribute
+                          %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
+                        = bfm.input :job_attribute, as: :hidden
+          #default-mapping{class: "#{@bullhorn_setting.custom_job_mapping? ? 'hide' : 'show' }"}
+            .alert.alert-info.no-border
+              These are the default values that are used to post a job on your website using Bullhorn data.
+            .mappings
+              %table.table
+                %thead
+                  %th Bullhorn Vacancy Field
+                  %th
+                  %th Volcanic Job Field
+                %tbody
+                  %tr
+                    %td Job title
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Job title
+                  %tr
+                    %td Job owner email
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Application email
+                  %tr
+                    %td Job owner first name + last name
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Contact name
+                  %tr
+                    %td Job industries
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Disciplines
+                  %tr
+                    %td Job id
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Job reference
+                  %tr
+                    %td Job address
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Location
+                  %tr
+                    %td Job employment type
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Job type
+                  %tr
+                    %td Job salary 
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Job salary low
+                  %tr
+                    %td Salary unit (per day, hour...)
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Salary per (day, hour...)
+                  %tr
+                    %td Job public description
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td Job description
+
+
+
+:javascript
+  
+
+    $("[name='bullhorn_app_setting[custom_job_mapping]']").on( "change", function() {
+        var custom = $(this).val();
+
+        if (custom == 'true'){
+
+          if($("#custom-mapping").hasClass('hide')){
+            $("#custom-mapping").removeClass('hide');
+            $("#custom-mapping").addClass('show');
+          }
+          if($("#default-mapping").hasClass('show')){
+            $("#default-mapping").removeClass('show');
+            $("#default-mapping").addClass('hide');
+          }
+
+        }else{
+          if($("#default-mapping").hasClass('hide')){
+            $("#default-mapping").removeClass('hide');
+            $("#default-mapping").addClass('show');
+          }
+          if($("#custom-mapping").hasClass('show')){
+            $("#custom-mapping").removeClass('show');
+            $("#custom-mapping").addClass('hide');
+          }
+        }
+    } );    
