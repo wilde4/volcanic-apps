@@ -47,6 +47,7 @@ class BullhornController < ApplicationController
           # Set default custom mappings unless present
           @bullhorn_setting.bullhorn_field_mappings.create_with(bullhorn_field_name: 'customFloat1').find_or_create_by(job_attribute: 'salary_high')
           @bullhorn_setting.bullhorn_field_mappings.create_with(bullhorn_field_name: 'customText3').find_or_create_by(job_attribute: 'salary_free')
+          @bullhorn_setting.bullhorn_field_mappings.create_with(bullhorn_field_name: 'businessSectors').find_or_create_by(job_attribute: 'discipline')
         else
           @bullhorn_setting.bullhorn_field_mappings.job.destroy_all
         end
@@ -791,9 +792,13 @@ class BullhornController < ApplicationController
       obj = client.decorate_response JSON.parse(res.body)
       @bullhorn_job_fields = obj['fields'].select { |f| f['type'] == "SCALAR" }.map { |field| ["#{field['label']} (#{field['name']})", field['name']] }.sort! { |x,y| x.first <=> y.first }
 
+      # Get some specfic non SCALAR fields
+      obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'categories' }.each { |field| @bullhorn_job_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+      obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'businessSectors' }.each { |field| @bullhorn_job_fields << ["#{field['label']} (#{field['name']})", field['name']] }
+
 
       # Get volcanic fields
-      url = Rails.env.development? ? "#{@key.protocol}#{@key.host}:3000/api/v1/user_groups.json" : "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
+      url = Rails.env.development? ? "#{@key.protocol}#{@key.host}/api/v1/user_groups.json" : "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
       response = HTTParty.get(url)
 
       @volcanic_fields = {}
@@ -804,7 +809,7 @@ class BullhornController < ApplicationController
         @bullhorn_setting.bullhorn_field_mappings.build(registration_question_reference: reference) unless @bullhorn_setting.bullhorn_field_mappings.find_by(registration_question_reference: reference)
       end
 
-      @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed"}
+      @volcanic_job_fields = {'salary_high' => 'Salary (High)', 'salary_free' => "Salary Displayed", 'discipline' => 'Discipline'}
     rescue StandardError => e # Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError, Net::ReadTimeout, Faraday::TimeoutError, JSON::ParserError => e
       Honeybadger.notify(e)
       @net_error = create_log(@bullhorn_setting, @key, 'get_fields', nil, nil, e.message, true, true)

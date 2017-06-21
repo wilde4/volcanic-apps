@@ -87,17 +87,6 @@ class BullhornJobImport
         @job_payload['job[application_email]'] = @job_payload['job[contact_email]'] = c_user.data.email
         @job_payload['job[contact_name]'] = "#{job.owner.firstName} #{job.owner.lastName}"
 
-        # puts "--- job.businessSectors = #{job.businessSectors}"
-        disciplines = []
-        job.businessSectors.data.each do |bs|
-          # puts "--- bs[:id] = #{bs[:id]}"
-          b_sector = client.business_sector(bs[:id])
-          # puts "--- b_sector = #{b_sector.inspect}"
-          disciplines << b_sector.data.name.strip
-        end
-        discipline_list = disciplines.join(', ')
-        @job_payload['job[discipline]'] = discipline_list.strip
-
         @job_payload['job[created_at]'] = Time.at(job.dateAdded / 1000).to_datetime.to_s
 
         # @job_payload['job[job_reference]'] = job.externalID
@@ -126,6 +115,25 @@ class BullhornJobImport
             else
               @job_payload['job[salary_high]'] = salary_val
             end
+          when 'discipline'
+            case fm.bullhorn_field_name
+            when 'businessSectors'
+              disciplines = []
+              job.businessSectors.data.each do |bs|
+                # puts "--- bs[:id] = #{bs[:id]}"
+                b_sector = client.business_sector(bs[:id])
+                # puts "--- b_sector = #{b_sector.inspect}"
+                disciplines << b_sector.data.name.strip
+                discipline_list = disciplines.join(', ')
+              end
+            when 'categories'
+              disciplines = job.categories.data.map(&:name)
+              discipline_list = disciplines.join(', ')
+            else
+              discipline_list = job.send(fm.bullhorn_field_name)
+            end
+            
+            @job_payload['job[discipline]'] = discipline_list.strip
           end
         end
         
