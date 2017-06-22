@@ -1,14 +1,14 @@
-# BullhornJobImport.new.import_jobs
-# BullhornJobImport.new.delete_jobs
-# BullhornJobImport.new.expire_jobs
-class BullhornJobImport
+# BullhornV2JobImport.new.import_jobs
+# BullhornV2JobImport.new.delete_jobs
+# BullhornV2JobImport.new.expire_jobs
+class BullhornV2JobImport
 
   def import_jobs
     
     puts '- BEGIN import_jobs'
 
     # Find who has registered to use TR:
-    registered_hosts = Key.where(app_name: 'bullhorn')
+    registered_hosts = Key.where(app_name: 'bullhorn_v2')
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
