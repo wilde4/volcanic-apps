@@ -219,18 +219,25 @@ class BullhornV2Controller < ApplicationController
   end
 
   def report
-    key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+    key = Key.where(app_dataset_id: params[:dataset_id], app_name: 'bullhorn_v2').first
     if params[:filter]
       this_period_start = params[:filter][:start_date].to_date
       this_period_end = params[:filter][:end_date].to_date + 1.day
-      all_logs = key.app_logs.where(created_at: this_period_start..this_period_end)
     else
-      all_logs = key.app_logs
+      this_period_start = Date.today - 6.days
+      this_period_end = Date.today + 1.day
     end
+    all_logs = key.app_logs.where(created_at: this_period_start..this_period_end)
     user_requests = all_logs.where(loggable_type: 'BullhornUser')
     user_creates = user_requests.where(name: 'create_candidate', error: false)
     user_updates = user_requests.where(name: 'update_candidate', error: false)
     user_failures = user_requests.where(error: true)
+
+    job_requests = all_logs.where(name: 'post_job_in_volcanic')
+    job_posts = job_requests.where(error: false)
+    # job_updates = job_requests.where(error: false)
+    job_failures = job_requests.where(error: true)
+
     @report = { 
       layout: {
         circle_charts: [
@@ -251,16 +258,16 @@ class BullhornV2Controller < ApplicationController
           {
             data_name: :jobs,
             chart_name: 'Jobs',
-            charts: [:created, :updated, :failed],
+            charts: [:posted, :failed],
             column_size: 6,
-            chart_column_size: 4
+            chart_column_size: 6
           }
-        ],
-        line_chart: {
-          data_name: :timeline,
-          chart_name: 'Request Timeline',
-          column_size: 12
-        }
+        ]#,
+        # line_chart: {
+        #   data_name: :timeline,
+        #   chart_name: 'Request Timeline',
+        #   column_size: 12
+        # }
       },
       report_data: {
         requests: {
@@ -275,26 +282,25 @@ class BullhornV2Controller < ApplicationController
           failed: user_failures.count
         },
         jobs: {
-          total: user_requests.count,
-          created: user_creates.count,
-          updated: user_updates.count,
-          failed: user_failures.count
-        },
-        timeline: [
-          {date: '20160501',total: '8233',success: '6307',failure: '1548'},
-          {date: '20160601',total: '7596',success: '5685',failure: '1616'},
-          {date: '20160701',total: '9260',success: '6781',failure: '2098'},
-          {date: '20160801',total: '9055',success: '6708',failure: '2032'},
-          {date: '20160901',total: '8325',success: '6104',failure: '1991'},
-          {date: '20161001',total: '7609',success: '5445',failure: '1910'},
-          {date: '20161101',total: '7656',success: '5329',failure: '2119'},
-          {date: '20161201',total: '6258',success: '3797',failure: '2289'},
-          {date: '20170101',total: '7871',success: '5472',failure: '2166'},
-          {date: '20170201',total: '8312',success: '5964',failure: '2100'},
-          {date: '20170301',total: '9236',success: '6327',failure: '2651'},
-          {date: '20170401',total: '6703',success: '4752',failure: '1783'},
-          {date: '20170501',total: '8057',success: '5646',failure: '2225'}
-        ]
+          total: job_requests.count,
+          posted: job_posts.count,
+          failed: job_failures.count
+        }#,
+        # timeline: [
+        #   {date: '20160501',total: '8233',success: '6307',failure: '1548'},
+        #   {date: '20160601',total: '7596',success: '5685',failure: '1616'},
+        #   {date: '20160701',total: '9260',success: '6781',failure: '2098'},
+        #   {date: '20160801',total: '9055',success: '6708',failure: '2032'},
+        #   {date: '20160901',total: '8325',success: '6104',failure: '1991'},
+        #   {date: '20161001',total: '7609',success: '5445',failure: '1910'},
+        #   {date: '20161101',total: '7656',success: '5329',failure: '2119'},
+        #   {date: '20161201',total: '6258',success: '3797',failure: '2289'},
+        #   {date: '20170101',total: '7871',success: '5472',failure: '2166'},
+        #   {date: '20170201',total: '8312',success: '5964',failure: '2100'},
+        #   {date: '20170301',total: '9236',success: '6327',failure: '2651'},
+        #   {date: '20170401',total: '6703',success: '4752',failure: '1783'},
+        #   {date: '20170501',total: '8057',success: '5646',failure: '2225'}
+        # ]
       }
     }
 
