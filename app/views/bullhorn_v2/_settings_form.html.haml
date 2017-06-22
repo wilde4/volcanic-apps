@@ -1,0 +1,149 @@
+- url = Rails.env.development? ? 'http://localhost:3001/bullhorn/save_settings' : 'https://apps.volcanic.co/bullhorn/save_settings'
+= simple_form_for @bullhorn_setting, url: url, method: :post, remote: true do |f|
+  = f.input :dataset_id, as: :hidden
+  .panel{class: @bullhorn_setting.authorised? ? 'panel-success' : 'panel-danger'}
+    .panel-heading
+      1. Authentication Settings
+      - if @bullhorn_setting.authorised?
+        %i.icon-checkmark
+      - else
+        = link_to '#', data: { toggle: "modal", target: "#credentialsInfo"} do
+          %i.icon-info22
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :bh_username, input_html: { class: 'form-control' }
+          = f.input :bh_password, input_html: { class: 'form-control', value: @bullhorn_setting.bh_password }
+        .col-md-6
+          = f.input :bh_client_id, input_html: { class: 'form-control' }
+          = f.input :bh_client_secret, as: :password, input_html: { class: 'form-control', value: @bullhorn_setting.bh_client_secret }
+  - if @bullhorn_setting.authorised
+    .panel.panel-default
+      .panel-heading 2. Integration Settings
+      .panel-body
+        .well
+          %h4 Candidate Settings
+          .row
+            .col-md-6
+              = f.input :source_text, input_html: { class: 'form-control', value: f.object.source_text.present? ? f.object.source_text : 'Company Website' }
+          .row
+            .col-md-6
+              = f.input :status_text, input_html: { class: 'form-control', value: f.object.status_text.present? ? f.object.status_text : 'New Lead' }
+          .row
+            .col-md-6
+              = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
+          %hr
+          = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
+
+        .well
+          %h4 Vacancy Settings
+          %p This App can import Vacancies from Bullhorn to your Volcanic website. Vacancies are imported every hour at a quarter to the hour.
+          %p Applications made to these Vacancies through the website are automatically updated in Bullhorn. 
+          %p This option should not be selected if your website already uses a Job Posting tool such as Broadbean/Idibu/LogicMelon.
+          = f.input :import_jobs, input_html: { class: 'form-control' }
+          
+          - if @bullhorn_setting.import_jobs?
+            %hr
+            = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, input_html: { class: 'form-control' }
+          
+          - if @bullhorn_setting.bullhorn_field_mappings.job.present?
+            %hr
+            %p When importing jobs some salary attributes are set by custom Bullhorn fields. We have set these to common defaults but if required you can change them here.
+            - if @bullhorn_fields.blank?
+              .alert.alert-danger
+                Retrieving the latest data for your candidate fields from Bullhorn took too long, please refresh the page to try again. If the problem persists please contact Volcanic support.
+                (Error ID: #{@net_error})
+            - else
+              %table.table
+                %thead
+                  %th Bullhorn Field
+                  %th
+                  %th Volcanic Field
+                %tbody
+                  = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.job do |bfm|
+                    %tr
+                      %td= bfm.input :bullhorn_field_name, collection: @bullhorn_job_fields, label: false, input_html: { class: 'form-control' }
+                      %td.text-center
+                        %i.icon-arrow-right16
+                      %td
+                        = @volcanic_job_fields[bfm.object.job_attribute]
+                        = bfm.input :job_attribute, label: false, as: :hidden, input_html: { class: 'form-control' }
+  
+        
+    .panel.panel-default
+      .panel-heading 3. Field Mappings
+      .panel-body
+        - if @bullhorn_fields.blank?
+          .alert.alert-danger
+            Retrieving the latest data for your candidate fields from Bullhorn took too long, please refresh the page to try again. If the problem persists please contact Volcanic support.
+            (Error ID: #{@net_error})
+        - else
+          .mappings
+            %p
+              Here you can set how registration fields within your Volcanic website correspond to fields within your Bullhorn application.
+              Only the data set up here will be sent to Bullhorn when a Candidate registers.
+            %table.table
+              %thead
+                %th Volcanic Field
+                %th
+                %th Bullhorn Field
+              %tbody
+                %tr
+                  %td LinkedIn Public URL
+                  %td.text-center
+                    %i.icon-arrow-right16
+                  %td= f.input :linkedin_bullhorn_field, collection: @bullhorn_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+                = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
+                  %tr
+                    %td
+                      - if @volcanic_fields[bfm.object.registration_question_reference].present?
+                        = @volcanic_fields[bfm.object.registration_question_reference]
+                      - else
+                        = bfm.object.registration_question_reference
+                        %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
+                      = bfm.input :registration_question_reference, as: :hidden
+                    %td.text-center
+                      %i.icon-arrow-right16
+                    %td= bfm.input :bullhorn_field_name, collection: @bullhorn_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+
+
+  = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary show-loader'
+
+.modal.fade#credentialsInfo{:role => "dialog", :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header.bg-info
+        %button.close{"aria-label" => "Close", "data-dismiss" => "modal", :type => "button"}
+          %span{"aria-hidden" => "true"} ×
+        %h4.modal-title Requesting Authentication Settings
+      .modal-body
+        Authentication settings need to be requested from Bullhorn directly as a support ticket. A sample request you can use is included below:
+
+        .well
+          %p Hello Bullhorn Support,
+          %p Please could you provide us with the credentials we need to allow our website provider Volcanic access the REST API for our account?
+          %p Can you confirm that we will receive the username and password of the API user, along with the client_id and client_secret needed for the OAuth process to access the REST API.
+          %p Many thanks,
+
+        %p Once you have received these details you can enter them in the settings form and start setting up your Bullhorn integration.
+            
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", :type => "button"} Close
+
+:javascript
+  $("#submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#settings_form form").submit();
+  });
+
+  $('#settings_form form').keyup(function(event) {
+    if(event.keyCode === 13) {
+      $("#submit-btn").trigger("click");
+    }
+  });
+
+  $(".show-loader").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
+  $('[data-toggle="tooltip"]').tooltip();

@@ -452,7 +452,7 @@ class BullhornController < ApplicationController
         end
         logger.info "--- UPDATING #{bullhorn_id}, attributes.to_json = #{attributes.to_json.inspect}"
         response = client.update_candidate(bullhorn_id, attributes.to_json)
-        logger.info "--- response = #{response.inspect}"
+        # logger.info "--- response = #{response.inspect}"
         @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         if response.errors.present?
           response.errors.each do |e|
@@ -466,9 +466,9 @@ class BullhornController < ApplicationController
       else
         attributes['status'] = settings.status_text.present? ? settings.status_text : 'New Lead'
         attributes['source'] = settings.source_text.present? ? settings.source_text : 'Company Website'
-        logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
+        # logger.info "--- CREATING CANDIDATE, attributes.to_json =  #{attributes.to_json.inspect}"
         response = client.create_candidate(attributes.to_json)
-        logger.info "--- response = #{response.inspect}"
+        # logger.info "--- response = #{response.inspect}"
         @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
@@ -499,7 +499,7 @@ class BullhornController < ApplicationController
             # logger.info "--- business_sector = #{business_sector.inspect}"
             if business_sector.present?
               bs_response = client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-              logger.info "--- bs_response = #{bs_response.inspect}"
+              # logger.info "--- bs_response = #{bs_response.inspect}"
             end
           end
         end
@@ -516,14 +516,14 @@ class BullhornController < ApplicationController
     
     def post_user_to_bullhorn(user, params)
       settings = AppSetting.find_by(dataset_id: params[:user][:dataset_id]).settings
-      logger.info "--- settings = #{settings.inspect}"
+      # logger.info "--- settings = #{settings.inspect}"
       client = Bullhorn::Rest::Client.new(
         username: settings['username'],
         password: settings['password'],
         client_id: settings['client_id'],
         client_secret: settings['client_secret']
       )
-      logger.info "--- client = #{client.inspect}"
+      # logger.info "--- client = #{client.inspect}"
       attributes = {
         'firstName' => user.user_profile['first_name'],
         'lastName' => user.user_profile['last_name'],
@@ -573,11 +573,11 @@ class BullhornController < ApplicationController
       end
       # CREATE CANDIDATE
       if bullhorn_id.present?
-        logger.info "--- UPDATING #{bullhorn_id}: #{attributes.inspect} ..."
+        # logger.info "--- UPDATING #{bullhorn_id}: #{attributes.inspect} ..."
         response = client.update_candidate(bullhorn_id, attributes.to_json)
-        logger.info "--- response = #{response.inspect}"
+        # logger.info "--- response = #{response.inspect}"
       else
-        logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
+        # logger.info "--- CREATING CANDIDATE: #{attributes.inspect} ..."
         response = client.create_candidate(attributes.to_json)
         @user.update(bullhorn_uid: response['changedEntityId'])
       end
@@ -586,7 +586,7 @@ class BullhornController < ApplicationController
     def upload_cv_to_bullhorn_2(user, client, params)
       @user = user
       key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-      logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
+      # logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if params[:user_profile][:upload_path].present?
         if Rails.env.development?
           cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
@@ -594,13 +594,13 @@ class BullhornController < ApplicationController
           # UPLOAD PATHS USE CLOUDFRONT URL
           cv_url = params[:user_profile][:upload_path]
         end
-        logger.info "--- cv_url = #{cv_url}"
+        # logger.info "--- cv_url = #{cv_url}"
 
         # @file_attributes COME FROM THIS
         extract_file_attributes(cv_url, params)
 
         file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
-        logger.info "--- file_response = #{file_response.inspect}"
+        # logger.info "--- file_response = #{file_response.inspect}"
         create_log(@user, key, 'put_candidate_file', "file/candidate/#{@user.bullhorn_uid}", { attributes: @file_attributes.except('fileContent') }.to_s, file_response.to_s, file_response.errors.present?)
 
         # PARSE FILE
@@ -618,13 +618,13 @@ class BullhornController < ApplicationController
 
     def upload_cv_to_bullhorn(user, params)
       @user = user
-      logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
+      # logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
       if params[:user_profile][:upload_path].present?
         key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
         # cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
         # UPLOAD PATHS USE CLOUDFRONT URL
         cv_url = params[:user_profile][:upload_path]
-        logger.info "--- cv_url = #{cv_url}"
+        # logger.info "--- cv_url = #{cv_url}"
         settings = AppSetting.find_by(dataset_id: params[:dataset_id]).settings
         client = Bullhorn::Rest::Client.new(
           username: settings['username'],
@@ -636,7 +636,7 @@ class BullhornController < ApplicationController
         extract_file_attributes(cv_url, params)
 
         file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
-        logger.info "--- file_response = #{file_response.inspect}"
+        # logger.info "--- file_response = #{file_response.inspect}"
 
         # PARSE FILE
         candidate_data = parse_cv(client, params, @content_type, @cv, @ct)

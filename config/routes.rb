@@ -205,6 +205,22 @@ Apps::Application.routes.draw do
     post 'new_search'       => 'bullhorn#new_search'
   end
   
+  scope :bullhorn_v2 do
+    get 'index'             => 'bullhorn_v2#index'
+    get 'jobs'              => 'bullhorn_v2#jobs'
+    get 'add_file_mapping_field' => 'bullhorn_v2#add_file_mapping_field'
+    get 'get_user'          => 'bullhorn_v2#get_user'
+    post "update"    => 'bullhorn_v2#update'
+    post 'save_user'        => 'bullhorn_v2#save_user'
+    post 'upload_cv'        => 'bullhorn_v2#upload_cv'
+    post 'job_application'  => 'bullhorn_v2#job_application'
+    post 'activate_app'     => 'bullhorn_v2#activate_app'
+    post 'deactivate_app'   => 'bullhorn_v2#deactivate_app'
+    post 'update_settings'  => 'bullhorn_v2#update_settings'
+    post 'new_search'       => 'bullhorn_v2#new_search'
+    get 'report'            => 'bullhorn_v2#report'
+  end
+
   scope :reed_global do
     get 'index'             => 'reed_global#index'
     post 'activate_app'     => 'reed_global#activate_app'
@@ -377,4 +393,6 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'prs#deactivate_app'
     get  "index"            => 'prs#index'
   end
+
+  resources :app_logs
 end

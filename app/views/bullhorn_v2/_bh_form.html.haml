@@ -1,0 +1,60 @@
+- @url_post = Rails.env.development? ? 'http://localhost:3001/bullhorn_v2/update' : 'https://apps.volcanic.co/bullhorn_v2/update'
+= simple_form_for @bullhorn_setting, url: @url_post, method: :post, remote: true do |f|
+
+  -# BULLHORN CONNECTION FORM
+  = f.input :dataset_id, as: :hidden
+  .panel{class: @bullhorn_setting.authorised? ? 'panel-success' : 'panel-danger'}
+    .panel-heading
+      %h5.panel-title 
+        1. Authentication Settings
+        - if @bullhorn_setting.authorised?
+          %i.icon-checkmark
+        - else
+          = link_to '#', data: { toggle: "modal", target: "#credentialsInfo"} do
+            %i.icon-info22
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :bh_username, input_html: { class: 'form-control' }
+          = f.input :bh_password, input_html: { class: 'form-control', value: @bullhorn_setting.bh_password }
+        .col-md-6
+          = f.input :bh_client_id, input_html: { class: 'form-control' }
+          = f.input :bh_client_secret, as: :password, input_html: { class: 'form-control', value: @bullhorn_setting.bh_client_secret }
+
+  -# BULLHORN MAPPINGS AND OPTIONS IF THE CLIENT IS AUTHENTICATED
+  - if @bullhorn_setting.authorised
+    -# CANDIDATE SETTINGS
+    = render partial: 'candidate_settings', locals: {f: f}
+    
+    -# JOB SETTINGS
+    = render partial: 'job_settings', locals: {f: f}
+    
+
+
+
+
+
+
+
+  = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
+
+
+= render partial: 'credentials_info'
+
+:javascript
+  $("#submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#settings_form form").submit();
+  });
+
+  $('#settings_form form').keyup(function(event) {
+    if(event.keyCode === 13) {
+      $("#submit-btn").trigger("click");
+    }
+  });
+
+  $("#submit-btn").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
+  $('[data-toggle="tooltip"]').tooltip();
