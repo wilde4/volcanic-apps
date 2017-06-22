@@ -15,7 +15,7 @@ class BullhornV2JobImport
       @key = reg_host
 
       @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
-      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present? && @bullhorn_setting['import_jobs'] == true
 
       if @bullhorn_service.present?
         @bullhorn_service.import_client_jobs
