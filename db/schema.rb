@@ -345,6 +345,28 @@ ActiveRecord::Schema.define(version: 20170608103421) do
     t.integer  "dataset_id"
   end
 
+  create_table "reed_countries", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "country_reference"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "name"
+  end
+
+  add_index "reed_countries", ["dataset_id", "country_reference"], name: "index_reed_countries_on_dataset_id_and_country_reference", unique: true, using: :btree
+  add_index "reed_countries", ["dataset_id"], name: "index_reed_countries_on_dataset_id", using: :btree
+
+  create_table "reed_mappings", force: true do |t|
+    t.integer  "discipline_id"
+    t.integer  "job_function_id"
+    t.integer  "reed_country_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "reed_mappings", ["job_function_id"], name: "index_reed_mappings_on_job_function_id", using: :btree
+  add_index "reed_mappings", ["reed_country_id"], name: "index_reed_mappings_on_reed_country_id", using: :btree
+
   create_table "referrals", force: true do |t|
     t.integer  "user_id"
     t.string   "token"

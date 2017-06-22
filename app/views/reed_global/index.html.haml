@@ -1,0 +1,35 @@
+.volcanic_apps
+  .row
+    .col-lg-3.col-md-12
+    .col-lg-6.col-md-12
+      %h3 Map Disciplines to Specialist Sectors by country
+      %hr
+
+      #flash_messages
+
+      .row
+        .col-md-12
+          %ul.nav.nav-tabs.nav-tabs-highlight{ style: 'border-bottom: 1px solid #d9d9d9 !important;' }
+            %li.active
+              %a{ :href => '#tab1', 'data-toggle' => 'tab'} Mappings
+            %li
+              %a{ :href => '#tab2', 'data-toggle' => 'tab'} Countries
+          .tab-content
+            .tab-pane.active#tab1
+              #mappings
+                = render partial: 'mappings', locals: { reed_countries: @reed_countries }
+            .tab-pane#tab2
+              #country_form
+                = render partial: 'country_form', locals: { reed_country: @reed_country }
+
+              .panel
+                .panel-heading
+                  %h6 Current countries
+                .panel-body
+                  #countries
+                    = render partial: 'countries', locals: { reed_countries: @reed_countries }
+    
+:javascript
+  $('#country-groups').on('shown.bs.collapse', function () {
+    #{select_js}
+  })

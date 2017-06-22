@@ -1,0 +1,4 @@
+$("#flash_messages").html("<%= escape_javascript(render :partial => 'shared/flashes', :locals => { :flash => flash }) %>");
+$("#country<%= @country.id %>").html("<%= escape_javascript(render :partial => 'country', :locals => { :country => @country }) %>");
+$('#disciplines_<%= @country.id %>').select2({placeholder: 'Pick specialism...'});
+$('#job_functions_<%= @country.id %>').select2({placeholder: 'Pick sector...'});

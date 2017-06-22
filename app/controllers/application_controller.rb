@@ -82,6 +82,8 @@ protected
       app_dataset_id = params[:like][:dataset_id]
     elsif params[:user].present?
       app_dataset_id = params[:user][:dataset_id]
+    elsif params[:reed_country].present?
+      app_dataset_id = params[:reed_country][:dataset_id]
     elsif params[:app_info]
       app_dataset_id = params[:app_info].split('-').last
     end
