@@ -114,7 +114,7 @@ class Bullhorn::ClientService < BaseService
   # GETS VOLCANIC JOB FIELDS VIA API
   def volcanic_job_fields
     
-    url = "#{@key.protocol}#{@key.host}/api/v1/available_job_attributes.json?api_key=#{@key.api_key}"
+    url = "#{@key.protocol}#{@key.host}/api/v1/available_job_attributes.json?api_key=#{@key.api_key}&all=true"
     response = HTTParty.get(url)
 
     @volcanic_job_fields = {}
@@ -322,9 +322,28 @@ class Bullhorn::ClientService < BaseService
         #ONLY USE CUSTOM MAPPINGS IF THE APP IS NOT USING THE DEFAULT MAPPINGS
         if @bullhorn_setting.custom_job_mapping?
           field_mappings.each do |fm|
-            puts "--- job.#{fm.bullhorn_field_name} = #{job.send(fm.bullhorn_field_name)}"
 
-            @job_payload["job[#{fm.job_attribute}]"] = job.send(fm.bullhorn_field_name)
+            # Some bullhorn values need extra massaging
+            case fm.bullhorn_field_name
+            when 'businessSectors'
+              sectors = []
+              job.businessSectors.data.each do |bs|
+                # puts "--- bs[:id] = #{bs[:id]}"
+                b_sector = client.business_sector(bs[:id])
+                # puts "--- b_sector = #{b_sector.inspect}"
+                sectors << b_sector.data.name.strip
+              end
+              value = sectors.join(', ')
+            when 'categories'
+              categories = job.categories.data.map(&:name)
+              value = categories.join(', ')
+            else
+              value = job.send(fm.bullhorn_field_name)
+            end
+
+            puts "--- job.#{fm.bullhorn_field_name} = #{value}"
+
+            @job_payload["job[#{fm.job_attribute}]"] = value
             
           end
         end
@@ -542,18 +561,18 @@ class Bullhorn::ClientService < BaseService
     # Stop when less than 200 received in a query, and return concatenated results
 
     offset = 0
-    # results = 200 # prime the loop
+    results = 200 # prime the loop
 
     #TESTING
-    results = 5 # prime the loop
+    # results = 5 # prime the loop
 
     complete_data = []
 
     fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     
-    # while results == 200
+    while results == 200
     #TESTING
-    while results == 5
+    # while results == 5
       if is_deleted
         # jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
 
