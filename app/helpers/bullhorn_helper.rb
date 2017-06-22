@@ -15,7 +15,7 @@ module BullhornHelper
     when 'job_description'
       return 'publicDescription'
     else
-      return ''
+      return job_attribute
     end
   end
 
