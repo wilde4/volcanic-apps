@@ -576,17 +576,17 @@ class Bullhorn::ClientService < BaseService
       if is_deleted
         # jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
 
-        jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 2, start: offset)
+        jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
       elsif is_closed
         # jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
 
-        jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 2, start: offset)
+        jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
 
       else
         # jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
 
         #TESTING
-        jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 2, start: offset)
+        jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
       end
       
       puts "Received #{jobs["count"]}"
