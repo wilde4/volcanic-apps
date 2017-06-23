@@ -124,8 +124,8 @@ class BullhornJobImport
                 b_sector = client.business_sector(bs[:id])
                 # puts "--- b_sector = #{b_sector.inspect}"
                 disciplines << b_sector.data.name.strip
-                discipline_list = disciplines.join(', ')
               end
+              discipline_list = disciplines.join(', ')
             when 'categories'
               disciplines = job.categories.data.map(&:name)
               discipline_list = disciplines.join(', ')
@@ -133,7 +133,7 @@ class BullhornJobImport
               discipline_list = job.send(fm.bullhorn_field_name)
             end
             
-            @job_payload['job[discipline]'] = discipline_list.strip
+            @job_payload['job[discipline]'] = discipline_list.strip if discipline_list.present?
           end
         end
         
