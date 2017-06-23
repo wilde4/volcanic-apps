@@ -351,6 +351,20 @@ class Bullhorn::ClientService < BaseService
               end
             end
 
+            # Check for blank or zero Max Salary values
+            if fm.job_attribute == 'salary_high'
+              unless value.present? && value.to_i != 0
+                value = @job_payload["job[salary_low]"]
+              end
+            end
+
+            # Check for blank or zero Display Salary values
+            if fm.job_attribute == 'salary_free'
+              unless value.present? && value != 0
+                value = @job_payload["job[salary_low]"]
+              end
+            end
+
             puts "--- job.#{fm.bullhorn_field_name} = #{value}"
 
             @job_payload["job[#{fm.job_attribute}]"] = value
