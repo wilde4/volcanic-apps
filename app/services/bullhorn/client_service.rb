@@ -333,12 +333,22 @@ class Bullhorn::ClientService < BaseService
                 # puts "--- b_sector = #{b_sector.inspect}"
                 sectors << b_sector.data.name.strip
               end
-              value = sectors.join(', ')
-            when 'categories'
-              categories = job.categories.data.map(&:name)
-              value = categories.join(', ')
+              value = sectors.join(',')
             else
-              value = job.send(fm.bullhorn_field_name)
+              bullhorn_value = job.send(fm.bullhorn_field_name)
+              if bullhorn_value.is_a? Hash
+                if bullhorn_value.keys.include? 'data'
+                  value = bullhorn_value.data.map(&:name).join(',')
+                elsif bullhorn_value.keys.include? 'firstName'
+                  value = "#{bullhorn_value.firstName} #{bullhorn_value.lastName}"
+                elsif bullhorn_value.keys.include? 'name'
+                  value = bullhorn_value.name
+                end
+              elsif bullhorn_value.is_a? Array
+                value = bullhorn_value.join(',')
+              else
+                value = bullhorn_value
+              end
             end
 
             puts "--- job.#{fm.bullhorn_field_name} = #{value}"
