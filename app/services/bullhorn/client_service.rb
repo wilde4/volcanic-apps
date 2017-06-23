@@ -629,7 +629,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError => e
+  rescue BullhornServiceError, JSON::ParserError => e
     create_log(@bullhorn_setting, @key, 'post_payload', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
@@ -651,7 +651,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError => e
+  rescue BullhornServiceError, JSON::ParserError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_payload_for_delete', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
@@ -673,7 +673,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError => e
+  rescue BullhornServiceError, JSON::ParserError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_payload_for_expire', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
