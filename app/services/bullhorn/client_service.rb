@@ -358,6 +358,11 @@ class Bullhorn::ClientService < BaseService
           end
         end
 
+        if @bullhorn_setting.client_token.present?
+          @job_payload['job[client_token]'] = @bullhorn_setting.client_token
+          @job_payload['job[paid]'] = 1
+        end
+
         puts "--- job.isOpen = #{job.isOpen}"
         if job.isOpen
           puts '--- JOB IS OPEN'
