@@ -229,6 +229,12 @@ class Bullhorn::ClientService < BaseService
 
       create_log(user, @key, 'update_candidate', "entity/candidate/#{user.bullhorn_uid}", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
 
+      if (response.errors.present? || response.errorMessage.present?)
+        @key.bullhorn_report_entry.increment_count(:user_failed)
+      else
+        @key.bullhorn_report_entry.increment_count(:user_update)
+      end
+
       if response.errors.present?
         response.errors.each do |e|
           Honeybadger.notify(
@@ -249,6 +255,12 @@ class Bullhorn::ClientService < BaseService
 
       create_log(user, @key, 'create_candidate', "entity/candidate", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
       user.update(bullhorn_uid: response['changedEntityId'])
+      
+      if (response.errors.present? || response.errorMessage.present?)
+        @key.bullhorn_report_entry.increment_count(:user_failed)
+      else
+        @key.bullhorn_report_entry.increment_count(:user_create)
+      end
 
       bullhorn_id = response['changedEntityId']
       if response.errors.present?
@@ -392,8 +404,20 @@ class Bullhorn::ClientService < BaseService
           @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
         end
 
+
+        bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
+        begin
+          bullhorn_job.update_attribute :job_params, @job_payload
+        rescue ActiveRecord::StatementInvalid
+          bullhorn_job.update_attribute :job_params, 'Payload too large to save'
+        end
+
         puts "--- @job_payload = #{@job_payload.inspect}"
-        post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
+        if @job_payload["job[discipline]"].blank?
+          bullhorn_job.update_attribute :error, true
+        else
+          post_payload(@job_payload) 
+        end
       else
         puts "--- #{job.title} has been Deleted"
       end
@@ -401,6 +425,9 @@ class Bullhorn::ClientService < BaseService
 
     puts "Total data size = #{@job_data.length} jobs"
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
+    
+    puts "Updating report entries"
+    @key.update_bullhorn_report_job_entries
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'import_client_jobs', nil, nil, e.message, true, false)
@@ -456,6 +483,7 @@ class Bullhorn::ClientService < BaseService
 
     if @response.changedEntityId.present?
       create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, @response, false, false)
+      @key.bullhorn_report_entry.increment_count(:applications)
     else
       create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, @response, true, false)
     end
@@ -628,14 +656,20 @@ class Bullhorn::ClientService < BaseService
   end
 
   def post_payload(payload)
+
+    # Find or create bullhorn_job object
+
+    bullhorn_job = @key.bullhorn_jobs.find_by(bullhorn_uid: payload['job[job_reference]'])
     
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
     response = HTTParty.post(url, { body: payload })
 
     # CREATE APP LOGS
     if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
+      bullhorn_job.update_attribute :error, true
       create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
     elsif response['response'].present? && response['response']['reason'].present?
+      bullhorn_job.update_attribute :error, true
       create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
     else #SUCCESS
       create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
@@ -661,6 +695,7 @@ class Bullhorn::ClientService < BaseService
       create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
     else #SUCCESS
       create_log(@bullhorn_setting, @key, 'delete_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
+      @key.bullhorn_report_entry.increment_count(:job_delete)
     end
 
     return response.code.to_i == 200
@@ -683,6 +718,7 @@ class Bullhorn::ClientService < BaseService
       create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
     else #SUCCESS
       create_log(@bullhorn_setting, @key, 'expire_job_in_volcanic', url, payload.to_s, response.to_s, false, true)
+      @key.bullhorn_report_entry.increment_count(:job_expire)
     end
 
     return response.code.to_i == 200
@@ -1010,7 +1046,7 @@ class Bullhorn::ClientService < BaseService
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
     log.id
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
   end
 
