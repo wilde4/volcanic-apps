@@ -43,7 +43,6 @@ class BullhornReportEntry < ActiveRecord::Base
       }
       start_of_month = start_of_month + 1.month
     end
-    pp timeline
     timeline
   end
 end
