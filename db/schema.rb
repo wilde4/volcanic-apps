@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170623103725) do
+ActiveRecord::Schema.define(version: 20170704142651) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -101,6 +101,33 @@ ActiveRecord::Schema.define(version: 20170623103725) do
   end
 
   add_index "bullhorn_field_mappings", ["bullhorn_app_setting_id"], name: "index_bullhorn_field_mappings_on_bullhorn_app_setting_id", using: :btree
+
+  create_table "bullhorn_jobs", force: true do |t|
+    t.integer  "key_id"
+    t.integer  "bullhorn_uid"
+    t.text     "job_params"
+    t.boolean  "error",        default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "bullhorn_jobs", ["key_id"], name: "index_bullhorn_jobs_on_key_id", using: :btree
+
+  create_table "bullhorn_report_entries", force: true do |t|
+    t.integer "key_id"
+    t.date    "date"
+    t.integer "job_create_count",   default: 0
+    t.integer "job_expire_count",   default: 0
+    t.integer "job_delete_count",   default: 0
+    t.integer "job_failed_count",   default: 0
+    t.integer "user_create_count",  default: 0
+    t.integer "user_update_count",  default: 0
+    t.integer "user_failed_count",  default: 0
+    t.integer "applications_count", default: 0
+  end
+
+  add_index "bullhorn_report_entries", ["date"], name: "index_bullhorn_report_entries_on_date", using: :btree
+  add_index "bullhorn_report_entries", ["key_id"], name: "index_bullhorn_report_entries_on_key_id", using: :btree
 
   create_table "bullhorn_users", force: true do |t|
     t.integer  "user_id"

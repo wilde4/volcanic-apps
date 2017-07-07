@@ -220,6 +220,7 @@ class BullhornV2Controller < ApplicationController
 
   def report
     key = Key.where(app_dataset_id: params[:dataset_id], app_name: 'bullhorn_v2').first
+    bullhorn_app_setting = BullhornAppSetting.find_by(dataset_id: key.app_dataset_id)
     if params[:filter]
       this_period_start = params[:filter][:start_date].to_date
       this_period_end = params[:filter][:end_date].to_date + 1.day
@@ -227,82 +228,80 @@ class BullhornV2Controller < ApplicationController
       this_period_start = Date.today - 6.days
       this_period_end = Date.today + 1.day
     end
-    all_logs = key.app_logs.where(created_at: this_period_start..this_period_end)
-    user_requests = all_logs.where(loggable_type: 'BullhornUser')
-    user_creates = user_requests.where(name: 'create_candidate', error: false)
-    user_updates = user_requests.where(name: 'update_candidate', error: false)
-    user_failures = user_requests.where(error: true)
-
-    job_requests = all_logs.where(name: 'post_job_in_volcanic')
-    job_posts = job_requests.where(error: false)
-    # job_updates = job_requests.where(error: false)
-    job_failures = job_requests.where(error: true)
+    report_entries = key.bullhorn_report_entries.where(date: this_period_start..this_period_end)
+    timeline = BullhornReportEntry.timeline
 
     @report = { 
       layout: {
         circle_charts: [
           {
             data_name: :requests,
-            chart_name: 'Requests',
+            chart_name: 'All Requests',
             charts: [:total, :success, :failure],
             column_size: 12,
             chart_column_size: 4
           },
           {
             data_name: :users,
-            chart_name: 'Users',
+            chart_name: 'Candidate data sent to Bullhorn',
             charts: [:created, :updated, :failed],
-            column_size: 6,
+            column_size: 12,
             chart_column_size: 4
-          },
-          {
-            data_name: :jobs,
-            chart_name: 'Jobs',
-            charts: [:posted, :failed],
-            column_size: 6,
-            chart_column_size: 6
           }
-        ]#,
-        # line_chart: {
-        #   data_name: :timeline,
-        #   chart_name: 'Request Timeline',
-        #   column_size: 12
-        # }
+        ]
       },
       report_data: {
         requests: {
-          total: all_logs.count,
-          success: all_logs.where(error: false).count,
-          failure: all_logs.where(error: true).count
+          total: report_entries.total_count,
+          success: report_entries.total_success_count,
+          failure: report_entries.total_failed_count
         },
         users: {
-          total: user_requests.count,
-          created: user_creates.count,
-          updated: user_updates.count,
-          failed: user_failures.count
-        },
-        jobs: {
-          total: job_requests.count,
-          posted: job_posts.count,
-          failed: job_failures.count
-        }#,
-        # timeline: [
-        #   {date: '20160501',total: '8233',success: '6307',failure: '1548'},
-        #   {date: '20160601',total: '7596',success: '5685',failure: '1616'},
-        #   {date: '20160701',total: '9260',success: '6781',failure: '2098'},
-        #   {date: '20160801',total: '9055',success: '6708',failure: '2032'},
-        #   {date: '20160901',total: '8325',success: '6104',failure: '1991'},
-        #   {date: '20161001',total: '7609',success: '5445',failure: '1910'},
-        #   {date: '20161101',total: '7656',success: '5329',failure: '2119'},
-        #   {date: '20161201',total: '6258',success: '3797',failure: '2289'},
-        #   {date: '20170101',total: '7871',success: '5472',failure: '2166'},
-        #   {date: '20170201',total: '8312',success: '5964',failure: '2100'},
-        #   {date: '20170301',total: '9236',success: '6327',failure: '2651'},
-        #   {date: '20170401',total: '6703',success: '4752',failure: '1783'},
-        #   {date: '20170501',total: '8057',success: '5646',failure: '2225'}
-        # ]
+          total: report_entries.count_for(:user_create) + report_entries.count_for(:user_update) + report_entries.count_for(:user_failed),
+          created: report_entries.count_for(:user_create),
+          updated: report_entries.count_for(:user_update),
+          failed: report_entries.count_for(:user_failed)
+        }
       }
     }
+
+    # Only add job stats if the app is set up for jobs
+    if bullhorn_app_setting.import_jobs?
+      @report[:layout][:circle_charts] += [
+        {
+          data_name: :jobs,
+          chart_name: 'Job data received from Bullhorn',
+          charts: [:posted, :failed_to_post],
+          column_size: 6,
+          chart_column_size: 6
+        },
+        {
+          data_name: :applications,
+          chart_name: 'Application data sent to Bullhorn',
+          charts: [:total],
+          column_size: 6,
+          chart_column_size: 12
+        }
+      ]
+      @report[:report_data].merge!(
+        {
+          jobs: {
+            total: report_entries.count_for(:job_create) + report_entries.count_for(:job_failed),
+            posted: report_entries.count_for(:job_create),
+            failed_to_post: report_entries.count_for(:job_failed)
+          },
+          applications: {
+            total: report_entries.count_for(:applications)
+          }
+        }
+      )
+    end
+
+    # Only add the timeline if we have data in it
+    if timeline.any? { |t| t.any? { |k,v| k != :date && v > 0 } }
+      @report[:layout].merge!({ line_chart: { data_name: :timeline, chart_name: 'Request Timeline', column_size: 12 } })
+      @report[:report_data].merge!({ timeline: timeline })
+    end
 
     respond_to do |format|
       format.json { render json: @report }

@@ -239,6 +239,7 @@ class BullhornController < ApplicationController
     logger.info "--- response = #{response.inspect}"
     if response.changedEntityId.present?
       render json: { success: true, job_submission_id: response.changedEntityId }
+      @key.bullhorn_report_entry.increment_count(:applications)
     else
       render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
     end
@@ -454,6 +455,13 @@ class BullhornController < ApplicationController
         response = client.update_candidate(bullhorn_id, attributes.to_json)
         # logger.info "--- response = #{response.inspect}"
         @user.app_logs.create key: key, name: 'update_candidate', endpoint: "entity/candidate/#{@user.bullhorn_uid}", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+        
+        if (response.errors.present? || response.errorMessage.present?)
+          @key.bullhorn_report_entry.increment_count(:user_failed)
+        else
+          @key.bullhorn_report_entry.increment_count(:user_update)
+        end
+
         if response.errors.present?
           response.errors.each do |e|
             Honeybadger.notify(
@@ -470,6 +478,13 @@ class BullhornController < ApplicationController
         response = client.create_candidate(attributes.to_json)
         # logger.info "--- response = #{response.inspect}"
         @user.app_logs.create key: key, name: 'create_candidate', endpoint: "entity/candidate", message: { attributes: attributes }.to_s, response: response.to_s, error: response.errors.present?
+
+        if (response.errors.present? || response.errorMessage.present?)
+          @key.bullhorn_report_entry.increment_count(:user_failed)
+        else
+          @key.bullhorn_report_entry.increment_count(:user_create)
+        end
+
         @user.update(bullhorn_uid: response['changedEntityId'])
         bullhorn_id = response['changedEntityId']
         if response.errors.present?

@@ -159,8 +159,19 @@ class BullhornJobImport
           @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
         end
 
+        bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
+        begin
+          bullhorn_job.update_attribute :job_params, @job_payload
+        rescue ActiveRecord::StatementInvalid
+          bullhorn_job.update_attribute :job_params, 'Payload too large to save'
+        end
+
         puts "--- @job_payload = #{@job_payload.inspect}"
-        post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
+        if @job_payload["job[discipline]"].blank?
+          bullhorn_job.update_attribute :error, true
+        else
+          post_payload(@job_payload) 
+        end
       else
         puts "--- #{job.title} has been Deleted"
       end
@@ -168,6 +179,9 @@ class BullhornJobImport
 
     puts "Total data size = #{@job_data.length} jobs"
     puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
+    
+    puts "Updating report entries"
+    @key.update_bullhorn_report_job_entries
   end
 
   def parse_jobs_for_delete(client)
@@ -229,12 +243,16 @@ class BullhornJobImport
     # request.set_form_data( payload )
     # net.read_timeout = net.open_timeout = 10
 
+    bullhorn_job = @key.bullhorn_jobs.find_by(bullhorn_uid: payload['job[job_reference]'])
+
     begin
       # response = net.start do |http|
       #   http.request(request)
       # end
 
       response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs.json", { body: payload })
+
+      bullhorn_job.update_attribute(:error, true) unless response.code.to_i == 200
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
@@ -247,6 +265,8 @@ class BullhornJobImport
 
     begin
       response = HTTParty.post("#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json", { body: payload })
+
+      @key.bullhorn_report_entry.increment_count(:job_delete) if response.code.to_i == 200
 
       puts "#{response.code} - #{response.read_body}"
       return response.code.to_i == 200
