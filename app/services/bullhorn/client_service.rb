@@ -408,8 +408,8 @@ class Bullhorn::ClientService < BaseService
         bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
         begin
           bullhorn_job.update_attribute :job_params, @job_payload
-        rescue ActiveRecord::StatementInvalid
-          bullhorn_job.update_attribute :job_params, 'Payload too large to save'
+        rescue StandardError
+          bullhorn_job.update_attribute :job_params, 'Error saving payload'
         end
 
         puts "--- @job_payload = #{@job_payload.inspect}"
