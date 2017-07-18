@@ -672,6 +672,7 @@ class Bullhorn::ClientService < BaseService
       bullhorn_job.update_attribute :error, true
       create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
     else #SUCCESS
+      bullhorn_job.update_attribute :error, false
       create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
     end
 
