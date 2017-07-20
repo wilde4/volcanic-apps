@@ -403,7 +403,7 @@ class Bullhorn::ClientService < BaseService
           end
         else
           puts '--- JOB IS CLOSED'
-          if @job_payload['job[expiry_date]'].empty? || (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date > Date.today)
+          if @job_payload['job[expiry_date]'].blank? || (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date > Date.today)
             @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
           end
         end
