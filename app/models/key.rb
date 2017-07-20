@@ -20,4 +20,12 @@ class Key < ActiveRecord::Base
   def bullhorn_report_entry
     bullhorn_report_entries.find_or_create_by date: Date.today
   end
+
+  def update_all_bullhorn_report_job_entries
+    bullhorn_report_entries.each do |report|
+      date = report.date
+      jobs = bullhorn_jobs.where created_at: date.beginning_of_day..date.end_of_day
+      report.update_job_counts(jobs)
+    end
+  end
 end
