@@ -115,6 +115,14 @@ class SplitFeeController < ApplicationController
     end
   end
 
+  def get_shared_candidate_split_fee
+
+    fee = SplitFee.where(app_dataset_id: params[:dataset_id], user_id: params[:user_id]).last
+    respond_to do |format|
+      format.json { render json: { success: true, split_fee: fee } }
+    end
+  end
+
 
 
 
@@ -156,15 +164,13 @@ class SplitFeeController < ApplicationController
     render nothing: true, status: 200 and return
   end
 
-  # need to add methods for SCF: Create, Delete, Update...
-
   protected
 
-    def _get_shared_canddiate(user_id)
-      return (user_id.nil? ? SplitFee.new : SplitFee.find_by(user_id: user_id))
-    end
+  def _get_shared_canddiate(user_id)
+    return (user_id.nil? ? SplitFee.new : SplitFee.find_by(user_id: user_id))
+  end
 
-    def split_fee_setting_params
-      params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
-    end
+  def split_fee_setting_params
+    params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
+  end
 end
