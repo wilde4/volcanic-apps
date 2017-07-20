@@ -309,7 +309,7 @@ class Bullhorn::ClientService < BaseService
 
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
     
-    @job_data = query_job_orders(false, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
+    @job_data = query_job_orders(false, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }, @bullhorn_setting.job_status)
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
@@ -612,45 +612,42 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'send_category', nil, nil, e.message, true, false)
   end
 
-  def query_job_orders(is_deleted, is_closed = false, custom_fields = [])
-    # Bullhorn only returns 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
-    # Stop when less than 200 received in a query, and return concatenated results
+  def query_job_orders(is_deleted, is_closed = false, custom_fields = [], job_status = nil)
+    # Bullhorn only returns a max of 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
+    # Depending on the requested data less than 200 results may be received, so keep checking until 0 results are returned
 
     offset = 0
     results = 200 # prime the loop
-
-    #TESTING
-    # results = 5 # prime the loop
 
     complete_data = []
 
     fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     
-    while results == 200
-    #TESTING
-    # while results == 5
+    while results > 0
       if is_deleted
-        # jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
 
         jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
+
       elsif is_closed
-        # jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
 
         jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
 
-      else
-        # jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
+      elsif job_status.present?
 
-        #TESTING
+        jobs = @client.query_job_orders(where: "isDeleted = false AND status = '#{job_status}'", fields: fields, count: 200, start: offset)
+
+      else
+
         jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
+
       end
       
       puts "Received #{jobs["count"]}"
-      puts "Received 200 - possibly another page" if jobs["count"] >= 200
+      puts "Received results - possibly another page" if jobs["count"] > 0
 
       results = jobs["count"]
-      offset += 200
-      complete_data.concat jobs.data
+      offset += jobs["count"]
+      complete_data.concat jobs.data if jobs["count"] > 0
     end
     complete_data
   end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170704142651) do
+ActiveRecord::Schema.define(version: 20170720115838) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -88,6 +88,7 @@ ActiveRecord::Schema.define(version: 20170704142651) do
     t.boolean  "custom_job_mapping",         default: false
     t.boolean  "expire_closed_jobs",         default: false
     t.string   "client_token"
+    t.string   "job_status"
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|

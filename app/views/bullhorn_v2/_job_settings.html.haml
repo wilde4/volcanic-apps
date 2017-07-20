@@ -16,6 +16,8 @@
           %p
             = f.input :uses_public_filter, collection: [['Import all open vacancies', false], ['Import only open vacancies marked to be published', true]], as: :radio_buttons, label: false
           %p
+            = f.input :job_status, label: 'Import only jobs with the following status', hint: 'Leave blank to import all jobs (except archived).', input_html: { class: 'form-control'}
+          %p
             = f.input :expire_closed_jobs, input_html: { class: 'form-control'}, label: 'Expire "Closed" jobs', hint: 'Expire jobs in the site if they are marked as "Closed" in Bullhorn. Jobs will not be deleted.'
           
           %hr

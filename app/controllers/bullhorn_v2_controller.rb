@@ -329,6 +329,7 @@ class BullhornV2Controller < ApplicationController
         :custom_job_mapping,
         :expire_closed_jobs,
         :status_text,
+        :job_status,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )
     end
