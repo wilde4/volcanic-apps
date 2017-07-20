@@ -396,14 +396,16 @@ class Bullhorn::ClientService < BaseService
           # Expiry = date + 365 days
           begin
             date = Date.parse(@job_payload['job[created_at]'])
-            @job_payload['job[expiry_date]'] = (date + 365.days).to_s
+            @job_payload['job[expiry_date]'] ||= (date + 365.days).to_s
           rescue Exception => e
             puts "[WARN] #{e}"
-            @job_payload['job[expiry_date]'] = (Date.today + 365.days).to_s
+            @job_payload['job[expiry_date]'] ||= (Date.today + 365.days).to_s
           end
         else
           puts '--- JOB IS CLOSED'
-          @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
+          if @job_payload['job[expiry_date]'].empty? || (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date > Date.today)
+            @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
+          end
         end
 
 
