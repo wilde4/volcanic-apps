@@ -420,7 +420,12 @@ class Bullhorn::ClientService < BaseService
         if @job_payload["job[discipline]"].blank?
           bullhorn_job.update_attribute :error, true
         else
-          post_payload(@job_payload) 
+          # Don't post if we have a client_id (ie a job board) and the job is open but we have a past expiry date (as oliver API will still make live because job board)
+          if @bullhorn_setting.client_token.present? && (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date < Date.today)
+            bullhorn_job.update_attribute :error, true
+          else
+            post_payload(@job_payload)
+          end
         end
       else
         puts "--- #{job.title} has been Deleted"
