@@ -229,7 +229,7 @@ class BullhornV2Controller < ApplicationController
       this_period_end = Date.today + 1.day
     end
     report_entries = key.bullhorn_report_entries.where(date: this_period_start..this_period_end)
-    timeline = BullhornReportEntry.timeline
+    timeline = key.bullhorn_report_entries.timeline
 
     @report = { 
       layout: {
