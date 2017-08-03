@@ -1,0 +1,11 @@
+%html
+  %body
+    - if @job.present?
+      %p
+        XJAFN: #{@first_name}<br>
+        XJALN: #{@last_name}<br>
+        XJAEM: #{@email}<br>
+        XJAMP: #{@registration_answer_hash['phone']}<br>
+        XJAST: #{@registration_answer_hash['state-i-reside-in']}<br>
+        XJARS: #{@registration_answer_hash['residency']}<br>
+      *** DAXTRA DATA ***

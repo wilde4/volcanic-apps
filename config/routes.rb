@@ -394,6 +394,13 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'prs#deactivate_app'
     get  "index"            => 'prs#index'
   end
+  scope :daxtra do
+    get "email_data"     => 'daxtra#email_data'
+    post "email_data"     => 'daxtra#email_data'
+    post "activate_app"     => 'daxtra#activate_app'
+    post "deactivate_app"   => 'daxtra#deactivate_app'
+    get  "index"            => 'daxtra#index'
+  end
 
   resources :app_logs
 end
