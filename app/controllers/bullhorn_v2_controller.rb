@@ -100,6 +100,13 @@ class BullhornV2Controller < ApplicationController
 
       if @bullhorn_service.present?
         @bullhorn_service.post_user_to_bullhorn(@user, params)
+        
+        if @bullhorn_service.send_candidate_cv(@user, params) == true
+          create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
+        else
+          create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+        end
+
       end
 
       render json: { success: true, user_id: @user.id }
@@ -190,10 +197,10 @@ class BullhornV2Controller < ApplicationController
       end
 
       if @file_response == true
-        create_log(@bullhorn_setting, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
+        create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
         render json: { success: true, user_id: @user.id }
       else
-        create_log(@bullhorn_setting, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+        create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
         render json: { success: false, status: "CV was not uploaded to Bullhorn" }
       end
     end

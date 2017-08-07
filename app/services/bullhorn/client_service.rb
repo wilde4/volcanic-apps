@@ -576,7 +576,7 @@ class Bullhorn::ClientService < BaseService
     end
 
 
-    if @file_response['fileId'].present?
+    if @file_response && @file_response['fileId'].present?
       create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
       return true
     else
@@ -586,6 +586,7 @@ class Bullhorn::ClientService < BaseService
   rescue BullhornServiceError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
+    return false
   end
 
   private
