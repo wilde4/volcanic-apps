@@ -30,7 +30,7 @@ class BullhornV2JobImport
     puts '- BEGIN delete_jobs'
 
     # Find who has registered to use TR:
-    registered_hosts = Key.where(app_name: 'bullhorn')
+    registered_hosts = Key.where(app_name: 'bullhorn_v2')
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
@@ -51,7 +51,7 @@ class BullhornV2JobImport
     puts '- BEGIN expire_jobs'
 
     # Find who has registered to use TR:
-    registered_hosts = Key.where(app_name: 'bullhorn')
+    registered_hosts = Key.where(app_name: 'bullhorn_v2')
 
     registered_hosts.each do |reg_host|
       puts "Polling for: #{reg_host.host}"
