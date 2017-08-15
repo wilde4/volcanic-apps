@@ -1,0 +1,84 @@
+.row
+  .col-xs-12
+    %h2
+      File:
+      = @file.filename
+
+    .well
+      %p
+        = @file.lines.where(processed: true).count
+        \/
+        = @file.lines.count
+        lines imported successfully
+      %p
+        = @file.lines.where(error: true).count
+        \/
+        = @file.lines.count
+        lines returned errors when importing
+      %p
+        Import reference:
+        %span.label.label-info data_import_#{@file.id}
+        
+        
+
+.row
+  .col-xs-12
+    .pull-right.mt25= link_to 'Map Headers', edit_data_import_file_path(@file), class: 'btn btn-success'
+    %h2
+      Mapped headers
+      (#{@file.mapped_headers.count}/#{@file.headers.count})
+
+    .well
+      - if @file.mapped_headers.present?
+        %table.table
+          %thead
+            %tr
+              %th Header
+              %th Mapping
+          %tbody
+            - @file.mapped_headers.each do |header|
+              %tr
+                %td= header.name
+                %td
+                  - if header.registration_question
+                    = header.registration_question.label
+                  - else
+                    = header.column_name
+      - else
+        No headers mapped yet
+
+.row
+  .col-xs-12
+    %h2
+      Update Data
+    .well
+      = simple_form_for @file, multipart: true do |f|
+        .col-sm-6.col-xs-12
+          .form-group
+            = f.label :file, 'Choose file'
+            = f.file_field :file, class: 'form-control'
+        .col-sm-4.col-xs-12
+          = f.input :model, collection: %w{user client job blog}
+        .col-sm-2.col-xs-12.mt25
+          .form-group
+            = f.submit 'Update', class: 'btn btn-default'
+      .clearfix
+
+.row
+  .col-xs-12
+    %h2 Import into Site
+    .well
+      %p
+        = simple_form_for @file, html: { class: 'form-inline' } do |f|
+          Send maximum
+          .form-group
+            = f.input :max_size, class: 'form-control', label: false, input_html: { value: @file.max_size || 5 }
+          records, every
+          .form-group
+            = f.input :delay_interval, class: 'form-control', label: false, input_html: { value: @file.delay_interval || 1 }
+          seconds
+          .form-group
+            = f.submit 'Update', class: 'btn btn-default'
+        .clearfix
+
+      = link_to 'Perform Import', import_data_import_file_path(@file), class: 'btn btn-warning', data: { confirm: 'Are you sure?' }

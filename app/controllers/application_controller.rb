@@ -99,4 +99,10 @@ protected
     Honeybadger.notify(e)
   end
 
+  def set_profile
+    if cookies[:profile_domain].present?
+      @profile = Profile.last # Profile.find_by(host: cookies[:profile_domain])
+    end
+  end
+
 end

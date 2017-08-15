@@ -403,4 +403,32 @@ Apps::Application.routes.draw do
   end
 
   resources :app_logs
+  
+  devise_for :profiles
+  get "sso/:id" => "sessions#new"
+
+  namespace :data_import do
+    get "index" => "data_import#index"
+    get "welcome" => "data_import#welcome"
+    resources :files do
+      get 'creating', :on => :collection
+      get 'importing', :on => :member
+      get 'updating', :on => :member
+      get 'import', :on => :member
+      resources :headers
+    end
+    get "post_to_api" => "post_to_api#index"
+    resources :registration_questions
+  end
+
+  # ===========
+  # = API =
+  # ===========
+
+  namespace :api, defaults: { format: "json" } do
+    namespace :v1 do
+      post "activate_app"     =>  'profiles#activate_app'
+      post "deactivate_app"   =>  'profiles#deactivate_app'
+    end
+  end
 end

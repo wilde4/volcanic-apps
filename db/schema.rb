@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170720115838) do
+ActiveRecord::Schema.define(version: 20170815155914) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -187,6 +187,52 @@ ActiveRecord::Schema.define(version: 20170720115838) do
     t.string  "cv_credit_title"
     t.text    "cv_credit_description"
   end
+
+  create_table "data_import_files", force: true do |t|
+    t.string   "filename"
+    t.integer  "profile_id"
+    t.integer  "user_group_id"
+    t.string   "uid"
+    t.string   "created_at_mapping"
+    t.integer  "max_size"
+    t.integer  "delay_interval"
+    t.string   "model"
+    t.integer  "user_id"
+    t.string   "post_mapping"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+  end
+
+  add_index "data_import_files", ["profile_id"], name: "index_data_import_files_on_profile_id", using: :btree
+
+  create_table "data_import_headers", force: true do |t|
+    t.string   "name"
+    t.string   "mapping"
+    t.integer  "data_import_file_id"
+    t.integer  "registration_question_id"
+    t.boolean  "multiple_answers",         default: false
+    t.string   "column_name"
+    t.boolean  "nl2br",                    default: false
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
+  end
+
+  add_index "data_import_headers", ["data_import_file_id"], name: "index_data_import_headers_on_data_import_file_id", using: :btree
+  add_index "data_import_headers", ["registration_question_id"], name: "index_data_import_headers_on_registration_question_id", using: :btree
+
+  create_table "data_import_lines", force: true do |t|
+    t.integer  "number"
+    t.text     "values"
+    t.text     "error_messages"
+    t.boolean  "error",               default: false
+    t.boolean  "processed",           default: false
+    t.integer  "data_import_file_id"
+    t.string   "uid"
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+  end
+
+  add_index "data_import_lines", ["data_import_file_id"], name: "index_data_import_lines_on_data_import_file_id", using: :btree
 
   create_table "eventbrite_settings", force: true do |t|
     t.integer  "dataset_id"
@@ -374,6 +420,15 @@ ActiveRecord::Schema.define(version: 20170720115838) do
     t.integer  "dataset_id"
   end
 
+  create_table "profiles", force: true do |t|
+    t.string   "host"
+    t.string   "api_key"
+    t.boolean  "enable"
+    t.integer  "app_dataset_id"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+  end
+
   create_table "reed_countries", force: true do |t|
     t.integer  "dataset_id"
     t.string   "country_reference"
@@ -414,6 +469,18 @@ ActiveRecord::Schema.define(version: 20170720115838) do
     t.string   "account_number"
     t.string   "sort_code"
     t.integer  "dataset_id"
+  end
+
+  create_table "registration_questions", force: true do |t|
+    t.string   "user_group_name"
+    t.integer  "user_group_id"
+    t.string   "label"
+    t.string   "reference"
+    t.string   "core_reference"
+    t.string   "profile_id"
+    t.string   "uid"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
   create_table "roles", force: true do |t|

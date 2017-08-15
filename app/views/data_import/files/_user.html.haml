@@ -1,0 +1,39 @@
+- if builder.object.name == 'full_name'
+  .row
+    .col-xs-3
+      .form-group
+        = builder.object.name
+        = builder.input :column_name, collection: [['Full Name', 'full_name']], label: false, input_html: { class: 'form-control' }, include_blank: true
+        = builder.input :multiple_answers
+    .col-xs-3.mt30
+      = truncate(@file.lines[0].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[1].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[2].values[builder.object.name])
+- elsif builder.object.name == 'disciplines'
+  .row
+    .col-xs-3
+      .form-group
+        = builder.object.name
+        = builder.input :column_name, collection: [['Disciplines', 'disciplines']], label: false, input_html: { class: 'form-control' }, include_blank: true
+        = builder.input :multiple_answers
+    .col-xs-3.mt30
+      = truncate(@file.lines[0].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[1].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[2].values[builder.object.name])
+- else
+  .row
+    .col-xs-3
+      .form-group
+        = builder.object.name
+        = builder.association :registration_question, collection: mappings_collection, selected: (f.object.created_at_mapping.present? && builder.object.name == f.object.created_at_mapping ? 'created_at' : builder.object.registration_question_id), label: false, input_html: { class: 'form-control' }, include_blank: true
+        = builder.input :multiple_answers
+    .col-xs-3.mt30
+      = truncate(@file.lines[0].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[1].values[builder.object.name])
+    .col-xs-3.mt30
+      = truncate(@file.lines[2].values[builder.object.name])

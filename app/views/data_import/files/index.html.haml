@@ -1,0 +1,31 @@
+.row
+  .col-xs-12
+    %h2 Files
+    %table.table
+      %thead
+        %tr
+          %th Filename
+          %th Import Type
+          %th Uploaded At
+      %body
+        - @files.each do |file|
+          %tr
+            %td= link_to file.filename, data_import_file_path(file)
+            %td= file.model.try(:capitalize)
+            %td= file.created_at.to_s(:long)
+
+.row
+  .col-xs-12
+    .btn-group
+      %button.btn.btn-default.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
+        Add File
+        %span.caret
+      %ul.dropdown-menu
+        %li
+          = link_to 'Users file', new_data_import_file_path(model: 'user')
+        %li
+          = link_to 'Clients file', new_data_import_file_path(model: 'client')
+        %li
+          = link_to 'Jobs file', new_data_import_file_path(model: 'job')
+        %li
+          = link_to 'Blogs file', new_data_import_file_path(model: 'blog')

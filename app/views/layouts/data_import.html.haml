@@ -1,0 +1,64 @@
+!!! 5
+%html(lang="en")
+  %head
+    %meta(charset="utf-8")
+    %meta(http-equiv="Content-Language" content="#{@content_language}")
+    %meta(http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1")
+    %meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    %title
+      = yield :page_title
+      = " - Data Import - Volcanic"
+    = csrf_meta_tags
+    / Le HTML5 shim, for IE6-8 support of HTML elements
+    /[if lt IE 9]
+      = javascript_include_tag "//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.1/html5shiv.js"
+    = stylesheet_link_tag "application", :media => "all"
+    = favicon_link_tag 'apple-touch-icon-144x144-precomposed.png', :rel => 'apple-touch-icon-precomposed', :type => 'image/png', :sizes => '144x144'
+    = favicon_link_tag 'apple-touch-icon-114x114-precomposed.png', :rel => 'apple-touch-icon-precomposed', :type => 'image/png', :sizes => '114x114'
+    = favicon_link_tag 'apple-touch-icon-72x72-precomposed.png', :rel => 'apple-touch-icon-precomposed', :type => 'image/png', :sizes => '72x72'
+    = favicon_link_tag 'apple-touch-icon-precomposed.png', :rel => 'apple-touch-icon-precomposed', :type => 'image/png'
+    = favicon_link_tag 'favicon.ico', :rel => 'shortcut icon'
+    = javascript_include_tag "application"
+
+
+  %body
+    .navbar.navbar-default.navbar-static-top
+      .container
+        - if profile_signed_in?
+          %button.navbar-toggle(type="button" data-toggle="collapse" data-target=".navbar-responsive-collapse")
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          = render :partial => 'shared/logo'
+
+          .navbar-collapse.collapse.navbar-responsive-collapse
+            %ul.nav.navbar-nav
+              %li= link_to "Files", data_import_files_path
+              %li= link_to "Registration Questions", data_import_registration_questions_path
+
+            %ul.nav.navbar-nav.pull-right
+              %li
+                = link_to "#", :"data-toggle" => "dropdown", :"aria-expanded" => "true", id:"dropdownMenu1" do
+                  %i.fa.fa-language
+                  =@locale
+                  %span.caret
+                %ul.dropdown-menu.dropdown-menu-right{ role:"menu", :"aria-labelledby"=> "dropdownMenu1"}
+                  %li{:role=>"presentation"}
+                    %a{role:"menuitem", tabindex:"-1", href:"?locale=en", :onclick => "set_locale('en-GB');"} English
+                  %li{:role=>"presentation"}
+                    %a{role:"menuitem", tabindex:"-1", href:"?locale=es", :onclick => "set_locale('es-ES');"} Español
+                  %li{:role=>"presentation"}
+                    %a{role:"menuitem", tabindex:"-1", href:"?locale=ja", :onclick => "set_locale('ja-JP');"} 日本人
+
+              %li
+
+                = link_to "Sign Out", destroy_profile_session_path, method: :delete
+
+
+    .container
+      .row
+        .col-lg-9
+          = bootstrap_flash
+          = yield
+      %footer
+        %p &copy; Volcanic 2010&mdash;2015

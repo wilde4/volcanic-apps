@@ -1,0 +1,23 @@
+= simple_form_for @file, multipart: true do |f|
+  = f.input :model, as: :hidden
+  .form-group
+    = f.label :file, 'Upload file'
+    = f.file_field :file, class: 'form-control'
+  .form-group
+    = f.input :uid, label: "Unique ID", hint: "Please provide the name of a column header/xml node which can uniquely identify each row of data", input_html: { class: 'form-control' }
+  - if f.object.model == 'user'
+    .form-group
+      = f.input :user_group_id, collection: @user_groups, required: true, input_html: { class: 'form-control' }
+    .form-group
+      = f.input :post_mapping, label: "Post mapping", hint: "For xml docs, the node name of a user", required: true, input_html: { class: 'form-control' }
+    .form-group
+      = f.input :nodes, as: :text, label: "Nodes", hint: "For xml docs, the names of relevant nodes, one per line", input_html: { class: 'form-control' }
+  - if f.object.model == 'blog'
+    .form-group
+      = f.input :user_id, label: "User ID", hint: "Please provide the ID of a user to associate the blogs to", required: true, input_html: { class: 'form-control' }
+    .form-group
+      = f.input :post_mapping, label: "Post mapping", hint: "For xml docs, the node name of a blog post", required: true, input_html: { class: 'form-control' }
+    .form-group
+      = f.input :nodes, as: :text, label: "Nodes", hint: "For xml docs, the names of relevant nodes, one per line", input_html: { class: 'form-control' }
+  .form-group
+    = f.submit 'Upload', class: 'btn btn-default'

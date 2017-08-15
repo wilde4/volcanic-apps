@@ -53,6 +53,14 @@ gem 'attr_encrypted', '~> 1.3.4'
 gem 'sanitize', '3.0.0'
 gem 'shoryuken', '~> 2.0.3'
 
+# Data Import app
+gem 'devise'
+gem 'dragonfly', '~> 1.0.10'
+gem 'dragonfly-s3_data_store'
+gem 'remotipart', '~> 1.2'
+gem "twitter-bootstrap-rails", '~> 3.2'
+gem 'sidekiq', '~> 3.3'
+
 group :development do
   gem 'sqlite3'
   gem 'bootstrap-sass'
