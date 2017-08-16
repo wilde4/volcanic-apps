@@ -44,6 +44,7 @@ GEM
       encryptor (>= 1.3.0)
     aws-sdk-core (2.2.10)
       jmespath (~> 1.0)
+    bcrypt (3.1.11)
     bootstrap-sass (3.2.0.1)
       sass (~> 3.2)
     buftok (0.2.0)
@@ -81,18 +82,34 @@ GEM
       execjs
     coffee-script-source (1.7.0)
     columnize (0.9.0)
+    commonjs (0.2.7)
+    connection_pool (2.2.1)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     crass (0.2.0)
     daemons (1.1.9)
     debugger-linecache (1.2.0)
+    devise (3.5.10)
+      bcrypt (~> 3.0)
+      orm_adapter (~> 0.1)
+      railties (>= 3.2.6, < 5)
+      responders
+      thread_safe (~> 0.1)
+      warden (~> 1.2.3)
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
+    dragonfly (1.0.12)
+      addressable (~> 2.3)
+      multi_json (~> 1.0)
+      rack (>= 1.3.0)
+    dragonfly-s3_data_store (1.0.5)
+      dragonfly (~> 1.0)
+      fog
     encryptor (1.3.0)
     equalizer (0.0.11)
     erubis (2.7.0)
     excon (0.33.0)
-    execjs (2.0.2)
+    execjs (2.7.0)
     factory_girl (4.4.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.4.1)
@@ -106,6 +123,27 @@ GEM
       bundler (~> 1.0)
       rails (>= 3, < 5)
     flickraw (0.9.8)
+    fog (1.22.1)
+      fog-brightbox
+      fog-core (~> 1.22)
+      fog-json
+      ipaddress (~> 0.5)
+      nokogiri (~> 1.5, >= 1.5.11)
+    fog-brightbox (0.13.0)
+      fog-core (~> 1.22)
+      fog-json
+      inflecto (~> 0.0.2)
+    fog-core (1.22.0)
+      builder
+      excon (~> 0.33)
+      formatador (~> 0.2)
+      mime-types
+      net-scp (~> 1.1)
+      net-ssh (>= 2.1.3)
+    fog-json (1.0.2)
+      fog-core (~> 1.0)
+      multi_json (~> 1.10)
+    formatador (0.2.5)
     gibberish (1.4.0)
     gibbon (2.2.4)
       faraday (>= 0.9.1)
@@ -131,6 +169,8 @@ GEM
     httpi (2.4.1)
       rack
     i18n (0.7.0)
+    inflecto (0.0.2)
+    ipaddress (0.8.3)
     jbuilder (1.5.3)
       activesupport (>= 3.0.0)
       multi_json (>= 1.2.0)
@@ -142,6 +182,13 @@ GEM
     jwt (0.1.11)
       multi_json (>= 1.5)
     kgio (2.9.2)
+    less (2.6.0)
+      commonjs (~> 0.2.7)
+    less-rails (2.8.0)
+      actionpack (>= 4.0)
+      less (~> 2.6.0)
+      sprockets (> 2, < 4)
+      tilt
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
@@ -159,6 +206,9 @@ GEM
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     naught (1.1.0)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-ssh (4.1.0)
     netrc (0.11.0)
     newrelic_rpm (3.7.2.195)
     nokogiri (1.5.11)
@@ -172,6 +222,7 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (~> 1.2)
+    orm_adapter (0.5.0)
     polyglot (0.3.4)
     pry (0.10.1)
       coderay (~> 1.1.0)
@@ -181,6 +232,8 @@ GEM
       byebug (~> 3.4)
       pry (~> 0.10)
     rack (1.5.2)
+    rack-protection (1.5.3)
+      rack
     rack-test (0.6.2)
       rack (>= 1.0)
     rails (4.0.1)
@@ -198,6 +251,12 @@ GEM
       thor (>= 0.18.1, < 2.0)
     raindrops (0.13.0)
     rake (10.3.1)
+    redis (3.3.3)
+    redis-namespace (1.5.3)
+      redis (~> 3.0, >= 3.0.4)
+    remotipart (1.3.1)
+    responders (1.1.2)
+      railties (>= 3.2, < 4.2)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -226,10 +285,20 @@ GEM
     shoryuken (2.0.3)
       aws-sdk-core (~> 2)
       celluloid (~> 0.16)
+    sidekiq (3.5.4)
+      celluloid (~> 0.17.2)
+      connection_pool (~> 2.2, >= 2.2.0)
+      json (~> 1.0)
+      redis (~> 3.2, >= 3.2.1)
+      redis-namespace (~> 1.5, >= 1.5.2)
     simple_form (3.1.0)
       actionpack (~> 4.0)
       activemodel (~> 4.0)
     simple_oauth (0.2.0)
+    sinatra (1.4.8)
+      rack (~> 1.5)
+      rack-protection (~> 1.4)
+      tilt (>= 1.3, < 3)
     slop (3.6.0)
     sprockets (2.11.0)
       hike (~> 1.2)
@@ -263,6 +332,11 @@ GEM
       memoizable (~> 0.4.0)
       naught (~> 1.0)
       simple_oauth (~> 0.2.0)
+    twitter-bootstrap-rails (3.2.2)
+      actionpack (>= 3.1)
+      execjs (>= 2.2.2, >= 2.2)
+      less-rails (>= 2.5.0)
+      railties (>= 3.1)
     tzinfo (0.3.42)
     uglifier (2.5.0)
       execjs (>= 0.3.0)
@@ -276,6 +350,8 @@ GEM
       raindrops (~> 0.7)
     unicorn-worker-killer (0.4.2)
       unicorn (~> 4)
+    warden (1.2.7)
+      rack (>= 1.0)
     wasabi (3.5.0)
       httpi (~> 2.0)
       nokogiri (>= 1.4.2)
@@ -303,6 +379,9 @@ DEPENDENCIES
   clockwork
   coffee-rails (~> 4.0.0)
   daemons
+  devise
+  dragonfly (~> 1.0.10)
+  dragonfly-s3_data_store
   factory_girl_rails
   faker
   figaro
@@ -324,21 +403,25 @@ DEPENDENCIES
   oauth2
   pry-byebug
   rails (= 4.0.1)
+  remotipart (~> 1.2)
   rest-client (~> 1.8)
   sanitize (= 3.0.0)
   sass-rails (~> 4.0.0)
   savon (~> 2.0)
   semrush
   shoryuken (~> 2.0.3)
+  sidekiq (~> 3.3)
   simple_form
+  sinatra
   sqlite3
   stringex
   turbolinks
   twitter
+  twitter-bootstrap-rails (~> 3.2)
   uglifier (>= 1.3.0)
   unicorn
   unicorn-worker-killer
   youtube_it
 
 BUNDLED WITH
-   1.13.6
+   1.13.7

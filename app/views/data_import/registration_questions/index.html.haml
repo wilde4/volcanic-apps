@@ -1,0 +1,19 @@
+.well
+  %p Successfully Updated #{pluralize(@records, "registration question")}
+  - if @removed_questions_count > 0
+    %p Removed #{pluralize(@removed_questions_count, "registration question")} that no longer exist
+
+%table.table.table-striped
+  %tr
+    %th User Group
+    %th Label
+    %th Reference
+    %th Core Reference
+    
+  - @profile.registration_questions.each do |registration_question|
+    %tr
+      %td
+        = "#{registration_question.user_group_name} (#{registration_question.user_group_id})"
+      %td=registration_question.label
+      %td=registration_question.reference
+      %td=registration_question.core_reference

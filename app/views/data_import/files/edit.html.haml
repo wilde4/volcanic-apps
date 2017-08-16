@@ -1,0 +1,19 @@
+.pull-right= link_to "Back", data_import_file_path(@file), class: 'btn btn-default'
+%h2
+  Header Mappings
+  - if @file.model == 'user'
+    for
+    = RegistrationQuestion.where(user_group_id: @file.user_group_id).first.user_group_name
+    User Group
+
+.row
+  .col-xs-3
+    %h3 Header
+  .col-xs-9
+    %h3 Example data (first 3 lines from file)
+= simple_form_for @file do |f|
+  = f.fields_for :headers do |builder|
+    = render partial: f.object.model, locals: { f: f, builder: builder }
+        
+  .form-group
+    = f.submit 'Save', class: 'btn btn-success'

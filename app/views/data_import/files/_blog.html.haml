@@ -1,0 +1,12 @@
+.row
+  .col-xs-3
+    .form-group
+      = builder.object.name
+      = builder.input :column_name, collection: blog_columns_collection, label: false, input_html: { class: 'form-control' }, include_blank: true
+      = builder.input :nl2br, label: 'New lines to break tags'
+  .col-xs-3.mt30
+    = truncate(@file.lines[0].values[builder.object.name])
+  .col-xs-3.mt30
+    = truncate(@file.lines[1].values[builder.object.name])
+  .col-xs-3.mt30
+    = truncate(@file.lines[2].values[builder.object.name])

@@ -1,0 +1,13 @@
+.row
+  .col-xs-12
+    .spinner
+
+:javascript
+  setTimeout(function(){reload_page();},5000)
+
+  function reload_page() {
+    var loc_array = location.href.split('/')
+    if(loc_array[(loc_array.length -1)] == 'updating' || loc_array[(loc_array.length -1)] == 'updating?updating=true') {
+      location = '#{updating_data_import_file_path(@file)}';
+    }
+  }
