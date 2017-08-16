@@ -431,4 +431,9 @@ Apps::Application.routes.draw do
       post "deactivate_app"   =>  'profiles#deactivate_app'
     end
   end
+
+  require 'sidekiq/web'
+  authenticate :profile do
+    mount Sidekiq::Web => '/sidekiq'
+  end
 end

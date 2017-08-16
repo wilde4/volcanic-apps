@@ -60,6 +60,7 @@ gem 'dragonfly-s3_data_store'
 gem 'remotipart', '~> 1.2'
 gem "twitter-bootstrap-rails", '~> 3.2'
 gem 'sidekiq', '~> 3.3'
+gem 'sinatra', :require => nil
 
 group :development do
   gem 'sqlite3'
