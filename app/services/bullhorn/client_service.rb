@@ -248,7 +248,11 @@ class Bullhorn::ClientService < BaseService
     else
 
       attributes['status'] = @bullhorn_setting.status_text.present? ? @bullhorn_setting.status_text : 'New Lead'
-      attributes['source'] = @bullhorn_setting.source_text.present? ? @bullhorn_setting.source_text : 'Company Website'
+      if @bullhorn_setting.use_utm_source? && user.user_data['utm_source']
+        attributes['source'] = user.user_data['utm_source']
+      else
+        attributes['source'] = @bullhorn_setting.source_text.present? ? @bullhorn_setting.source_text : 'Company Website'
+      end
 
 
       response = @client.create_candidate(attributes.to_json)
