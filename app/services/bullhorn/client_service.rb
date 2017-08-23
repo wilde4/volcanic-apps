@@ -172,7 +172,7 @@ class Bullhorn::ClientService < BaseService
         attributes[fm.bullhorn_field_name] = answer_integer if answer_integer.present?
       when 'countryID'
         # ADDRESS COUNTRY
-        attributes['address']['countryID'] = get_country_id(answer) if answer.present?
+        attributes['address']['countryID'] = get_country(answer) if answer.present?
       when 'category', 'categoryID'
         # FIND category ID
         categories = @client.categories
