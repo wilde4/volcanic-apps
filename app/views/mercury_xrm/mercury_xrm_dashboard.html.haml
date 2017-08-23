@@ -1,14 +1,9 @@
 %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"}
 / %script#mercuryxrm-widget{"data-div" => "mercuryxrm-remote", "data-key" => "#{@encrypted_email}", :src => "http://xrmportalsdev-systest.azurewebsites.net/mercury.candidateportal/app/PortalWidget.js"}
 
-%script#mercuryxrm-widget{"data-div" => "mercuryxrm-remote", "data-key" => "QZv0Hr58jU8oZcnk/jE4oa+Qoy0LBBGcDpPRNpSta/4=", :src => "https://xrmportalsdev-systest.azurewebsites.net/mercury.candidateportal/app/PortalWidget.js"}
+%script#mercuryxrm-widget{"async" => true, "data-div" => "mercuryxrm-remote", "data-key" => "QZv0Hr58jU8oZcnk/jE4oa+Qoy0LBBGcDpPRNpSta/4=", :src => "https://xrmportalsdev-systest.azurewebsites.net/mercury.candidateportal/app/PortalWidget.js"}
 
-.row{style: "margin-top: 40px; margin-bottom: 40px;"}
-  .col-md-12{style: "padding: 0;"}
-    .well{style: "padding: 0;"}
-      #mercuryxrm-remote{style: "position: relative;"}
-
-:css
-  div#mercuryxrm-remote div.navbar.navbar-inverse.navbar-fixed-top {
-    position: absolute;
-  }
+.row
+  .col-md-12
+    .well
+      #mercuryxrm-remote

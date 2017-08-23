@@ -1,5 +1,7 @@
 class MercuryXrmController < ApplicationController
 
+  layout "no_jquery_application"
+
   def mercury_xrm_dashboard
     @encrypted_email = _encrypt_email(params[:data][:email])
     render "mercury_xrm_dashboard"
