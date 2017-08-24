@@ -32,6 +32,7 @@ module Clockwork
   
   every(2.hours, 'poll_bullhorn.job', at: '**:45') do
     BullhornWorker.perform_async({})
+    BullhornV2Worker.perform_async({})
   end
   
   # every(1.day, 'send_activity_logs_to_oliver_james', at: '23:30') do 
