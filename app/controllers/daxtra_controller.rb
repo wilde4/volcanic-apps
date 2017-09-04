@@ -20,6 +20,7 @@ class DaxtraController < ApplicationController
       @last_name = @user_profile['last_name']
       @registration_answer_hash = params[:registration_answer_hash] || {}
       @job = params[:job]
+      @utm = params[:user][:utm_source]
       body =  render_to_string(action: 'email_data.html.haml', layout: false)
       render json: { success: true, body: body }
     else
