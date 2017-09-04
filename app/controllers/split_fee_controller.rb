@@ -48,7 +48,6 @@ class SplitFeeController < ApplicationController
         }}
       end
     end
-
   end
 
   def job_form
@@ -58,12 +57,15 @@ class SplitFeeController < ApplicationController
   end
 
   def job_create
+
     job_id = params[:job][:id]
     
     if params[:job][:extra].present? && params[:job][:extra][:split_fee].present?
+      
       split_free_params = params[:job][:extra][:split_fee]
-      split_fee = SplitFee.find_by(job_id: job_id)
-      salary_band = params[:job][:salary_high]
+      split_fee =         SplitFee.find_by(job_id: job_id)
+      salary_band =       params[:job][:salary_high]
+      
       if split_fee.present?
         split_fee.update_attributes(job_id: job_id,
                         app_dataset_id: @key.app_dataset_id,
@@ -80,6 +82,7 @@ class SplitFeeController < ApplicationController
                         expiry_date: params[:job][:expiry_date])
       end
     end
+
     render nothing: true, status: 200 and return
   end
 
@@ -118,6 +121,7 @@ class SplitFeeController < ApplicationController
   def get_shared_candidate_split_fee
 
     fee = SplitFee.where(app_dataset_id: params[:dataset_id], user_id: params[:user_id]).last
+
     respond_to do |format|
       format.json { render json: { success: true, split_fee: fee } }
     end
@@ -128,25 +132,35 @@ class SplitFeeController < ApplicationController
 
   def shared_candidate_form
     @split_fee_setting = SplitFeeSetting.find_by(app_dataset_id: @key.app_dataset_id)
-    @user = _get_shared_canddiate( JSON.parse(params["data"]["user"])["id"] )
+    @user = get_shared_canddiate( JSON.parse(params["data"]["user"])["id"] )
     render layout: false
   end
 
   def shared_candidate_create
 
-    u = _get_shared_canddiate(params[:user][:id])
+    u = get_shared_canddiate(params[:user][:id])
+
+    _salary_band =    params[:user][:salary_high]
+    _fee_percentage = 12.5
+    _expiry_date =    Date.today + 1.year
 
     if u.nil?
       SplitFee.create(
         user_id:         params[:user][:id].to_i,
         app_dataset_id:  params[:apikey][:dataset_id],
+        salary_band:     _salary_band,
+        fee_percentage:  _fee_percentage.to_i,
         terms_of_fee:    params[:user][:split_fee][:terms_of_fee],
-        fee_percentage:  params[:user][:split_fee][:fee_percentage].to_i
+        expiry_date:     _expiry_date
       )
     else
       u.update_attributes(
-        terms_of_fee:   params[:user][:split_fee][:terms_of_fee],
-        fee_percentage: params[:user][:split_fee][:fee_percentage].to_i
+        user_id:         params[:user][:id].to_i,
+        app_dataset_id:  params[:apikey][:dataset_id],
+        salary_band:     _salary_band,
+        fee_percentage:  _fee_percentage.to_i,
+        terms_of_fee:    params[:user][:split_fee][:terms_of_fee],
+        expiry_date:     _expiry_date
       )
     end
 
@@ -155,7 +169,7 @@ class SplitFeeController < ApplicationController
 
   def shared_candidate_destroy
     
-    u = _get_shared_canddiate(params[:user][:id])
+    u = get_shared_canddiate(params[:user][:id])
 
     if !u.nil?
       u.update_attributes(expiry_date: Date.yesterday)
@@ -166,11 +180,13 @@ class SplitFeeController < ApplicationController
 
   protected
 
-  def _get_shared_canddiate(user_id)
+  def get_shared_canddiate(user_id)
+
     return (user_id.nil? ? SplitFee.new : SplitFee.find_by(user_id: user_id))
   end
 
   def split_fee_setting_params
+    
     params.require(:split_fee_setting).permit(:app_dataset_id, :salary_bands, :details)
   end
 end
