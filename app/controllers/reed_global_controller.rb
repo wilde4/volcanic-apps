@@ -84,9 +84,9 @@ class ReedGlobalController < ApplicationController
       @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
       discipline_ids = job_functions.map do |jf|
 
-        job_function = @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
-        job_function ||= @job_functions.find { |job_function| job_function['reference'] == jf.strip }
+        job_function = @job_functions.find { |job_function| job_function['reference'] == jf.strip }
         job_function ||= @job_functions.find { |job_function| job_function['name'].downcase == jf.strip.downcase }
+        job_function ||= @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
 
         if job_function.present?
           mappings = reed_country.mappings.where job_function_id: job_function['id']
