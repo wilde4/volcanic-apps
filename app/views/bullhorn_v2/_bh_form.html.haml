@@ -1,4 +1,4 @@
-- @url_post = Rails.env.development? ? 'http://localhost:3001/bullhorn_v2/update' : 'https://apps.volcanic.co/bullhorn_v2/update'
+- @url_post = Rails.env.development? ? 'http://localhost:3001/bullhorn_v2/update' : 'https://#{ENV['DOMAIN_NAME']}/bullhorn_v2/update'
 = simple_form_for @bullhorn_setting, url: @url_post, method: :post, remote: true do |f|
 
   -# BULLHORN CONNECTION FORM

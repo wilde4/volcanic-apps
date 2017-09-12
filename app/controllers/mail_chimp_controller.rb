@@ -224,7 +224,7 @@ class MailChimpController < ApplicationController
         @user_groups_url = host + '/api/v1/user_groups.json'
         # @user_groups_url = 'http://meridian.dev.volcanic.co/api/v1/user_groups.json'
         @user_groups = HTTParty.get(@user_groups_url)
-        @import_group_url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://apps.volcanic.co/mail_chimp/import_user_group'
+        @import_group_url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/import_user_group' : 'https://#{ENV['DOMAIN_NAME']}/mail_chimp/import_user_group'
         gibbon = set_gibbon(@settings.access_token)
     
         @mailchimp_lists = gibbon.lists.retrieve

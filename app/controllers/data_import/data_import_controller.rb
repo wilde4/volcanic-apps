@@ -14,7 +14,7 @@ class DataImport::DataImportController < ActionController::Base
 
     def host_url
       if Rails.env == "production"
-        "https://apps.volcanic.co"
+        "https://#{ENV['DOMAIN_NAME']}"
       elsif Rails.env == "development"
         "http://localhost:3001"
       end

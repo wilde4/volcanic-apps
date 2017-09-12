@@ -79,7 +79,7 @@ class EventbriteController < ApplicationController
       if Rails.env.development?
         "http://localhost:3001"
       else
-        "https://apps.volcanic.co"
+        "https://#{ENV['DOMAIN_NAME']}"
       end
     end
 

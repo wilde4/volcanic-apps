@@ -1,5 +1,5 @@
-- url = Rails.env.development? ? 'http://localhost:3001/twitter/update' : 'https://apps.volcanic.co/twitter/update'
-- disable_url = Rails.env.development? ? 'http://localhost:3001/twitter/disable' : 'https://apps.volcanic.co/twitter/disable'
+- url = Rails.env.development? ? 'http://localhost:3001/twitter/update' : 'https://#{ENV['DOMAIN_NAME']}/twitter/update'
+- disable_url = Rails.env.development? ? 'http://localhost:3001/twitter/disable' : 'https://#{ENV['DOMAIN_NAME']}/twitter/disable'
 
 .volcanic_apps.mailchimp-app
   - if @setting.present? && @setting.access_token.present?

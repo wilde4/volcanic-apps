@@ -12,7 +12,7 @@ module ApplicationHelper
     if Rails.env.development?
       "localhost:3001"
     elsif Rails.env.production?
-      "apps.volcanic.co"
+      ENV['DOMAIN_NAME']
     end
   end
 

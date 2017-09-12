@@ -1,4 +1,4 @@
-- url = Rails.env.development? ? 'http://localhost:3001/reed_global/destroy_country' : 'https://apps.volcanic.co/reed_global/destroy_country'
+- url = Rails.env.development? ? 'http://localhost:3001/reed_global/destroy_country' : "https://#{ENV['DOMAIN_NAME']}/reed_global/destroy_country"
 %table.table
   %thead
     %tr
