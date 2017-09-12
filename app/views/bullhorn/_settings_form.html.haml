@@ -1,4 +1,4 @@
-- url = Rails.env.development? ? 'http://localhost:3001/bullhorn/save_settings' : 'https://#{ENV['DOMAIN_NAME']}/bullhorn/save_settings'
+- url = Rails.env.development? ? 'http://localhost:3001/bullhorn/save_settings' : "https://#{ENV['DOMAIN_NAME']}/bullhorn/save_settings"
 = simple_form_for @bullhorn_setting, url: url, method: :post, remote: true do |f|
   = f.input :dataset_id, as: :hidden
   .panel{class: @bullhorn_setting.authorised? ? 'panel-success' : 'panel-danger'}

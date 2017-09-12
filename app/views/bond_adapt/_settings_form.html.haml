@@ -1,4 +1,4 @@
-- url = Rails.env.development? ? 'http://localhost:3001/bond_adapt/save_settings' : 'https://#{ENV['DOMAIN_NAME']}/bond_adapt/save_settings'
+- url = Rails.env.development? ? 'http://localhost:3001/bond_adapt/save_settings' : "https://#{ENV['DOMAIN_NAME']}/bond_adapt/save_settings"
 = simple_form_for @bond_adapt_setting, url: url, method: :post, remote: true do |f|
   = f.input :dataset_id, as: :hidden
   .panel

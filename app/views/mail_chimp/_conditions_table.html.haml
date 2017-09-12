@@ -37,7 +37,7 @@
               %td.text-danger List deleted in MailChimp
             
             %td
-              - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/delete_condition' : 'https://#{ENV['DOMAIN_NAME']}/mail_chimp/delete_condition'
+              - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/delete_condition' : "https://#{ENV['DOMAIN_NAME']}/mail_chimp/delete_condition"
               = simple_form_for :mail_chimp_condition, url: url, method: :post do |f|
                 = hidden_field_tag :id, "#{condition.id}"
                 = hidden_field_tag :app_id, "#{params[:data][:id]}"

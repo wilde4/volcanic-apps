@@ -1,4 +1,4 @@
-- url = Rails.env.development? ? 'http://localhost:3001/semrush/save_settings' : 'https://#{ENV['DOMAIN_NAME']}/semrush/save_settings'
+- url = Rails.env.development? ? 'http://localhost:3001/semrush/save_settings' : "https://#{ENV['DOMAIN_NAME']}/semrush/save_settings"
 = simple_form_for @semrush_setting, url: url, method: :post, remote: true do |f|
   = f.input :dataset_id, as: :hidden
   .panel.panel-default

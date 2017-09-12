@@ -3,7 +3,7 @@
     %h2 Form
   .col-xs-12
     .row
-      - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/save_condition' : 'https://#{ENV['DOMAIN_NAME']}/mail_chimp/save_condition'
+      - url = Rails.env.development? ? 'http://localhost:3001/mail_chimp/save_condition' : "https://#{ENV['DOMAIN_NAME']}/mail_chimp/save_condition"
       = simple_form_for @mail_chimp_condition, url: url, method: :post do |f|
         = hidden_field_tag :app_id, "#{params[:data][:id]}"
         = hidden_field_tag :key_id, "#{@key.id}"

@@ -1,4 +1,4 @@
-- url = Rails.env.development? ? 'http://localhost:3001/reed_global/destroy_mapping' : 'https://#{ENV['DOMAIN_NAME']}/reed_global/destroy_mapping'
+- url = Rails.env.development? ? 'http://localhost:3001/reed_global/destroy_mapping' : "https://#{ENV['DOMAIN_NAME']}/reed_global/destroy_mapping"
 - if mappings.present?
   .well
     %h6
