@@ -782,7 +782,7 @@ class Bullhorn::ClientService < BaseService
     @job_payload['job[job_description]'] = job.publicDescription.present? ? job.publicDescription : job.description
   end
 
-  def get_country(country_id)
+  def get_country(val)
     bullhorn_country_array =  [
       ["United States","1"],
       ["Afghanistan","2185"],
@@ -970,9 +970,12 @@ class Bullhorn::ClientService < BaseService
       ["None Specified","NO2378"],
       ["Cayman Islands","2379"]
     ]
-    array_item = bullhorn_country_array.select{ |name, id| id == country_id }
-    if array_item.present?
-      array_item.first[0]
+    id = bullhorn_country_array.select{ |name, id| id == val }
+    name = bullhorn_country_array.select{ |name, id| name == val }
+    if id.present?
+      id.first[0]
+    elsif name.present?
+      name.first[1].to_i
     end
   end
 
