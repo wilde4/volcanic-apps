@@ -62,7 +62,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_fields.sort! { |x,y| x.first <=> y.first }
 
     @bullhorn_fields
-  rescue BullhornServiceError => e 
+  rescue StandardError => e 
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', nil, nil, e.message, true, false)
   end
@@ -83,7 +83,7 @@ class Bullhorn::ClientService < BaseService
     @volcanic_fields = Hash[@volcanic_fields.sort]
 
     @volcanic_fields
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_volcanic_candidate_fields', url, nil, e.message, true, true)
   end
@@ -106,7 +106,7 @@ class Bullhorn::ClientService < BaseService
 
 
     @bullhorn_job_fields
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, nil, e.message, true, false)
   end
@@ -126,7 +126,7 @@ class Bullhorn::ClientService < BaseService
     # @volcanic_job_fields = Hash[@volcanic_job_fields.sort]
 
     @volcanic_job_fields
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
   end
@@ -303,7 +303,7 @@ class Bullhorn::ClientService < BaseService
       end
 
     end
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, nil, e.message, true, false)
   end
@@ -441,7 +441,7 @@ class Bullhorn::ClientService < BaseService
     
     puts "Updating report entries"
     @key.update_bullhorn_report_job_entries
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'import_client_jobs', nil, nil, e.message, true, false)
   end
@@ -462,7 +462,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     puts "Total data size = #{@job_data.length} jobs"
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'delete_client_jobs', nil, nil, e.message, true, false)
   end
@@ -484,7 +484,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     puts "Total data size = #{@job_data.length} jobs"
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'expire_client_jobs', nil, nil, e.message, true, false)
   end
@@ -502,7 +502,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return @response
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'send_job_application', nil, nil, e.message, true, false)
   end
@@ -545,7 +545,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return @response
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'send_search', nil, nil, e.message, true, false)
   end
@@ -587,7 +587,7 @@ class Bullhorn::ClientService < BaseService
       create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, true, false)
       return false
     end
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
     return false
@@ -621,7 +621,7 @@ class Bullhorn::ClientService < BaseService
     if @category_id.present?
       Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_id).send_category_to_bullhorn
     end
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'send_category', nil, nil, e.message, true, false)
   end
@@ -688,7 +688,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError, JSON::ParserError => e
+  rescue StandardError, JSON::ParserError => e
     create_log(@bullhorn_setting, @key, 'post_payload', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
@@ -711,7 +711,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError, JSON::ParserError => e
+  rescue StandardError, JSON::ParserError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_payload_for_delete', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
@@ -734,7 +734,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     return response.code.to_i == 200
-  rescue BullhornServiceError, JSON::ParserError => e
+  rescue StandardError, JSON::ParserError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_payload_for_expire', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
@@ -1053,7 +1053,7 @@ class Bullhorn::ClientService < BaseService
       end
     end
     false # return false if this has not returned a candidate_response after 10 tries
-  rescue BullhornServiceError => e
+  rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
   end 
@@ -1064,8 +1064,6 @@ class Bullhorn::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
   end
-
-  class BullhornServiceError < StandardError; end
 
 
 end
