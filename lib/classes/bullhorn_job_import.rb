@@ -57,12 +57,13 @@ class BullhornJobImport
   def parse_jobs(client)
     settings = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
     field_mappings = settings.bullhorn_field_mappings.job
+    job_references = volcanic_job_references
     
     @job_data = query_job_orders(client, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? })
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
-      if settings.uses_public_filter? && job.isPublic == 0
+      if settings.uses_public_filter? && job.isPublic == 0 && job_references.include?(job.id.to_s)
 
         #make sure the job is deleted if already published in Volcanic
         @job_payload = Hash.new
@@ -188,12 +189,10 @@ class BullhornJobImport
     @job_data = query_job_orders(client, true)
     # jobs = @job_data.xpath("//item")
     
-    
-
-    
+    job_references = volcanic_job_references
 
     @job_data.each do |job|
-      if job.isDeleted || job.status == 'Archive'
+      if (job.isDeleted || job.status == 'Archive') && job_references.include?(job.id.to_s)
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
         @job_payload['job[job_reference]'] = job.id
@@ -466,6 +465,17 @@ class BullhornJobImport
     array_item = bullhorn_country_array.select{ |name, id| id == country_id }
     if array_item.present?
       array_item.first[0]
+    end
+  end
+
+  def volcanic_job_references
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json"
+    response = HTTParty.get(url)
+
+    if response.code == 200
+      response.parsed_response.map { |r| r['job_reference'] }
+    else
+      []
     end
   end
 end

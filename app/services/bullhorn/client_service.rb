@@ -312,12 +312,13 @@ class Bullhorn::ClientService < BaseService
   def import_client_jobs
 
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
+    job_references = volcanic_job_references
     
     @job_data = query_job_orders(false, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }, @bullhorn_setting.job_status)
     # jobs = @job_data.xpath("//item")
     @non_public_jobs_count = 0
     @job_data.each do |job|
-      if @bullhorn_setting.uses_public_filter? && job.isPublic == 0
+      if @bullhorn_setting.uses_public_filter? && job.isPublic == 0 && job_references.include?(job.id.to_s)
 
         #make sure the job is deleted if already published in Volcanic
         @job_payload = Hash.new
@@ -448,10 +449,11 @@ class Bullhorn::ClientService < BaseService
 
   #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
   def delete_client_jobs
-    @job_data = query_job_orders(true) 
+    @job_data = query_job_orders(true)
+    job_references = volcanic_job_references
 
     @job_data.each do |job|
-      if job.isDeleted || job.status == 'Archive'
+      if (job.isDeleted || job.status == 'Archive') && job_references.include?(job.id.to_s)
         @job_payload = Hash.new
         @job_payload["job[api_key]"] = @key.api_key
         @job_payload['job[job_reference]'] = job.id
@@ -1063,6 +1065,21 @@ class Bullhorn::ClientService < BaseService
     log.id
   rescue StandardError => e
     Honeybadger.notify(e)
+  end
+
+  def volcanic_job_references
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json"
+    response = HTTParty.get(url)
+
+    if response.code == 200
+      response.parsed_response.map { |r| r['job_reference'] }
+    else
+      []
+    end
+    
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'get_volcanic_job_references', url, nil, e.message, true, true)
   end
 
 
