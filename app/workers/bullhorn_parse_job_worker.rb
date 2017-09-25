@@ -1,4 +1,4 @@
-class BullhornV2Worker
+class BullhornParseJobWorker
   include Shoryuken::Worker
 
   queue = Rails.env.development? ? 'apps-default-dev' : 'apps-default'
@@ -7,19 +7,10 @@ class BullhornV2Worker
 
   def perform(sqs_msg, msg)
     
-    # Find who has registered to use BH:
-    registered_hosts = Key.where(app_name: 'bullhorn_v2')
+    bullhorn_setting = BullhornAppSetting.find msg['setting_id']
+    service = Bullhorn::ClientService.new bullhorn_setting
+    service.import_client_job msg['job_id'], msg['exists_on_volcanic']
 
-    registered_hosts.each do |key|
-
-      puts key.host
-
-      BullhornImportWorker.perform_async key_id: key.id
-
-    end
-
-    BullhornV2JobImport.new.delete_jobs
-    BullhornV2JobImport.new.expire_jobs
     sqs_msg.delete
   rescue StandardError => e
     sqs_msg.delete
