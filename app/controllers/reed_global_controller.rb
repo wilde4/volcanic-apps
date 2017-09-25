@@ -76,27 +76,31 @@ class ReedGlobalController < ApplicationController
   end
 
   def job_disciplines
-    @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
-    job_functions = params[:job][:job_functions].split(',')
-    country_reference = params[:job][:extra_categorisation]
-    reed_country = @reed_countries.find_by country_reference: country_reference
-    if reed_country.present?
-      @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
-      discipline_ids = job_functions.map do |jf|
+    if params[:job][:job_functions].present?
+      @reed_countries = ReedCountry.where dataset_id: params[:dataset_id]
+      job_functions = params[:job][:job_functions].split(',')
+      country_reference = params[:job][:extra_categorisation]
+      reed_country = @reed_countries.find_by country_reference: country_reference
+      if reed_country.present?
+        @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
+        discipline_ids = job_functions.map do |jf|
 
-        job_function = @job_functions.find { |job_function| job_function['reference'] == jf.strip }
-        job_function ||= @job_functions.find { |job_function| job_function['name'].downcase == jf.strip.downcase }
-        job_function ||= @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
+          job_function = @job_functions.find { |job_function| job_function['reference'] == jf.strip }
+          job_function ||= @job_functions.find { |job_function| job_function['name'].downcase == jf.strip.downcase }
+          job_function ||= @job_functions.find { |job_function| job_function['id'] == jf.strip.to_i }
 
-        if job_function.present?
-          mappings = reed_country.mappings.where job_function_id: job_function['id']
-          mappings.map(&:discipline_id) if mappings.present?
+          if job_function.present?
+            mappings = reed_country.mappings.where job_function_id: job_function['id']
+            mappings.map(&:discipline_id) if mappings.present?
+          end
+
+        end.flatten.compact
+
+        if discipline_ids.present?
+          render json: { success: true, params: { discipline: discipline_ids.join(',') } }
+        else
+          render json: {}
         end
-
-      end.flatten.compact
-
-      if discipline_ids.present?
-        render json: { success: true, params: { discipline: discipline_ids.join(',') } }
       else
         render json: {}
       end
