@@ -1,4 +1,4 @@
-class BullhornImportWorker
+class BullhornJobsWorker
   include Shoryuken::Worker
 
   queue = Rails.env.development? ? 'apps-default-dev' : 'apps-default'
@@ -13,11 +13,9 @@ class BullhornImportWorker
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present? && @bullhorn_setting['import_jobs'] == true
 
     if @bullhorn_service.present?
-      @bullhorn_service.import_client_jobs
+      @bullhorn_service.sync_jobs
     end
     
-    BullhornJobImport.new.parse_jobs(msg['setting_id'])
-
     sqs_msg.delete
   rescue StandardError => e
     sqs_msg.delete

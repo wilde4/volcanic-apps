@@ -9,7 +9,7 @@ class BullhornParseJobWorker
     
     bullhorn_setting = BullhornAppSetting.find msg['setting_id']
     service = Bullhorn::ClientService.new bullhorn_setting
-    service.import_client_job msg['job_id'], msg['exists_on_volcanic']
+    service.import_client_job msg['job_id']
 
     sqs_msg.delete
   rescue StandardError => e
