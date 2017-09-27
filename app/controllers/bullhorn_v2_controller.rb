@@ -100,11 +100,15 @@ class BullhornV2Controller < ApplicationController
 
       if @bullhorn_service.present?
         @bullhorn_service.post_user_to_bullhorn(@user, params)
+
+        if params[:user_profile][:upload_path].present?
         
-        if @bullhorn_service.send_candidate_cv(@user, params) == true
-          create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
-        else
-          create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+          if @bullhorn_service.send_candidate_cv(@user, params) == true
+            create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
+          else
+            create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+          end
+
         end
 
       end

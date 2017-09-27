@@ -583,15 +583,15 @@ class Bullhorn::ClientService < BaseService
 
 
     if @file_response && @file_response['fileId'].present?
-      create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
+      create_log(user, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
       return true
     else
-      create_log(@bullhorn_setting, @key, 'send_candidate_file', nil, nil, @file_response, true, false)
+      create_log(user, @key, 'send_candidate_file', nil, nil, @file_response, true, false)
       return false
     end
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
+    create_log(user, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
     return false
   end
 
