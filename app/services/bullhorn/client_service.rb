@@ -2,30 +2,50 @@ class Bullhorn::ClientService < BaseService
 
   def initialize(bullhorn_setting)
     @bullhorn_setting = bullhorn_setting
-    @client = setup_client
+    setup_client
     @key = Key.find_by(app_dataset_id: bullhorn_setting.dataset_id, app_name: 'bullhorn_v2')
+  end
+
+  def client
+    @client
   end
 
   # CHECK IF THE CLIENT HAVE ACCES TO THE API
   def client_authenticated? 
-    if @bullhorn_setting.auth_settings_filled
-      candidates = @client.candidates(fields: 'id', sort: 'id') #TEST CALL TO CHECK IF INDEED WE HAVE PERMISSIONS (GET A CANDIDATES RESPONSE)
-      
-      candidates.data.size > 0
-    else
-      false
-    end
+    @bullhorn_setting.auth_settings_filled && @client.rest_token.present?
   rescue
     false
   end
 
   def setup_client
-    return Bullhorn::Rest::Client.new(
+    @client = nil and return unless @bullhorn_setting.auth_settings_filled
+    @client = Bullhorn::Rest::Client.new(
       username: @bullhorn_setting.bh_username,
       password: @bullhorn_setting.bh_password,
       client_id: @bullhorn_setting.bh_client_id,
-      client_secret: @bullhorn_setting.bh_client_secret
+      client_secret: @bullhorn_setting.bh_client_secret,
+      refresh_token: @bullhorn_setting.refresh_token
     )
+    
+    # Attempt to authenticate, this will use the refresh token if present
+    @client.authenticate rescue nil
+
+    if @client.rest_token.blank?
+      # It's possible another instance may have already used the refresh token, thus invalidating it.
+      # A new refresh token should have been saved to the bullhorn setting in this case
+      @bullhorn_setting.reload
+      @client.refresh_token = @bullhorn_setting.refresh_token
+      @client.authenticate rescue nil
+    end
+
+    # Try full authentication again if we still need to
+    if @client.rest_token.blank?
+      @client.refresh_token = nil
+      @client.authenticate rescue nil
+    end
+
+    # Save a new refresh token against the bullhorn setting
+    @bullhorn_setting.update_attribute :refresh_token, @client.refresh_token
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
