@@ -125,36 +125,9 @@ class BullhornV2Controller < ApplicationController
   end
 
   def job_application
-    @user = BullhornUser.find_by(user_id: params[:user][:id])
-    @job_reference = params[:job][:job_reference]
-
-    candidate = {
-      'id' => @user.bullhorn_uid
-    }
-    job_order = {
-      'id' => @job_reference
-    }
-
-    attributes = {
-      'candidate' => candidate,
-      'isDeleted' => 'false',
-      'jobOrder' => job_order,
-      'status' => 'New Lead'
-    }
-
-    if @user.present? && @job_reference.present?
-      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
-      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
-      
-      @response = @bullhorn_service.send_job_application(attributes) if @bullhorn_service.present?
-
-    end
     
-    if @response.changedEntityId.present?
-      render json: { success: true, job_submission_id: response.changedEntityId }
-    else
-      render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
-    end
+    BullhornApplicationWorker.perform_async params
+
   rescue StandardError => e
     Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
