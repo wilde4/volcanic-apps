@@ -346,7 +346,7 @@ class Bullhorn::ClientService < BaseService
               sectors = []
               job.businessSectors.data.each do |bs|
                 # puts "--- bs[:id] = #{bs[:id]}"
-                b_sector = client.business_sector(bs[:id])
+                b_sector = @client.business_sector(bs[:id])
                 # puts "--- b_sector = #{b_sector.inspect}"
                 sectors << b_sector.data.name.strip
               end
