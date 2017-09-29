@@ -10,6 +10,8 @@ class BullhornV2Controller < ApplicationController
 
   # To Authorize a Bullhorn API user, follow instruction on https://github.com/bobop/bullhorn-rest
   def index
+    @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
+
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || BullhornAppSetting.new(dataset_id: params[:data][:dataset_id])
 
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
@@ -64,6 +66,18 @@ class BullhornV2Controller < ApplicationController
   rescue StandardError => e
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'update', nil, nil, e.message, true, true)
+  end
+
+  def import_jobs
+
+    @key = Key.find params[:id]
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: @key.app_dataset_id)
+    @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+    BullhornJobsWorker.perform_async key_id: params[:id]
+    flash[:notice] = "Importing jobs"
+    get_fields
+
   end
 
   def save_user
