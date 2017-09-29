@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170927141438) do
+ActiveRecord::Schema.define(version: 20170929083117) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -91,6 +91,10 @@ ActiveRecord::Schema.define(version: 20170927141438) do
     t.string   "job_status"
     t.boolean  "use_utm_source",             default: false
     t.string   "refresh_token"
+    t.string   "access_token"
+    t.datetime "access_token_expires_at"
+    t.string   "rest_token"
+    t.string   "rest_url"
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|

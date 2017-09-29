@@ -10,7 +10,7 @@ class Bullhorn::ClientService < BaseService
 
   # CHECK IF THE CLIENT HAVE ACCES TO THE API
   def client_authenticated? 
-    @bullhorn_setting.auth_settings_filled && @client.rest_token.present?
+    @client && @client.authenticated?
   rescue
     false
   end
@@ -22,28 +22,46 @@ class Bullhorn::ClientService < BaseService
       password: @bullhorn_setting.bh_password,
       client_id: @bullhorn_setting.bh_client_id,
       client_secret: @bullhorn_setting.bh_client_secret,
-      refresh_token: @bullhorn_setting.refresh_token
+      refresh_token: @bullhorn_setting.refresh_token,
+      access_token: @bullhorn_setting.access_token,
+      access_token_expires_at: @bullhorn_setting.access_token_expires_at,
+      rest_token: @bullhorn_setting.rest_token,
+      rest_url: @bullhorn_setting.rest_url
     )
     
+    # Re-authenticate if our stored rest_token has expired
+    unless @client.authenticated?
+
     # Attempt to authenticate, this will use the refresh token if present
-    @client.authenticate rescue nil
-
-    if @client.rest_token.blank?
-      # It's possible another instance may have already used the refresh token, thus invalidating it.
-      # A new refresh token should have been saved to the bullhorn setting in this case
-      @bullhorn_setting.reload
-      @client.refresh_token = @bullhorn_setting.refresh_token
       @client.authenticate rescue nil
-    end
 
-    # Try full authentication again if we still need to
-    if @client.rest_token.blank?
-      @client.refresh_token = nil
-      @client.authenticate rescue nil
-    end
+      if @client.authenticated?
+        # Save new tokens against the bullhorn setting
+        @bullhorn_setting.update_attributes rest_token: @client.rest_token, rest_url: @client.rest_url.to_s, access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+      else
+        # It's possible another instance may have already used the refresh token, thus invalidating it.
+        # A new tokens should have been saved to the bullhorn setting in this case
+        @bullhorn_setting.reload
 
-    # Save a new refresh token against the bullhorn setting
-    @bullhorn_setting.update_attribute :refresh_token, @client.refresh_token
+        @client.rest_token = @bullhorn_setting.rest_token
+        @client.access_token = @bullhorn_setting.access_token
+        @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
+        @client.refresh_token = @bullhorn_setting.refresh_token
+
+        @client.authenticate unless @client.authenticated? rescue nil
+      end
+
+      # Try full authentication again if we still need to
+      unless @client.authenticated? 
+        @client.expire
+        @client.refresh_token = nil
+        @client.authenticate rescue nil
+
+        # Save new tokens against the bullhorn setting
+        @bullhorn_setting.update_attributes rest_token: @client.rest_token, rest_url: @client.rest_url.to_s, access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+      end
+
+    end
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
@@ -334,11 +352,8 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_setting.job_status
     
     # Retrieve only job ids initially
-    @job_data = query_job_orders
 
-    puts "#{@job_data.count} IDs"
-
-    @job_data.each do |job|
+    query_job_orders.each do |job|
       exists_on_volcanic = job_references.include?(job.id.to_s)
 
       if job.isOpen && ((@bullhorn_setting.job_status.blank? && job.status != 'Archived') || @bullhorn_setting.job_status == job.status)
@@ -346,21 +361,20 @@ class Bullhorn::ClientService < BaseService
       elsif exists_on_volcanic
         if job.isDeleted || job.status == 'Archived' || (@bullhorn_setting.uses_public_filter? && job.isPublic == 0)
           BullhornDeleteJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
-        else
+        elsif @bullhorn_setting.expire_closed_jobs?
           BullhornExpireJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
         end
       end
 
     end
 
-    puts "Total data size = #{@job_data.length} jobs"
-    
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'import_client_jobs', nil, nil, e.message, true, false)
   end
 
   def import_client_job(job_id)
+    puts "Importing..."
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
     job = query_job_order job_id, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }
     
