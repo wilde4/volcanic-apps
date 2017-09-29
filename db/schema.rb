@@ -93,8 +93,6 @@ ActiveRecord::Schema.define(version: 20170929083117) do
     t.string   "refresh_token"
     t.string   "access_token"
     t.datetime "access_token_expires_at"
-    t.string   "rest_token"
-    t.string   "rest_url"
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|

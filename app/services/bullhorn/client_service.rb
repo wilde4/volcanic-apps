@@ -24,44 +24,37 @@ class Bullhorn::ClientService < BaseService
       client_secret: @bullhorn_setting.bh_client_secret,
       refresh_token: @bullhorn_setting.refresh_token,
       access_token: @bullhorn_setting.access_token,
-      access_token_expires_at: @bullhorn_setting.access_token_expires_at,
-      rest_token: @bullhorn_setting.rest_token,
-      rest_url: @bullhorn_setting.rest_url
+      access_token_expires_at: @bullhorn_setting.access_token_expires_at
     )
     
-    # Re-authenticate if our stored rest_token has expired
-    unless @client.authenticated?
+    # Attempt to authenticate, this will use the access token or refresh token if present
+    @client.authenticate rescue nil
 
-    # Attempt to authenticate, this will use the refresh token if present
+    if @client.authenticated?
+      # Save new tokens against the bullhorn setting
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+    else
+      # It's possible another instance may have already used the refresh token, thus invalidating it.
+      # A new tokens should have been saved to the bullhorn setting in this case
+      @bullhorn_setting.reload
+
+      @client.access_token = @bullhorn_setting.access_token
+      @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
+      @client.refresh_token = @bullhorn_setting.refresh_token
+
+      @client.authenticate unless @client.authenticated? rescue nil
+    end
+
+    # Try full authentication again if we still need to
+    unless @client.authenticated? 
+      @client.expire
+      @client.refresh_token = nil
       @client.authenticate rescue nil
 
-      if @client.authenticated?
-        # Save new tokens against the bullhorn setting
-        @bullhorn_setting.update_attributes rest_token: @client.rest_token, rest_url: @client.rest_url.to_s, access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
-      else
-        # It's possible another instance may have already used the refresh token, thus invalidating it.
-        # A new tokens should have been saved to the bullhorn setting in this case
-        @bullhorn_setting.reload
-
-        @client.rest_token = @bullhorn_setting.rest_token
-        @client.access_token = @bullhorn_setting.access_token
-        @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
-        @client.refresh_token = @bullhorn_setting.refresh_token
-
-        @client.authenticate unless @client.authenticated? rescue nil
-      end
-
-      # Try full authentication again if we still need to
-      unless @client.authenticated? 
-        @client.expire
-        @client.refresh_token = nil
-        @client.authenticate rescue nil
-
-        # Save new tokens against the bullhorn setting
-        @bullhorn_setting.update_attributes rest_token: @client.rest_token, rest_url: @client.rest_url.to_s, access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
-      end
-
+      # Save new tokens against the bullhorn setting
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
     end
+
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
