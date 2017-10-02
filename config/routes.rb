@@ -219,6 +219,7 @@ Apps::Application.routes.draw do
     post 'update_settings'  => 'bullhorn_v2#update_settings'
     post 'new_search'       => 'bullhorn_v2#new_search'
     get 'report'            => 'bullhorn_v2#report'
+    get 'import_jobs/:id'       => 'bullhorn_v2#import_jobs'
   end
 
   scope :reed_global do

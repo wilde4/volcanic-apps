@@ -1,31 +1,64 @@
 class Bullhorn::ClientService < BaseService
 
+  attr_accessor :client, :key
+
   def initialize(bullhorn_setting)
     @bullhorn_setting = bullhorn_setting
-    @client = setup_client
+    setup_client
     @key = Key.find_by(app_dataset_id: bullhorn_setting.dataset_id, app_name: 'bullhorn_v2')
   end
 
   # CHECK IF THE CLIENT HAVE ACCES TO THE API
   def client_authenticated? 
-    if @bullhorn_setting.auth_settings_filled
-      candidates = @client.candidates(fields: 'id', sort: 'id') #TEST CALL TO CHECK IF INDEED WE HAVE PERMISSIONS (GET A CANDIDATES RESPONSE)
-      
-      candidates.data.size > 0
-    else
-      false
-    end
+    @client && @client.authenticated?
   rescue
     false
   end
 
   def setup_client
-    return Bullhorn::Rest::Client.new(
+    unless @bullhorn_setting.auth_settings_filled
+      @client = nil
+      return
+    end
+
+    @client = Bullhorn::Rest::Client.new(
       username: @bullhorn_setting.bh_username,
       password: @bullhorn_setting.bh_password,
       client_id: @bullhorn_setting.bh_client_id,
-      client_secret: @bullhorn_setting.bh_client_secret
+      client_secret: @bullhorn_setting.bh_client_secret,
+      refresh_token: @bullhorn_setting.refresh_token,
+      access_token: @bullhorn_setting.access_token,
+      access_token_expires_at: @bullhorn_setting.access_token_expires_at
     )
+    
+    # Attempt to authenticate, this will use the access token or refresh token if present
+    @client.authenticate rescue nil
+
+    if @client.authenticated?
+      # Save new tokens against the bullhorn setting
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+    else
+      # It's possible another instance may have already used the refresh token, thus invalidating it.
+      # New tokens should have been saved to the bullhorn setting in this case
+      @bullhorn_setting.reload
+
+      @client.access_token = @bullhorn_setting.access_token
+      @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
+      @client.refresh_token = @bullhorn_setting.refresh_token
+
+      @client.authenticate unless @client.authenticated? rescue nil
+    end
+
+    # Try full authentication again if we still need to
+    unless @client.authenticated? 
+      @client.expire
+      @client.refresh_token = nil
+      @client.authenticate rescue nil
+
+      # Save new tokens against the bullhorn setting
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+    end
+
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
@@ -309,185 +342,159 @@ class Bullhorn::ClientService < BaseService
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO IMPORT INTO VOLCANIC
-  def import_client_jobs
+  def sync_jobs
 
-    field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
     job_references = volcanic_job_references
+
+    @bullhorn_setting.job_status
     
-    @job_data = query_job_orders(false, false, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }, @bullhorn_setting.job_status)
-    # jobs = @job_data.xpath("//item")
-    @non_public_jobs_count = 0
-    @job_data.each do |job|
-      if @bullhorn_setting.uses_public_filter? && job.isPublic == 0
+    # Retrieve only job ids initially
 
-        #make sure the job is deleted if already published in Volcanic
-        if job_references.include?(job.id.to_s)
-          @job_payload = Hash.new
-          @job_payload["job[api_key]"] = @key.api_key
-          @job_payload['job[job_reference]'] = job.id
-          post_payload_for_delete(@job_payload)
+    query_job_orders.each do |job|
+      exists_on_volcanic = job_references.include?(job.id.to_s)
+
+      if job.isOpen && ((@bullhorn_setting.job_status.blank? && job.status != 'Archived') || @bullhorn_setting.job_status == job.status) && (!@bullhorn_setting.uses_public_filter? || job.isPublic == 1)
+        BullhornParseJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
+      elsif exists_on_volcanic
+        if job.isDeleted || job.status == 'Archived' || (@bullhorn_setting.uses_public_filter? && job.isPublic == 0)
+          BullhornDeleteJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
+        elsif @bullhorn_setting.expire_closed_jobs?
+          BullhornExpireJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
         end
-
-        @non_public_jobs_count = ( @non_public_jobs_count + 1 ) 
-        next 
       end
-      
-      unless job.isDeleted
-        @job_payload = Hash.new
-        @job_payload["job[api_key]"] = @key.api_key
 
-        default_job_playload_attributes(job)
-
-        #ONLY USE CUSTOM MAPPINGS IF THE APP IS NOT USING THE DEFAULT MAPPINGS
-        if @bullhorn_setting.custom_job_mapping?
-          field_mappings.each do |fm|
-
-            # Some bullhorn values need extra massaging
-            case fm.bullhorn_field_name
-            when 'businessSectors'
-              sectors = []
-              job.businessSectors.data.each do |bs|
-                # puts "--- bs[:id] = #{bs[:id]}"
-                b_sector = @client.business_sector(bs[:id])
-                # puts "--- b_sector = #{b_sector.inspect}"
-                sectors << b_sector.data.name.strip
-              end
-              value = sectors.join(',')
-            when 'dateEnd'
-              value = Time.at(job.dateEnd / 1000).to_date.to_s rescue nil
-            else
-              bullhorn_value = job.send(fm.bullhorn_field_name)
-              if bullhorn_value.is_a? Hash
-                if bullhorn_value.keys.include? 'data'
-                  value = bullhorn_value.data.map(&:name).join(',')
-                elsif bullhorn_value.keys.include? 'firstName'
-                  value = "#{bullhorn_value.firstName} #{bullhorn_value.lastName}"
-                elsif bullhorn_value.keys.include? 'name'
-                  value = bullhorn_value.name
-                end
-              elsif bullhorn_value.is_a? Array
-                value = bullhorn_value.join(',')
-              else
-                value = bullhorn_value
-              end
-            end
-
-            # Check for blank or zero Max Salary values
-            if fm.job_attribute == 'salary_high'
-              unless value.present? && value.to_i != 0
-                value = @job_payload["job[salary_low]"]
-              end
-            end
-
-            # Check for blank or zero Display Salary values
-            if fm.job_attribute == 'salary_free'
-              unless value.present? && value != 0
-                value = @job_payload["job[salary_low]"]
-              end
-            end
-
-            puts "--- job.#{fm.bullhorn_field_name} = #{value}"
-
-            @job_payload["job[#{fm.job_attribute}]"] = value
-            
-          end
-        end
-
-        if @bullhorn_setting.client_token.present?
-          @job_payload['job[client_token]'] = @bullhorn_setting.client_token
-        end
-
-        puts "--- job.isOpen = #{job.isOpen}"
-        if job.isOpen
-          puts '--- JOB IS OPEN'
-          # Expiry = date + 365 days
-          begin
-            date = Date.parse(@job_payload['job[created_at]'])
-            @job_payload['job[expiry_date]'] ||= (date + 365.days).to_s
-          rescue Exception => e
-            puts "[WARN] #{e}"
-            @job_payload['job[expiry_date]'] ||= (Date.today + 365.days).to_s
-          end
-        else
-          puts '--- JOB IS CLOSED'
-          if @job_payload['job[expiry_date]'].blank? || (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date > Date.today)
-            @job_payload['job[expiry_date]'] = (Date.today - 1.day).to_s
-          end
-        end
-
-
-        bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
-        begin
-          bullhorn_job.update_attribute :job_params, @job_payload
-        rescue StandardError
-          bullhorn_job.update_attribute :job_params, 'Error saving payload'
-        end
-
-        puts "--- @job_payload = #{@job_payload.inspect}"
-        if @job_payload["job[discipline]"].blank?
-          bullhorn_job.update_attribute :error, true
-        else
-          # Don't post if we have a client_id (ie a job board) and the job is open but we have a past expiry date (as oliver API will still make live because job board)
-          if @bullhorn_setting.client_token.present? && (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date < Date.today)
-            bullhorn_job.update_attribute :error, true
-          else
-            post_payload(@job_payload)
-          end
-        end
-      else
-        puts "--- #{job.title} has been Deleted"
-      end
     end
 
-    puts "Total data size = #{@job_data.length} jobs"
-    puts "Total private jobs skipped size = #{@non_public_jobs_count} jobs"
-    
-    puts "Updating report entries"
-    @key.update_bullhorn_report_job_entries
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'import_client_jobs', nil, nil, e.message, true, false)
   end
 
-  #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
-  def delete_client_jobs
-    @job_data = query_job_orders(true)
-    job_references = volcanic_job_references
+  def import_client_job(job_id)
+    puts "Importing..."
+    field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
+    job = query_job_order job_id, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }
+    
+    @job_payload = Hash.new
+    @job_payload["job[api_key]"] = @key.api_key
 
-    @job_data.each do |job|
-      if (job.isDeleted || job.status == 'Archive') && job_references.include?(job.id.to_s)
-        @job_payload = Hash.new
-        @job_payload["job[api_key]"] = @key.api_key
-        @job_payload['job[job_reference]'] = job.id
+    default_job_playload_attributes(job)
 
-        # puts "--- @job_payload = #{@job_payload.inspect}"
-        post_payload_for_delete(@job_payload)
+    #ONLY USE CUSTOM MAPPINGS IF THE APP IS NOT USING THE DEFAULT MAPPINGS
+    if @bullhorn_setting.custom_job_mapping?
+      field_mappings.each do |fm|
+
+        # Some bullhorn values need extra massaging
+        case fm.bullhorn_field_name
+        when 'businessSectors'
+          sectors = []
+          job.businessSectors.data.each do |bs|
+            # puts "--- bs[:id] = #{bs[:id]}"
+            b_sector = client.business_sector(bs[:id])
+            # puts "--- b_sector = #{b_sector.inspect}"
+            sectors << b_sector.data.name.strip
+          end
+          value = sectors.join(',')
+        when 'dateEnd'
+          value = Time.at(job.dateEnd / 1000).to_date.to_s rescue nil
+        else
+          bullhorn_value = job.send(fm.bullhorn_field_name)
+          if bullhorn_value.is_a? Hash
+            if bullhorn_value.keys.include? 'data'
+              value = bullhorn_value.data.map(&:name).join(',')
+            elsif bullhorn_value.keys.include? 'firstName'
+              value = "#{bullhorn_value.firstName} #{bullhorn_value.lastName}"
+            elsif bullhorn_value.keys.include? 'name'
+              value = bullhorn_value.name
+            end
+          elsif bullhorn_value.is_a? Array
+            value = bullhorn_value.join(',')
+          else
+            value = bullhorn_value
+          end
+        end
+
+        # Check for blank or zero Max Salary values
+        if fm.job_attribute == 'salary_high'
+          unless value.present? && value.to_i != 0
+            value = @job_payload["job[salary_low]"]
+          end
+        end
+
+        # Check for blank or zero Display Salary values
+        if fm.job_attribute == 'salary_free'
+          unless value.present? && value != 0
+            value = @job_payload["job[salary_low]"]
+          end
+        end
+
+        puts "--- job.#{fm.bullhorn_field_name} = #{value}"
+
+        @job_payload["job[#{fm.job_attribute}]"] = value
+        
       end
     end
 
-    puts "Total data size = #{@job_data.length} jobs"
+    if @bullhorn_setting.client_token.present?
+      @job_payload['job[client_token]'] = @bullhorn_setting.client_token
+    end
+
+    # Expiry = date + 365 days
+    begin
+      date = Date.parse(@job_payload['job[created_at]'])
+      @job_payload['job[expiry_date]'] ||= (date + 365.days).to_s
+    rescue Exception => e
+      puts "[WARN] #{e}"
+      @job_payload['job[expiry_date]'] ||= (Date.today + 365.days).to_s
+    end
+
+    bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
+    begin
+      bullhorn_job.update_attribute :job_params, @job_payload
+    rescue StandardError
+      bullhorn_job.update_attribute :job_params, 'Error saving payload'
+    end
+
+    if @job_payload["job[discipline]"].blank?
+      bullhorn_job.update_attribute :error, true
+    else
+      # Don't post if we have a client_id (ie a job board) and the job is open but we have a past expiry date (as oliver API will still make live because job board)
+      if @bullhorn_setting.client_token.present? && (@job_payload['job[expiry_date]'].present? && @job_payload['job[expiry_date]'].to_date < Date.today)
+        bullhorn_job.update_attribute :error, true
+      else
+        post_payload(@job_payload)
+      end
+    end
+    
+    puts "Updating report entries"
+    @key.update_bullhorn_report_job_entries
+  end
+
+  #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
+  def delete_client_job(job_id)
+    job = query_job_order job_id
+
+    @job_payload = Hash.new
+    @job_payload["job[api_key]"] = @key.api_key
+    @job_payload['job[job_reference]'] = job.id
+
+    post_payload_for_delete(@job_payload)
+    
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'delete_client_jobs', nil, nil, e.message, true, false)
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO EXPIRE FROM VOLCANIC
-  def expire_client_jobs
-    @job_data = query_job_orders(false, true) 
+  def expire_client_job(job_id)
+    job = query_job_order job_id 
 
-    @job_data.each do |job|
-      if !job.isOpen
-        @job_payload = Hash.new
-        @job_payload["job[api_key]"] = @key.api_key
-        @job_payload['job[job_reference]'] = job.id
+    @job_payload = Hash.new
+    @job_payload["job[api_key]"] = @key.api_key
+    @job_payload['job[job_reference]'] = job.id
 
-        # puts "----------------------- expire payload = #{@job_payload.inspect}"
+    post_payload_for_expire(@job_payload)
 
-        post_payload_for_expire(@job_payload)
-      end
-    end
-
-    puts "Total data size = #{@job_data.length} jobs"
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'expire_client_jobs', nil, nil, e.message, true, false)
@@ -630,7 +637,7 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'send_category', nil, nil, e.message, true, false)
   end
 
-  def query_job_orders(is_deleted, is_closed = false, custom_fields = [], job_status = nil)
+  def query_job_orders
     # Bullhorn only returns a max of 200 jobs per query, so if 200 is received, assume there are more an increase offset and repeat query. 
     # Depending on the requested data less than 200 results may be received, so keep checking until 0 results are returned
 
@@ -639,26 +646,9 @@ class Bullhorn::ClientService < BaseService
 
     complete_data = []
 
-    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
-    
     while results > 0
-      if is_deleted
 
-        jobs = @client.query_job_orders(where: "isDeleted = #{is_deleted} OR status = 'Archive'", fields: fields, count: 200, start: offset)
-
-      elsif is_closed
-
-        jobs = @client.query_job_orders(where: "isOpen = false", fields: fields, count: 200, start: offset)
-
-      elsif job_status.present?
-
-        jobs = @client.query_job_orders(where: "isDeleted = false AND status = '#{job_status}'", fields: fields, count: 200, start: offset)
-
-      else
-
-        jobs = @client.query_job_orders(where: "isDeleted = false AND status <> 'Archive'", fields: fields, count: 200, start: offset)
-
-      end
+      jobs = @client.query_job_orders(where: 'status IS NOT NULL', fields: 'id,isOpen,isDeleted,isPublic,status', count: 200, start: offset)
       
       puts "Received #{jobs["count"]}"
       puts "Received results - possibly another page" if jobs["count"] > 0
@@ -668,6 +658,11 @@ class Bullhorn::ClientService < BaseService
       complete_data.concat jobs.data if jobs["count"] > 0
     end
     complete_data
+  end
+
+  def query_job_order(job_id, custom_fields = [])
+    fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
+    job = @client.job_order(job_id, fields: fields).data
   end
 
   def post_payload(payload)
