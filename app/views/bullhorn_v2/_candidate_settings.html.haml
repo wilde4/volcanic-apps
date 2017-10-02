@@ -15,6 +15,7 @@
 
         = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
       .col-md-6
+        = f.input :full_candidate_registrations_only, collection: [['Send all candidates that register', false], ['Only send candidates who have filled out their profile and have uploaded a CV', true]], as: :radio_buttons, input_html: { class: 'form-control' }
         = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
     %hr
     .row

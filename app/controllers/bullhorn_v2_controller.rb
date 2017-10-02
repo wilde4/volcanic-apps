@@ -75,61 +75,65 @@ class BullhornV2Controller < ApplicationController
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
     BullhornJobsWorker.perform_async key_id: params[:id]
-    flash[:notice] = "Importing jobs"
+    flash[:notice] = "Job import started"
     get_fields
 
   end
 
   def save_user
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
-    user_available = false
-    @user = BullhornUser.find_by(user_id: params[:user][:id])
-
-    if @user.present?
-      if @user.update(
-        email: params[:user][:email],
-        user_data: params[:user],
-        user_profile: params[:user_profile],
-        linkedin_profile: params[:linkedin_profile],
-        registration_answers: params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-      )
-        
-        user_available = true
-      end
+    if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+      render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
     else
-      @user = BullhornUser.new
-      @user.user_id = params[:user][:id]
-      @user.email = params[:user][:email]
-      @user.user_data = params[:user]
-      @user.user_profile = params[:user_profile]
-      @user.linkedin_profile = params[:linkedin_profile]
-      @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-      user_available = true if @user.save
-    end
+      user_available = false
+      @user = BullhornUser.find_by(user_id: params[:user][:id])
 
-    if @user.present? && user_available
+      if @user.present?
+        if @user.update(
+          email: params[:user][:email],
+          user_data: params[:user],
+          user_profile: params[:user_profile],
+          linkedin_profile: params[:linkedin_profile],
+          registration_answers: params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+        )
+          
+          user_available = true
+        end
+      else
+        @user = BullhornUser.new
+        @user.user_id = params[:user][:id]
+        @user.email = params[:user][:email]
+        @user.user_data = params[:user]
+        @user.user_profile = params[:user_profile]
+        @user.linkedin_profile = params[:linkedin_profile]
+        @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+        user_available = true if @user.save
+      end
 
-      @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+      if @user.present? && user_available
 
-      if @bullhorn_service.present?
-        @bullhorn_service.post_user_to_bullhorn(@user, params)
+        @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-        if params[:user_profile][:upload_path].present?
-        
-          if @bullhorn_service.send_candidate_cv(@user, params) == true
-            create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
-          else
-            create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+        if @bullhorn_service.present?
+          @bullhorn_service.post_user_to_bullhorn(@user, params)
+
+          if params[:user_profile][:upload_path].present?
+          
+            if @bullhorn_service.send_candidate_cv(@user, params) == true
+              create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
+            else
+              create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
+            end
+
           end
 
         end
 
+        render json: { success: true, user_id: @user.id }
+      else
+        render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }, status: 422
       end
-
-      render json: { success: true, user_id: @user.id }
-    else
-      render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }
     end
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -141,6 +145,7 @@ class BullhornV2Controller < ApplicationController
   def job_application
     
     BullhornApplicationWorker.perform_async params
+    render json: { success: true, status: 'Application has been queued for submission to Bullhorn' }
 
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -329,6 +334,7 @@ class BullhornV2Controller < ApplicationController
         :status_text,
         :job_status,
         :use_utm_source,
+        :full_candidate_registrations_only,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )
     end

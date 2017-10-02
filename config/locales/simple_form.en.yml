@@ -24,6 +24,7 @@ en:
         linkedin_bullhorn_field: Bullhorn Field For LinkedIn Public URL
         source_text: Bullhorn Source text for Candidate records
         always_create: Saving Candidates in Bullhorn
+        full_candidate_registrations_only: Which candidate registrations should be sent to Bullhorn?
         status_text: Bullhorn Status text for Candidate records
         cv_type_text: Bullhorn CV Type text for Candidate CV files
         uses_public_filter: Published Vacancies Filter

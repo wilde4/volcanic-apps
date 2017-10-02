@@ -16,7 +16,11 @@ class Bullhorn::ClientService < BaseService
   end
 
   def setup_client
-    @client = nil and return unless @bullhorn_setting.auth_settings_filled
+    unless @bullhorn_setting.auth_settings_filled
+      @client = nil
+      return
+    end
+
     @client = Bullhorn::Rest::Client.new(
       username: @bullhorn_setting.bh_username,
       password: @bullhorn_setting.bh_password,
@@ -35,7 +39,7 @@ class Bullhorn::ClientService < BaseService
       @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
     else
       # It's possible another instance may have already used the refresh token, thus invalidating it.
-      # A new tokens should have been saved to the bullhorn setting in this case
+      # New tokens should have been saved to the bullhorn setting in this case
       @bullhorn_setting.reload
 
       @client.access_token = @bullhorn_setting.access_token
