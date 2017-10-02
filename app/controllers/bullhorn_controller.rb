@@ -261,7 +261,7 @@ class BullhornController < ApplicationController
 
     # create note entity
     attributes = {
-      'action' => 'Job search on website',
+      'action' => 'Job alert created on website',
       'comments' => comment,
       'isDeleted' => 'false',
       'personReference' => candidate
