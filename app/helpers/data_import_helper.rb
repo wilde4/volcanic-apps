@@ -16,7 +16,8 @@ module DataImportHelper
     'job_description', 'application_email', 'application_url',
     'created_at', 'paid', 'job_location', 'salary_free', 'salary_low',
     'salary_high', 'salary_currency', 'job_startdate',
-    'extra', 'expiry_date', 'job_functions', 'contact_name', 'contact_email'].sort
+    'extra', 'expiry_date', 'job_functions', 'contact_name', 'contact_email',
+    'salary_per', 'branch'].sort
   end
 
   def blog_columns_collection
