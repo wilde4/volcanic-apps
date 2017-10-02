@@ -353,7 +353,7 @@ class Bullhorn::ClientService < BaseService
     query_job_orders.each do |job|
       exists_on_volcanic = job_references.include?(job.id.to_s)
 
-      if job.isOpen && ((@bullhorn_setting.job_status.blank? && job.status != 'Archived') || @bullhorn_setting.job_status == job.status)
+      if job.isOpen && ((@bullhorn_setting.job_status.blank? && job.status != 'Archived') || @bullhorn_setting.job_status == job.status) && (!@bullhorn_setting.uses_public_filter? || job.isPublic == 1)
         BullhornParseJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
       elsif exists_on_volcanic
         if job.isDeleted || job.status == 'Archived' || (@bullhorn_setting.uses_public_filter? && job.isPublic == 0)
