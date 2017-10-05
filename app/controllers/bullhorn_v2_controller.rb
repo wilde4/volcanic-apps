@@ -83,34 +83,47 @@ class BullhornV2Controller < ApplicationController
   def save_user
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
+    user_available = false
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+
+    if @user.present?
+      # If the user hasn't been sent to BH yet save previous CV details
+      if @user.bullhorn_uid.blank?
+        @cv = { upload_name: @user.user_profile['upload_name'], upload_path: @user.user_profile['upload_path'] } if @user.user_profile['upload_path'].present?
+      end
+
+      if @user.update(
+        email: params[:user][:email],
+        user_data: params[:user],
+        user_profile: params[:user_profile],
+        linkedin_profile: params[:linkedin_profile],
+        registration_answers: params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+      )
+        
+        user_available = true
+      end
+
+      # Check if we need to add the CV details back to the profile hash
+      if @cv.present? && @cv[:upload_path].present? && @user.user_profile['upload_path'].blank?
+        @user.user_profile['upload_name'] = @cv[:upload_name]
+        @user.user_profile['upload_path'] = @cv[:upload_path]
+        @user.save
+      end
+
+    else
+      @user = BullhornUser.new
+      @user.user_id = params[:user][:id]
+      @user.email = params[:user][:email]
+      @user.user_data = params[:user]
+      @user.user_profile = params[:user_profile]
+      @user.linkedin_profile = params[:linkedin_profile]
+      @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+      user_available = true if @user.save
+    end
+
     if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
       render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
     else
-      user_available = false
-      @user = BullhornUser.find_by(user_id: params[:user][:id])
-
-      if @user.present?
-        if @user.update(
-          email: params[:user][:email],
-          user_data: params[:user],
-          user_profile: params[:user_profile],
-          linkedin_profile: params[:linkedin_profile],
-          registration_answers: params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-        )
-          
-          user_available = true
-        end
-      else
-        @user = BullhornUser.new
-        @user.user_id = params[:user][:id]
-        @user.email = params[:user][:email]
-        @user.user_data = params[:user]
-        @user.user_profile = params[:user_profile]
-        @user.linkedin_profile = params[:linkedin_profile]
-        @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-        user_available = true if @user.save
-      end
-
       if @user.present? && user_available
 
         @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
@@ -118,7 +131,7 @@ class BullhornV2Controller < ApplicationController
         if @bullhorn_service.present?
           @bullhorn_service.post_user_to_bullhorn(@user, params)
 
-          if params[:user_profile][:upload_path].present?
+          if params[:user_profile][:upload_path].present? || (@cv.present? && @cv[:upload_path].present?)
           
             if @bullhorn_service.send_candidate_cv(@user, params) == true
               create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
@@ -135,6 +148,7 @@ class BullhornV2Controller < ApplicationController
         render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }, status: 422
       end
     end
+
   rescue StandardError => e
     Honeybadger.notify(e)
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
@@ -182,15 +196,25 @@ class BullhornV2Controller < ApplicationController
   end
 
   def upload_cv
-    if params[:user_profile][:upload_path].present?
-      @user = BullhornUser.find_by(user_id: params[:user][:id])
+    user_available = false
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
 
-      if @user.present?
-        @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
-        @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+    if @user.present?
 
-        @file_response = @bullhorn_service.send_candidate_cv(@user, params)
+      if @user.update(user_profile: params[:user_profile])
+        user_available = true
       end
+
+    end
+
+    if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+      render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
+    elsif params[:user_profile][:upload_path].present? && user_available
+
+      @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+      @file_response = @bullhorn_service.send_candidate_cv(@user, params)
 
       if @file_response == true
         create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)

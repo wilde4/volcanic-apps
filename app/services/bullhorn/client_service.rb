@@ -566,10 +566,10 @@ class Bullhorn::ClientService < BaseService
 
     if Rails.env.development?
       key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-      cv_url = 'http://' + key.host + params[:user_profile][:upload_path]
+      cv_url = 'http://' + key.host + user['user_profile']['upload_path']
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
-      cv_url = params[:user_profile][:upload_path]
+      cv_url = user['user_profile']['upload_path']
     end
 
     # @file_attributes COME FROM THIS
