@@ -156,7 +156,7 @@ class Bullhorn::ClientService < BaseService
       @volcanic_job_fields[val['attribute']] = val['name'] 
     }
 
-    # @volcanic_job_fields = Hash[@volcanic_job_fields.sort]
+    @volcanic_job_fields = Hash[@volcanic_job_fields.sort]
 
     @volcanic_job_fields
   rescue StandardError => e
