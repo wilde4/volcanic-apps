@@ -44,7 +44,7 @@
                     %td LinkedIn Public URL
                     %td.text-center
                       %i.icon-arrow-right16
-                    %td= f.input :linkedin_bullhorn_field, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+                    %td= f.input :linkedin_bullhorn_field, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
                   = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
                     %tr
                       %td
@@ -56,7 +56,7 @@
                         = bfm.input :registration_question_reference, as: :hidden
                       %td.text-center
                         %i.icon-arrow-right16
-                      %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control' }
+                      %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
 :javascript
   $( "a.btn" ).click(function() {
     if ($(this).find( "i" ).hasClass('fa-rotate-180')){

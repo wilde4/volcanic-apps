@@ -41,16 +41,16 @@
 
 = render partial: 'credentials_info'
 
+:css
+  .select2-dropdown {
+    border: 1px solid #ddd !important;
+    border-radius: 3px !important;
+  }
+
 :javascript
   $("#submit-btn").click(function(e) {
     e.preventDefault();
-    $("#settings_form form").submit();
-  });
-
-  $('#settings_form form').keyup(function(event) {
-    if(event.keyCode === 13) {
-      $("#submit-btn").trigger("click");
-    }
+    $("#bh_settings_form form").submit();
   });
 
   $("#submit-btn").click(function(e){
@@ -64,3 +64,7 @@
   });
 
   $('[data-toggle="tooltip"]').tooltip();
+
+  $(document).ready(function() {
+    $('.select2').select2({width: '100%', placeholder: ' ', allowClear: true});
+  });
