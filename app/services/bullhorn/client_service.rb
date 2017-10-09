@@ -343,24 +343,21 @@ class Bullhorn::ClientService < BaseService
 
   #FETCH CLIENT'S BLUHORN JOBS TO IMPORT INTO VOLCANIC
   def sync_jobs
-
-    job_references = volcanic_job_references
-
-    @bullhorn_setting.job_status
     
     # Retrieve only job ids initially
 
     query_job_orders.each do |job|
-      exists_on_volcanic = job_references.include?(job.id.to_s)
 
       if job.isOpen && ((@bullhorn_setting.job_status.blank? && job.status != 'Archived') || @bullhorn_setting.job_status == job.status) && (!@bullhorn_setting.uses_public_filter? || job.isPublic == 1)
         BullhornParseJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
-      elsif exists_on_volcanic
+      elsif live_volcanic_job_references.include?(job.id.to_s)
         if job.isDeleted || job.status == 'Archived' || (@bullhorn_setting.uses_public_filter? && job.isPublic == 0)
           BullhornDeleteJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
         elsif @bullhorn_setting.expire_closed_jobs?
           BullhornExpireJobWorker.perform_async setting_id: @bullhorn_setting.id, job_id: job.id
         end
+      elsif expired_volcanic_job_references.include?(job.id.to_s)
+        BullhornDeleteJobWorker.perform_async(setting_id: @bullhorn_setting.id, job_id: job.id) if job.isDeleted || job.status == 'Archived' || (@bullhorn_setting.uses_public_filter? && job.isPublic == 0)
       end
 
     end
@@ -1064,15 +1061,36 @@ class Bullhorn::ClientService < BaseService
     Honeybadger.notify(e)
   end
 
-  def volcanic_job_references
+  def live_volcanic_job_references
+    return @volcanic_job_references if @volcanic_job_references.present?
+
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json"
     response = HTTParty.get(url)
 
-    if response.code == 200
+    @volcanic_job_references = if response.code == 200
       response.parsed_response.map { |r| r['job_reference'] }
     else
       []
     end
+    
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'get_volcanic_job_references', url, nil, e.message, true, true)
+  end
+
+  def expired_volcanic_job_references
+    return @expired_volcanic_job_references if @expired_volcanic_job_references.present?
+    
+    url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json?include_expired=true"
+    response = HTTParty.get(url)
+
+    @all_volcanic_job_references = if response.code == 200
+      response.parsed_response.map { |r| r['job_reference'] }
+    else
+      []
+    end
+
+    @expired_volcanic_job_references = @all_volcanic_job_references - live_volcanic_job_references
     
   rescue StandardError => e
     Honeybadger.notify(e)
