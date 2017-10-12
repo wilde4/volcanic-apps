@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170929130814) do
+ActiveRecord::Schema.define(version: 20171011141332) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -238,6 +238,15 @@ ActiveRecord::Schema.define(version: 20170929130814) do
   end
 
   add_index "data_import_lines", ["data_import_file_id"], name: "index_data_import_lines_on_data_import_file_id", using: :btree
+
+  create_table "etz_settings", force: true do |t|
+    t.integer  "dataset_id", null: false
+    t.string   "url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "etz_settings", ["dataset_id"], name: "index_etz_settings_on_dataset_id", using: :btree
 
   create_table "eventbrite_settings", force: true do |t|
     t.integer  "dataset_id"

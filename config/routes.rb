@@ -263,6 +263,14 @@ Apps::Application.routes.draw do
     get 'disable', to: 'twitter#disable'
   end
 
+  scope :etz do
+    get 'index', to: 'etz#index'
+    get 'show', to: 'etz#show'
+    post 'activate_app', to: 'etz#activate_app'
+    post 'deactivate_app', to: 'etz#deactivate_app'
+    post 'update', to: 'etz#update'
+  end
+
   scope :job_adder do
     post "activate_app"     => 'job_adder#activate_app'
     post "deactivate_app"   => 'job_adder#deactivate_app'
