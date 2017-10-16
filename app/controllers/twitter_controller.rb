@@ -44,6 +44,9 @@ class TwitterController < ApplicationController
     end
 
     render nothing: true, status: 200 and return
+
+  rescue Twitter::Error::Forbidden => e
+
   end
 
   def update
