@@ -7,7 +7,7 @@ class DataImport::FilesController < ApplicationController
   before_action :check_creating, only: [:index, :creating]
   before_action :check_importing, only: [:index, :importing]
   before_action :check_updating, only: [:index, :updating]
-  before_action :set_file, only: [:show, :edit, :update, :import, :importing, :updating]
+  before_action :set_file, only: [:show, :edit, :update, :import, :importing, :updating, :errors]
 
   IMPORT_WORKERS = %w(ImportUsersWorker ImportClientsWorker ImportJobsWorker ImportBlogsWorker)
 
@@ -200,6 +200,10 @@ class DataImport::FilesController < ApplicationController
       seconds_delay += @file.delay_interval || 1
     end
     redirect_to importing_data_import_file_path(@file, importing: true)
+  end
+
+  def errors
+    @error_lines = @file.lines.where(error: true)
   end
 
   private

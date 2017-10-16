@@ -1,0 +1,19 @@
+.row
+  .col-xs-12
+    .pull-right= link_to "Back", data_import_file_path(@file), class: 'btn btn-default'
+    %h2
+      = @error_lines.count
+      errors returned for
+      = @file.filename
+
+    - @error_lines.each do |line|
+      %h3
+        Line
+        = line.number
+      .alert.alert-danger= line.error_messages_hash['errors']
+      .well
+        - line.values.each do |k,v|
+          %b #{k}:
+          #{v}
+          %br
+      %hr
