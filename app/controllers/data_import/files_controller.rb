@@ -7,7 +7,7 @@ class DataImport::FilesController < ApplicationController
   before_action :check_creating, only: [:index, :creating]
   before_action :check_importing, only: [:index, :importing]
   before_action :check_updating, only: [:index, :updating]
-  before_action :set_file, only: [:show, :edit, :update, :import, :importing, :updating, :errors]
+  before_action :set_file, only: [:show, :edit, :update, :destroy, :import, :importing, :updating, :errors]
 
   IMPORT_WORKERS = %w(ImportUsersWorker ImportClientsWorker ImportJobsWorker ImportBlogsWorker)
 
@@ -113,6 +113,11 @@ class DataImport::FilesController < ApplicationController
     end
   end
 
+  def destroy
+    @file.destroy
+    redirect_to data_import_files_path, notice: 'File deleted'
+  end
+
   def creating
     unless @creating
       redirect_to data_import_files_path
@@ -203,7 +208,7 @@ class DataImport::FilesController < ApplicationController
   end
 
   def errors
-    @error_lines = @file.lines.where(error: true)
+    @error_lines = @file.lines.errors
   end
 
   private

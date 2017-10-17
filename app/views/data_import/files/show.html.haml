@@ -3,7 +3,8 @@
     %h2
       File:
       = @file.filename
-      .pull-right= link_to "Errors", errors_data_import_file_path(@file), class: 'btn btn-danger'
+      - if @file.lines.errors.any?
+        .pull-right= link_to "Errors", errors_data_import_file_path(@file), class: 'btn btn-danger'
 
     .well
       %p

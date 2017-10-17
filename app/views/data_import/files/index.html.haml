@@ -7,12 +7,14 @@
           %th Filename
           %th Import Type
           %th Uploaded At
+          %th
       %body
         - @files.each do |file|
           %tr
             %td= link_to file.filename, data_import_file_path(file)
             %td= file.model.try(:capitalize)
             %td= file.created_at.to_s(:long)
+            %td= link_to 'Delete', data_import_file_path(file), method: :delete
 
 .row
   .col-xs-12

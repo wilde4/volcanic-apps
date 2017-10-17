@@ -3,6 +3,8 @@ class DataImport::Line < ActiveRecord::Base
 
   serialize :values
 
+  scope :errors, -> { where(error: true) }
+
   def error_messages_hash
     @error_messages_hash ||= JSON.parse(error_messages)['response'] if error_messages.present?
   end
