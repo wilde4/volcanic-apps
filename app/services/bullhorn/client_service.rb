@@ -59,6 +59,8 @@ class Bullhorn::ClientService < BaseService
       @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
     end
 
+    @bullhorn_setting.update_attribute :authorised, !!@client.authenticated? if !!@bullhorn_setting.authorised != !!@client.authenticated?
+
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
