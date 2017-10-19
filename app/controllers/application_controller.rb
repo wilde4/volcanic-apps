@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
 
   def activate_app
     key = Key.new
-    key.host = params[:data][:host]
+    key.host = Rails.env.development? ? "#{params[:data][:host]}:3000" : params[:data][:host]
     key.app_dataset_id = params[:data][:app_dataset_id]
     key.api_key = params[:data][:api_key]
     key.protocol = params[:data][:protocol]
