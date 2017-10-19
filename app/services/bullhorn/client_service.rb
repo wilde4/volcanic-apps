@@ -1,5 +1,10 @@
 class Bullhorn::ClientService < BaseService
 
+  DEFAULT_JOB_FIELDS = { job_title: 'Job Title', application_email: 'Job owner email', contact_name: 'Job owner first name + last name',
+                        discipline: 'Job industries', created_at: 'Date Job Added', job_reference: 'Job reference', job_location: 'Job address',
+                        job_type: 'Job employment type', salary_low: 'Job salary', salary_per: 'Salary unit (per day,  hour...)',
+                        job_description: 'Job public description' }
+
   attr_accessor :client, :key
 
   def initialize(bullhorn_setting)
@@ -100,6 +105,7 @@ class Bullhorn::ClientService < BaseService
   rescue StandardError => e 
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_bullhorn_candidate_fields', nil, nil, e.message, true, false)
+    { error: 'Error retrieving candidate fields' }
   end
 
   # GETS VOLCANIC CANDIDATES FIELDS VIA API
@@ -121,6 +127,7 @@ class Bullhorn::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_volcanic_candidate_fields', url, nil, e.message, true, true)
+    { error: 'Error retrieving candidate fields' }
   end
 
   # GETS BULLHORN JOB FIELDS VIA API USING THE GEM
@@ -144,6 +151,7 @@ class Bullhorn::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'get_bullhorn_job_fields', path, nil, e.message, true, false)
+    { error: 'Error retrieving job fields' }
   end
 
   # GETS VOLCANIC JOB FIELDS VIA API
@@ -152,18 +160,25 @@ class Bullhorn::ClientService < BaseService
     url = "#{@key.protocol}#{@key.host}/api/v1/available_job_attributes.json?api_key=#{@key.api_key}&all=true"
     response = HTTParty.get(url)
 
-    @volcanic_job_fields = {}
+    @default_job_fields = {}
+    @other_job_fields = {}
 
-    response.each { |r, val| 
-      @volcanic_job_fields[val['attribute']] = val['name'] 
+    response.each { |r, val|
+      if DEFAULT_JOB_FIELDS.keys.include?(val['attribute'].to_sym)
+        @default_job_fields[val['attribute']] = val['name']
+      else
+        @other_job_fields[val['attribute']] = val['name']
+      end
     }
 
-    @volcanic_job_fields = Hash[@volcanic_job_fields.sort]
+    @default_job_fields = Hash[@default_job_fields.sort]
+    @other_job_fields = Hash[@other_job_fields.sort]
 
-    @volcanic_job_fields
+    @default_job_fields.merge(@other_job_fields)
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'get_volcanic_job_fileds', nil, nil, e.message, true, true)
+    create_log(@bullhorn_setting, @key, 'get_volcanic_job_fields', nil, nil, e.message, true, true)
+    { error: 'Error retrieving job fields' }
   end
 
   #SEND CANDIDATE INFO TO BULLHORN USING THE GEM

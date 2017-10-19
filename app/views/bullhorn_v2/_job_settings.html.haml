@@ -37,7 +37,7 @@
             %p
               Here you can set how Job fields within your Volcanic website correspond to fields within your Bullhorn vacancies.
             .alert.alert-info.no-border
-              Any mapping you set here will override any previous default mapping. To remove any custom mapping just set it to blank before saving.
+              Any mapping you set here will override the default mapping. Your custom mappings are shown first, followed by any remaining default mappings for reference. Click the 'x' next to a mapping to return it to the default.
             -#%a.btn.btn-primary{"aria-controls" => "collapse-jobs-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-jobs-fields"}
             -# Open mappings
             -##collapse-jobs-fields.collapse
@@ -51,7 +51,7 @@
                 %tbody
                   = f.simple_fields_for :bullhorn_field_mappings, @bullhorn_setting.bullhorn_field_mappings.select { |m| m.registration_question_reference.nil? } do |bfm|
                     %tr
-                      %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }, selected: default_job_attribute(bfm.object.bullhorn_field_name)
+                      %td= bfm.input :bullhorn_field_name, collection: @bh_job_fields, label: false, include_blank: true, input_html: { class: "form-control select2#{Bullhorn::ClientService::DEFAULT_JOB_FIELDS.keys.include?(bfm.object.job_attribute.to_sym) ? bfm.object.job_attribute : ''}" }, selected: default_job_attribute(bfm.object.bullhorn_field_name)
                       %td.text-center
                         %i.icon-arrow-right16
                       %td
