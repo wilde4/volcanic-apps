@@ -59,8 +59,11 @@ class BullhornV2Controller < ApplicationController
     end
 
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
-    get_fields if @bullhorn_service.present?
+    
     @bullhorn_setting.reload
+    
+    get_fields if @bullhorn_service.present?
+
   rescue StandardError => e
     Honeybadger.notify(e)
     @net_error = create_log(@bullhorn_setting, @key, 'update', nil, nil, e.message, true, true)
