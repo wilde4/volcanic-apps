@@ -163,38 +163,42 @@ class BullhornController < ApplicationController
   def upload_cv
     if params[:user_profile][:upload_path].present?
       @user = BullhornUser.find_by(user_id: params[:user][:id])
-      client = authenticate_client(params[:user][:dataset_id])
-      
-      logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
-      if Rails.env.development?
-        key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-        cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
+      if @user.present?
+        client = authenticate_client(params[:user][:dataset_id])
+        
+        logger.info "--- params[:user_profile][:upload_path] = #{params[:user_profile][:upload_path]}"
+        if Rails.env.development?
+          key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+          cv_url = 'http://' + key.host + ':3000' + params[:user_profile][:upload_path]
+        else
+          # UPLOAD PATHS USE CLOUDFRONT URL
+          cv_url = params[:user_profile][:upload_path]
+        end
+        logger.info "--- cv_url = #{cv_url}"
+
+        # @file_attributes COME FROM THIS
+        extract_file_attributes(cv_url, params)
+
+        file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
+        logger.info "--- file_response = #{file_response.inspect}"
+
+        # PARSE FILE
+        candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
+
+        # ADD TO CANDIDATE DESCRIPTION
+        if candidate_data.present? && candidate_data['description'].present?
+          attributes = {}
+          attributes['description'] = candidate_data['description']
+          response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
+        end
+
+        if file_response['fileId'].present?
+          render json: { success: true, user_id: @user.id }
+        else
+          render json: { success: false, status: "CV was not uploaded to Bullhorn" }
+        end
       else
-        # UPLOAD PATHS USE CLOUDFRONT URL
-        cv_url = params[:user_profile][:upload_path]
-      end
-      logger.info "--- cv_url = #{cv_url}"
-
-      # @file_attributes COME FROM THIS
-      extract_file_attributes(cv_url, params)
-
-      file_response = client.put_candidate_file(@user.bullhorn_uid, @file_attributes.to_json)
-      logger.info "--- file_response = #{file_response.inspect}"
-
-      # PARSE FILE
-      candidate_data = parse_cv(client, params, @content_type, @cv, @ct)
-
-      # ADD TO CANDIDATE DESCRIPTION
-      if candidate_data.present? && candidate_data['description'].present?
-        attributes = {}
-        attributes['description'] = candidate_data['description']
-        response = client.update_candidate(@user.bullhorn_uid, attributes.to_json)
-      end
-
-      if file_response['fileId'].present?
-        render json: { success: true, user_id: @user.id }
-      else
-        render json: { success: false, status: "CV was not uploaded to Bullhorn" }
+        render nothing: true, status: 404
       end
     end
   rescue StandardError => e
@@ -207,28 +211,33 @@ class BullhornController < ApplicationController
   def job_application
     client = authenticate_client(@key.app_dataset_id)
     @user = BullhornUser.find_by(user_id: params[:user][:id])
-    job_reference = params[:job][:job_reference]
-    candidate = {
-      'id' => @user.bullhorn_uid
-    }
-    job_order = {
-      'id' => job_reference
-    }
 
-    attributes = {
-      'candidate' => candidate,
-      'isDeleted' => 'false',
-      'jobOrder' => job_order,
-      'status' => 'New Lead'
-    }
+    if @user.present?
+      job_reference = params[:job][:job_reference]
+      candidate = {
+        'id' => @user.bullhorn_uid
+      }
+      job_order = {
+        'id' => job_reference
+      }
 
-    response = client.create_job_submission(attributes.to_json)
-    logger.info "--- response = #{response.inspect}"
-    if response.changedEntityId.present?
-      render json: { success: true, job_submission_id: response.changedEntityId }
-      @key.bullhorn_report_entry.increment_count(:applications)
+      attributes = {
+        'candidate' => candidate,
+        'isDeleted' => 'false',
+        'jobOrder' => job_order,
+        'status' => 'New Lead'
+      }
+
+      response = client.create_job_submission(attributes.to_json)
+      logger.info "--- response = #{response.inspect}"
+      if response.changedEntityId.present?
+        render json: { success: true, job_submission_id: response.changedEntityId }
+        @key.bullhorn_report_entry.increment_count(:applications)
+      else
+        render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
+      end
     else
-      render json: { success: false, status: "JobSubmission was not created in Bullhorn." }
+      render nothing: true, status: 404
     end
   rescue StandardError => e
     Honeybadger.notify(e)
