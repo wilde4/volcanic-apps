@@ -383,6 +383,7 @@ class Bullhorn::ClientService < BaseService
     puts "Importing..."
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
     job = query_job_order job_id, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }
+    return unless job.present?
     
     @job_payload = Hash.new
     @job_payload["job[api_key]"] = @key.api_key
@@ -482,6 +483,7 @@ class Bullhorn::ClientService < BaseService
   #FETCH CLIENT'S BLUHORN JOBS TO DELETE FROM VOLCANIC
   def delete_client_job(job_id)
     job = query_job_order job_id
+    return unless job.present?
 
     @job_payload = Hash.new
     @job_payload["job[api_key]"] = @key.api_key
@@ -496,7 +498,8 @@ class Bullhorn::ClientService < BaseService
 
   #FETCH CLIENT'S BLUHORN JOBS TO EXPIRE FROM VOLCANIC
   def expire_client_job(job_id)
-    job = query_job_order job_id 
+    job = query_job_order job_id
+    return unless job.present?
 
     @job_payload = Hash.new
     @job_payload["job[api_key]"] = @key.api_key
@@ -667,11 +670,19 @@ class Bullhorn::ClientService < BaseService
       complete_data.concat jobs.data if jobs["count"] > 0
     end
     complete_data
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'query_job_orders', nil, nil, e.message, true, true)
+    []
   end
 
   def query_job_order(job_id, custom_fields = [])
     fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     job = @client.job_order(job_id, fields: fields).data
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@bullhorn_setting, @key, 'query_job_order', nil, nil, e.message, true, true)
+    nil
   end
 
   def post_payload(payload)
