@@ -66,58 +66,62 @@ class MacildowieDaxtraController < ApplicationController
 
   def email_data
     @user = MacDaxtraUser.find_by(user_id: params[:user_id])
-    @name = "#{@user.user_profile[:first_name]} #{@user.user_profile[:last_name]}"
+    if @user.present?
+      @name = "#{@user.user_profile[:first_name]} #{@user.user_profile[:last_name]}"
 
-    if params[:email_name] == 'new_candidate'
-      @headers = {
-        "X-Aplitrak-Original-From-Address" => @user.email,
-        "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
-        "X-Aplitrak-Job-Type" => job_type,
-        "X-Aplitrak-Itris_discipline" => discipline_of_interest,
-        "X-Aplitrak-Salary_form" => salary_choice
-      }
-      if @user.user_group_name == 'candidate'
-        @subject = "#{job_type}/[NEW CANDIDATE]/NEWC/#{@name}/#{discipline_of_interest}"
-        @headers["X-Aplitrak-Responding-Board"] = "NEWC"
-        @headers["X-Aplitrak-Responding-Board-Name"] = "newcandidate"
-      elsif @user.user_group_name == 'dream_job'
-        @subject = "#{job_type}/Dream Job/DJ/#{@name}/#{discipline_of_interest}"
-        @headers["X-Aplitrak-Responding-Board"] = "DJ"
-        @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
+      if params[:email_name] == 'new_candidate'
+        @headers = {
+          "X-Aplitrak-Original-From-Address" => @user.email,
+          "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
+          "X-Aplitrak-Job-Type" => job_type,
+          "X-Aplitrak-Itris_discipline" => discipline_of_interest,
+          "X-Aplitrak-Salary_form" => salary_choice
+        }
+        if @user.user_group_name == 'candidate'
+          @subject = "#{job_type}/[NEW CANDIDATE]/NEWC/#{@name}/#{discipline_of_interest}"
+          @headers["X-Aplitrak-Responding-Board"] = "NEWC"
+          @headers["X-Aplitrak-Responding-Board-Name"] = "newcandidate"
+        elsif @user.user_group_name == 'dream_job'
+          @subject = "#{job_type}/Dream Job/DJ/#{@name}/#{discipline_of_interest}"
+          @headers["X-Aplitrak-Responding-Board"] = "DJ"
+          @headers["X-Aplitrak-Responding-Board-Name"] = "dreamjob"
+        end
+      elsif params[:email_name] == 'updated_cv_from_candidate' or params[:email_name] == 'updated_candidate'
+        @subject = "#{job_type}/Updated/UPD/#{@name}/#{discipline_of_interest}"
+        @headers = {
+          "X-Aplitrak-Original-From-Address" => @user.email,
+          "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
+          "X-Aplitrak-Job-Type" => job_type,
+          "X-Aplitrak-Itris_discipline" => discipline_of_interest,
+          "X-Aplitrak-Salary_form" => salary_choice,
+          "X-Aplitrak-Responding-Board" => "UPD",
+          "X-Aplitrak-Responding-Board-Name" => "updated"
+        }
+      elsif params[:email_name] == 'apply_for_vacancy'
+        @job = MacDaxtraJob.find_by(job_id: params[:job_id])
+        @subject = "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}"
+        @headers = {
+          "X-Mailer" => "Aplitrak Responce Management v2 (codename Apil2)",
+          'X-Aplitrak-Responding-Board' => "5671",
+          'X-Aplitrak-Responding-Board-Name' => "Macildowie New",
+          "X-Aplitrak-Original-From-Address" => @user.email,
+          'X-Aplitrak-Original-Consultant' => @job.job["contact_name"],
+          'X-Aplitrak-Original-Send_to_email' => @job.job["application_email"],
+          'X-Aplitrak-Original-Ref' => @job.job["job_reference"],
+          'X-Aplitrak-Original-Jobtitle' => @job.job["job_title"],
+          'X-Aplitrak-Original-Subject' => "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}",
+          'X-Aplitrak-Company' => "macildowie",
+          'X-Aplitrak-User-Id' => @user.user_id.to_s,
+          'X-Aplitrak-Time-Recived' => Time.now.to_formatted_s(:long),
+          'X-Aplitrak-Job-Type' => @job.job_type,
+          'X-Aplitrak-Salary_form' => @job.job["salary_low"],
+          'X-Aplitrak-Itris_discipline' => CGI.unescapeHTML(@job.disciplines.last["reference"])
+        }
       end
-    elsif params[:email_name] == 'updated_cv_from_candidate' or params[:email_name] == 'updated_candidate'
-      @subject = "#{job_type}/Updated/UPD/#{@name}/#{discipline_of_interest}"
-      @headers = {
-        "X-Aplitrak-Original-From-Address" => @user.email,
-        "X-Aplitrak-Original-Jobtitle" => @user.registration_answers["current-job-title"].present? ? @user.registration_answers["current-job-title"] : "No Job Title Given",
-        "X-Aplitrak-Job-Type" => job_type,
-        "X-Aplitrak-Itris_discipline" => discipline_of_interest,
-        "X-Aplitrak-Salary_form" => salary_choice,
-        "X-Aplitrak-Responding-Board" => "UPD",
-        "X-Aplitrak-Responding-Board-Name" => "updated"
-      }
-    elsif params[:email_name] == 'apply_for_vacancy'
-      @job = MacDaxtraJob.find_by(job_id: params[:job_id])
-      @subject = "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}"
-      @headers = {
-        "X-Mailer" => "Aplitrak Responce Management v2 (codename Apil2)",
-        'X-Aplitrak-Responding-Board' => "5671",
-        'X-Aplitrak-Responding-Board-Name' => "Macildowie New",
-        "X-Aplitrak-Original-From-Address" => @user.email,
-        'X-Aplitrak-Original-Consultant' => @job.job["contact_name"],
-        'X-Aplitrak-Original-Send_to_email' => @job.job["application_email"],
-        'X-Aplitrak-Original-Ref' => @job.job["job_reference"],
-        'X-Aplitrak-Original-Jobtitle' => @job.job["job_title"],
-        'X-Aplitrak-Original-Subject' => "#{@job.job_type}/#{@job.job["job_title"]}/#{@job.job["job_reference"]}/Macildowie New/5671/#{@job.job["contact_name"]}/#{@job.disciplines.last["name"]}",
-        'X-Aplitrak-Company' => "macildowie",
-        'X-Aplitrak-User-Id' => @user.user_id.to_s,
-        'X-Aplitrak-Time-Recived' => Time.now.to_formatted_s(:long),
-        'X-Aplitrak-Job-Type' => @job.job_type,
-        'X-Aplitrak-Salary_form' => @job.job["salary_low"],
-        'X-Aplitrak-Itris_discipline' => CGI.unescapeHTML(@job.disciplines.last["reference"])
-      }
+      create_log(@user, nil, 'email_data', nil, { headers: @headers }.to_s, nil, false, true)
+    else
+      render nothing: true, status: 404
     end
-    create_log(@user, nil, 'email_data', nil, { headers: @headers }.to_s, nil, false, true)
   end
 
   private
