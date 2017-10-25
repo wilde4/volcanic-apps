@@ -43,6 +43,9 @@ class TwitterController < ApplicationController
       end
     end
 
+  rescue Twitter::Error::Forbidden => e
+
+  ensure
     render nothing: true, status: 200 and return
   end
 
