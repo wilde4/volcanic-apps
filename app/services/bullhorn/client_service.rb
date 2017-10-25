@@ -31,19 +31,24 @@ class Bullhorn::ClientService < BaseService
       password: @bullhorn_setting.bh_password,
       client_id: @bullhorn_setting.bh_client_id,
       client_secret: @bullhorn_setting.bh_client_secret,
-      refresh_token: @bullhorn_setting.refresh_token
+      refresh_token: @bullhorn_setting.refresh_token,
+      access_token: @bullhorn_setting.access_token,
+      access_token_expires_at: @bullhorn_setting.access_token_expires_at
     )
     
-    # Attempt to authenticate, this will use the refresh token if present
+    # Attempt to authenticate, this will use the access token or refresh token if present
     @client.authenticate rescue nil
 
     if @client.authenticated?
-      # Save new token against the bullhorn setting
-      @bullhorn_setting.update_attributes refresh_token: @client.refresh_token
+      # Save new tokens against the bullhorn setting
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
     else
       # It's possible another instance may have already used the refresh token, thus invalidating it.
       # New tokens should have been saved to the bullhorn setting in this case
       @bullhorn_setting.reload
+
+      @client.access_token = @bullhorn_setting.access_token
+      @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
       @client.refresh_token = @bullhorn_setting.refresh_token
 
       @client.authenticate unless @client.authenticated? rescue nil
@@ -56,7 +61,7 @@ class Bullhorn::ClientService < BaseService
       @client.authenticate rescue nil
 
       # Save new tokens against the bullhorn setting
-      @bullhorn_setting.update_attributes refresh_token: @client.refresh_token
+      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
     end
 
     @bullhorn_setting.update_attribute :authorised, !!@client.authenticated? if !!@bullhorn_setting.authorised != !!@client.authenticated?
