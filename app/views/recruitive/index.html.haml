@@ -1,20 +1,7 @@
-.col-sm-10.col-sm-offset-1
-  .panel.panel-default
-    .panel-heading
-      %h4.panel-title Recruitive is able to post jobs to this website.
-    .panel-body
-      %p You can contact Recruitive UK Support on the following number:
-      %p 0845 60 00 550
+= image_tag(image_url('Recruitive.png'), class: 'pull-right')
+%h4 Recruitive is able to post jobs to this website.
 
-  .panel.panel-default
-    .panel-heading
-      %h4.panel-title Your Jobs XML feed
-    .panel-body
-      .col-xs-12 
-        %a{href: "#{@settings.settings[:url]}?api_key=#{@key.api_key}", target: :_blank}
-          .text-center
-            #{@settings.settings[:url]}?api_key=#{@key.api_key}
-
-  %a{href: 'https://action.recruitics.com/users/sign_in'}
-    .well{style: 'text-align: center;'}
-      Sign in to Recruitive
+%p
+  You can contact Recruitive UK Support on the following number:
+%p
+  0845 60 00 550
