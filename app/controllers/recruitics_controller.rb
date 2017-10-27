@@ -137,7 +137,7 @@ class RecruiticsController < ApplicationController
     key = Key.where(app_dataset_id: params[:data][:app_dataset_id], app_name: params[:controller]).first
     settings = AppSetting.find_by(dataset_id: params[:data][:app_dataset_id])
     
-    url = "#{key.protocol}#{key.host}/api/v1/document_generators/#{settings.settings[:secure_random]}.json?api_key=#{key.api_key}"
+    url = "#{key.protocol}#{key.host}/api/v1/document_generators/#{settings.settings[:secure_random]}.json"
     response = HTTParty.delete(url)
 
     respond_to do |format|
