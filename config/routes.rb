@@ -403,6 +403,12 @@ Apps::Application.routes.draw do
     get  "index"            => 'daxtra#index'
   end
 
+  scope :recruitics do
+    post "activate_app"     => 'recruitics#activate_app'
+    post "deactivate_app"   => 'recruitics#deactivate_app'
+    get  "index"            => 'recruitics#index'
+  end
+
   resources :app_logs
   
   devise_for :profiles
