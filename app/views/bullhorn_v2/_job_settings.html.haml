@@ -28,6 +28,12 @@
             = f.input :expire_closed_jobs, input_html: { class: 'form-control'}, label: 'Expire "Closed" jobs', hint: 'Expire jobs in the site if they are marked as "Closed" in Bullhorn. Jobs will not be deleted.'
           
           %hr
+          %h6 Applications
+          %p
+            = f.input :send_cover_letter, input_html: { class: 'form-control'}, label: 'Send cover letters', hint: 'If a candidate applies to a job with a cover letter, it will be added to their "Files" tab in Bullhorn.'
+
+
+          %hr
           %h6 Vacancies Fields Mappings
           %p
             = f.collection_radio_buttons :custom_job_mapping, [[false, 'Default'], [true, 'Custom']], :first, :last, item_wrapper_class: :radio, label: false

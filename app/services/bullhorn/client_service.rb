@@ -31,27 +31,23 @@ class Bullhorn::ClientService < BaseService
       password: @bullhorn_setting.bh_password,
       client_id: @bullhorn_setting.bh_client_id,
       client_secret: @bullhorn_setting.bh_client_secret,
-      refresh_token: @bullhorn_setting.refresh_token,
-      access_token: @bullhorn_setting.access_token,
-      access_token_expires_at: @bullhorn_setting.access_token_expires_at
+      refresh_token: @bullhorn_setting.refresh_token
     )
     
     # Attempt to authenticate, this will use the access token or refresh token if present
     @client.authenticate rescue nil
 
     if @client.authenticated?
-      # Save new tokens against the bullhorn setting
-      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+      # Save new token against the bullhorn setting
+      @bullhorn_setting.update_attribute :refresh_token, @client.refresh_token
     else
       # It's possible another instance may have already used the refresh token, thus invalidating it.
-      # New tokens should have been saved to the bullhorn setting in this case
+      # A new token should have been saved to the bullhorn setting in this case
       @bullhorn_setting.reload
 
-      @client.access_token = @bullhorn_setting.access_token
-      @client.access_token_expires_at = @bullhorn_setting.access_token_expires_at
       @client.refresh_token = @bullhorn_setting.refresh_token
 
-      @client.authenticate unless @client.authenticated? rescue nil
+      @client.authenticate rescue nil
     end
 
     # Try full authentication again if we still need to
@@ -60,8 +56,8 @@ class Bullhorn::ClientService < BaseService
       @client.refresh_token = nil
       @client.authenticate rescue nil
 
-      # Save new tokens against the bullhorn setting
-      @bullhorn_setting.update_attributes access_token: @client.access_token, access_token_expires_at: @client.access_token_expires_at, refresh_token: @client.refresh_token
+      # Save new token against the bullhorn setting
+      @bullhorn_setting.update_attribute :refresh_token, @client.refresh_token
     end
 
     @bullhorn_setting.update_attribute :authorised, !!@client.authenticated? if !!@bullhorn_setting.authorised != !!@client.authenticated?
@@ -579,34 +575,44 @@ class Bullhorn::ClientService < BaseService
   end
 
   # PARSE AND SEND CANDIDATE'S CV TO BULLHORN
-  def send_candidate_cv(user, params)
-
-    if Rails.env.development?
-      key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
-      cv_url = 'http://' + key.host + user['user_profile']['upload_path']
-    else
-      # UPLOAD PATHS USE CLOUDFRONT URL
-      cv_url = user['user_profile']['upload_path']
-    end
+  def send_candidate_file(user, params, upload_path, upload_name, type)
 
     # @file_attributes COME FROM THIS
-    extract_file_attributes(cv_url, params)
+     case type
+    when 'cv'
+      if Rails.env.development?
+        key = Key.where(app_dataset_id: params[:dataset_id], app_name: params[:controller]).first
+        file_url = 'http://' + key.host + upload_path
+      else
+        # UPLOAD PATHS USE CLOUDFRONT URL
+        file_url = upload_path
+      end
+      bh_type = (@bullhorn_setting.cv_type_text.present? ? @bullhorn_setting.cv_type_text : 'CV')
+    when 'cover_letter'
+      file_url = upload_path
+      bh_type = 'Cover Letter'
+    end
+
+    extract_file_attributes(file_url, params[:dataset_id], upload_name, bh_type)
 
     if @file_attributes.present?
 
       @file_response = @client.put_candidate_file(user.bullhorn_uid, @file_attributes.to_json)
 
-      # PARSE FILE
-      candidate_data = parse_cv(params, @content_type, @cv, @ct)
+      if type == 'cv'
 
-      # ADD TO CANDIDATE DESCRIPTION
-      if candidate_data.present? && candidate_data['description'].present?
-        attributes = {}
-        attributes['description'] = candidate_data['description']
-        post_user_to_bullhorn(user, nil, attributes)
+        # PARSE FILE
+        candidate_data = parse_cv(upload_name, @content_type, @file, @ct)
+
+        # ADD TO CANDIDATE DESCRIPTION
+        if candidate_data.present? && candidate_data['description'].present?
+          attributes = {}
+          attributes['description'] = candidate_data['description']
+          post_user_to_bullhorn(user, nil, attributes)
+        end
+
       end
     end
-
 
     if @file_response && @file_response['fileId'].present?
       create_log(user, @key, 'send_candidate_file', nil, nil, @file_response, false, false)
@@ -617,7 +623,7 @@ class Bullhorn::ClientService < BaseService
     end
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(user, @key, 'send_candidate_cv', nil, nil, e.message, true, false)
+    create_log(user, @key, 'send_candidate_file', nil, nil, e.message, true, false)
     return false
   end
 
@@ -1087,14 +1093,14 @@ class Bullhorn::ClientService < BaseService
     end
   end
 
-  def extract_file_attributes(cv_url, params)
+  def extract_file_attributes(url, dataset_id, upload_name, type)
     require 'open-uri'
     require 'base64'
-    settings = BullhornAppSetting.find_by(dataset_id: params[:user][:dataset_id])
-    @cv = open(cv_url).read
+    settings = BullhornAppSetting.find_by(dataset_id: dataset_id)
+    @file = open(url).read
     # UPOAD FILE
-    base64_cv = Base64.encode64(@cv)
-    @content_type = params[:user_profile][:upload_name].split('.').last
+    base64_file = Base64.encode64(@file)
+    @content_type = upload_name.split('.').last
     # text, html, pdf, doc, docx, rtf, or odt.
     case @content_type
     when 'doc'
@@ -1113,21 +1119,21 @@ class Bullhorn::ClientService < BaseService
       @ct = 'application/vnd.oasis.opendocument.text'
     end
     @file_attributes = {
-      'externalID' => 'CV',
+      'externalID' => type.upcase,
       'fileType' => 'SAMPLE',
-      'name' => params[:user_profile][:upload_name],
-      'fileContent' => base64_cv,
+      'name' => upload_name,
+      'fileContent' => base64_file,
       'contentType' => @ct,
-      'type' => settings.cv_type_text.present? ? settings.cv_type_text : 'CV'
+      'type' => type
     }
   end
 
-  def parse_cv(params, content_type, cv, ct)
+  def parse_cv(upload_name, content_type, cv, ct)
     # TRY UP TO 10 TIMES AS PER SUPPORT:
     # http://supportforums.bullhorn.com/viewtopic.php?t=15011
     10.times do
       require 'tempfile'
-      file = Tempfile.new(params[:user_profile][:upload_name])
+      file = Tempfile.new(upload_name)
       file.binmode
       file.write(cv)
       file.rewind

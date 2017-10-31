@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170929130814) do
+ActiveRecord::Schema.define(version: 20171102185918) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 20170929130814) do
     t.string   "access_token"
     t.datetime "access_token_expires_at"
     t.boolean  "full_candidate_registrations_only", default: false
+    t.boolean  "send_cover_letter",                 default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|
@@ -145,6 +146,7 @@ ActiveRecord::Schema.define(version: 20170929130814) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "linkedin_profile"
+    t.string   "sent_upload_ids"
   end
 
   create_table "client_vat_rates", force: true do |t|

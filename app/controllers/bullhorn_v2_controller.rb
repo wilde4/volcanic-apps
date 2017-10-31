@@ -134,7 +134,7 @@ class BullhornV2Controller < ApplicationController
 
           if params[:user_profile][:upload_path].present? || (@cv.present? && @cv[:upload_path].present?)
           
-            if @bullhorn_service.send_candidate_cv(@user, params) == true
+            if @bullhorn_service.send_candidate_file(@user, params, @user['user_profile']['upload_path'], @user['user_profile']['upload_name'], 'cv') == true
               create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
             else
               create_log(@user, @key, 'upload_cv_failed', nil, nil, nil, true, false)
@@ -360,6 +360,7 @@ class BullhornV2Controller < ApplicationController
         :job_status,
         :use_utm_source,
         :full_candidate_registrations_only,
+        :send_cover_letter,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )
     end

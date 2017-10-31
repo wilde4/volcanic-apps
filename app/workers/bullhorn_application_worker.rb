@@ -32,6 +32,24 @@ class BullhornApplicationWorker
         @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
         
         @response = @bullhorn_service.send_job_application(attributes) if @bullhorn_service.present?
+
+        if msg['application']['uploads'].present? && msg['application']['uploads']['cover_letter_url'].present?
+
+          unless Array(@user.sent_upload_ids).include?(msg['application']['covering_letter_upload_id'])
+
+            params = { dataset_id: msg['dataset_id'], controller: 'bullhorn_v2' }
+            
+            if @bullhorn_service.send_candidate_file(@user, params, msg['application']['uploads']['cover_letter_url'], msg['application']['uploads']['cover_letter_name'], 'cover_letter') == true
+              (@user.sent_upload_ids ||= []) << msg['application']['covering_letter_upload_id']
+              @user.save
+              @bullhorn_service.send(:create_log, @user, @key, 'upload_cover_letter_successfull', nil, nil, nil, false, false)
+            else
+              @bullhorn_service.send(:create_log, @user, @key, 'upload_cover_letter_failed', nil, nil, nil, true, false)
+            end
+
+          end
+
+        end
       
         error = @response.changedEntityId.blank?
         @user.app_logs.create key: @bullhorn_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: attributes, response: @response, error: error, internal: false
