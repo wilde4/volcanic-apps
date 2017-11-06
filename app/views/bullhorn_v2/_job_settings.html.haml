@@ -30,7 +30,7 @@
           %hr
           %h6 Applications
           %p
-            = f.input :send_cover_letter, input_html: { class: 'form-control'}, label: 'Send cover letters', hint: 'If a candidate applies to a job with a cover letter, it will be added to their "Files" tab in Bullhorn.'
+            = f.input :send_cover_letter, input_html: { class: 'form-control'}, as: :boolean, label: 'Send cover letters', hint: 'If a candidate applies to a job with a cover letter, it will be added to their "Files" tab in Bullhorn.'
 
 
           %hr
