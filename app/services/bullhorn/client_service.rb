@@ -692,7 +692,9 @@ class Bullhorn::ClientService < BaseService
     job = @client.job_order(job_id, fields: fields).data
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@bullhorn_setting, @key, 'query_job_order', nil, nil, e.message, true, true)
+    bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: job_id)
+    bullhorn_job.update_attribute :error, true
+    create_log(bullhorn_job, @key, 'query_job_order', 'entity/JobOrder', job_id, e.message, true, true)
     nil
   end
 
@@ -700,26 +702,26 @@ class Bullhorn::ClientService < BaseService
 
     # Find or create bullhorn_job object
 
-    bullhorn_job = @key.bullhorn_jobs.find_by(bullhorn_uid: payload['job[job_reference]'])
+    @bullhorn_job = @key.bullhorn_jobs.find_by(bullhorn_uid: payload['job[job_reference]'])
     
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
     response = HTTParty.post(url, { body: payload })
 
     # CREATE APP LOGS
     if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
-      bullhorn_job.update_attribute :error, true
-      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
+      @bullhorn_job.update_attribute :error, true
+      create_log(@bullhorn_job, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['errors'], true, true)
     elsif response['response'].present? && response['response']['reason'].present?
-      bullhorn_job.update_attribute :error, true
-      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
+      @bullhorn_job.update_attribute :error, true
+      create_log(@bullhorn_job, @key, 'post_job_in_volcanic', url, payload.to_s, response['response']['reason'], true, true)
     else #SUCCESS
-      bullhorn_job.update_attribute :error, false
-      create_log(@bullhorn_setting, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
+      @bullhorn_job.update_attribute :error, false
+      create_log(@bullhorn_job, @key, 'post_job_in_volcanic', url, payload.to_s, response.to_s, false, false)
     end
 
     return response.code.to_i == 200
   rescue StandardError, JSON::ParserError => e
-    create_log(@bullhorn_setting, @key, 'post_payload', url, nil, e.to_s, true, true)
+    create_log(@bullhorn_job, @key, 'post_payload', url, nil, e.to_s, true, true)
     puts "[FAIL] http.request failed to post payload: #{e}"
   end
 
