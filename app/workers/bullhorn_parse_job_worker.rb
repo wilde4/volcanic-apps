@@ -9,9 +9,12 @@ class BullhornParseJobWorker
     
     bullhorn_setting = BullhornAppSetting.find msg['setting_id']
     service = Bullhorn::ClientService.new bullhorn_setting
-    service.import_client_job msg['job_id']
-
-    sqs_msg.delete
+    if service.import_client_job msg['job_id']
+      puts "Job #{msg['job_id']} import run"
+      sqs_msg.delete
+    else
+      puts "Job #{msg['job_id']} import NOT run"
+    end
   rescue StandardError => e
     sqs_msg.delete
     Honeybadger.notify(e, force: true)

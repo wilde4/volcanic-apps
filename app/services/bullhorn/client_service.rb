@@ -383,8 +383,13 @@ class Bullhorn::ClientService < BaseService
   def import_client_job(job_id)
     puts "Importing..."
     field_mappings = @bullhorn_setting.bullhorn_field_mappings.job
+    bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: job_id)
+
     job = query_job_order job_id, field_mappings.map(&:bullhorn_field_name).reject { |m| m.empty? }
-    return unless job.present?
+    unless job.present?
+      bullhorn_job.update_attribute :error, true
+      return false
+    end
     
     @job_payload = Hash.new
     @job_payload["job[api_key]"] = @key.api_key
@@ -459,7 +464,6 @@ class Bullhorn::ClientService < BaseService
       @job_payload['job[expiry_date]'] ||= (Date.today + 365.days).to_s
     end
 
-    bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: @job_payload['job[job_reference]'])
     begin
       bullhorn_job.update_attribute :job_params, @job_payload
     rescue StandardError
