@@ -5,10 +5,9 @@ class FilteredNotificationsController < ApplicationController
   respond_to :json
 
   after_filter :setup_access_control_origin
+  after_filter :setup_access_control_origin, only: [:modal_content]
 
   before_action :set_key, only: [:send_notification, :job_form, :app_notifications, :shared_candidate_form]
-
-  after_filter :setup_access_control_origin, only: [:modal_content]
 
   layout false
 
@@ -32,14 +31,11 @@ class FilteredNotificationsController < ApplicationController
     end
   end
 
-
   def job_form
   end
 
-
   def shared_candidate_form
   end
-
 
   def send_notification
 
@@ -62,7 +58,6 @@ class FilteredNotificationsController < ApplicationController
     render json: { success: true }
   end
 
-
   def modal_content
 
     data = Hash.new
@@ -83,12 +78,7 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
-      if request.env['SERVER_NAME'].eql? "localhost"
-        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
-      else
-        url = "http://#{@key.host}/api/v1/clients/search.json"
-      end
+      url = "http://#{@key.host}/api/v1/clients/search.json"
 
       @clients = HTTParty.get(url, body: data) if @key.present?
 
@@ -109,21 +99,11 @@ class FilteredNotificationsController < ApplicationController
       end
 
       data[:per_page] = 1000
-      
-      # Check whether the request is on a localhost server (if so, append the port number to the end of the URL)
-      if request.env['SERVER_NAME'].eql? "localhost"
-        url = "http://#{@key.host}:3000/api/v1/clients/search.json"
-      else
-        url = "http://#{@key.host}/api/v1/clients/search.json"
-      end
+      url = "http://#{@key.host}/api/v1/clients/search.json"
 
-      
       @clients = HTTParty.get(url, body: data) if @key.present?
     end
 
-
-
     render json: {success: true, content: render_to_string("modal_content.html") }
   end
-
 end
