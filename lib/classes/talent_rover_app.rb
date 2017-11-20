@@ -15,8 +15,12 @@ class TalentRoverApp
         next
       end
       @job_data = get_xml
-      parse_jobs
-      prune_jobs if get_prune_jobs_setting
+      if @job_data
+        parse_jobs
+        prune_jobs if get_prune_jobs_setting
+      else
+        puts "No data received from feed!"
+      end
     end
 
     puts '- END poll_jobs_feed'
@@ -116,6 +120,8 @@ private
   def self.get_xml
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
+  rescue StandardError => e
+    false
   end
 
   def self.get_posting_language
