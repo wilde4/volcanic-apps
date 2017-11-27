@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171102185918) do
+ActiveRecord::Schema.define(version: 20171127140440) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -208,6 +208,7 @@ ActiveRecord::Schema.define(version: 20171102185918) do
     t.string   "post_mapping"
     t.datetime "created_at",         null: false
     t.datetime "updated_at",         null: false
+    t.string   "encoding"
   end
 
   add_index "data_import_files", ["profile_id"], name: "index_data_import_files_on_profile_id", using: :btree
