@@ -4,6 +4,8 @@
     = f.label :file, 'Upload file'
     = f.file_field :file, class: 'form-control'
   .form-group
+    = f.input :encoding, hint: "Select the character encoding for your file - use if characters are not importing as you expect", collection: Encoding.list.map(&:to_s).sort, input_html: { class: 'form-control' }
+  .form-group
     = f.input :uid, label: "Unique ID", hint: "Please provide the name of a column header/xml node which can uniquely identify each row of data", input_html: { class: 'form-control' }
   - if f.object.model == 'user'
     .form-group

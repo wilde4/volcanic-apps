@@ -8,7 +8,7 @@ class DataImport::File < ActiveRecord::Base
   validates :user_group_id, :uid, presence: true, if: "model == 'user'"
 
   accepts_nested_attributes_for :headers
-  attr_accessor :nodes
+  attr_accessor :nodes, :encoding
 
   def create_headers(data, xml_nodes)
     case filetype

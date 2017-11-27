@@ -37,10 +37,15 @@ class DataImport::FilesController < ApplicationController
       uploaded_io = params[:data_import_file][:file]
       params[:data_import_file][:filename] = params[:data_import_file][:file].original_filename
       params[:data_import_file].delete :file
+
       @xml_nodes = params[:data_import_file][:nodes].gsub("\r", "").split("\n") if params[:data_import_file][:nodes].present?
+      
+      # Set the encoding for when we read the uploaded file io into a temp file
+      # Use the selected encoding if given or default to 'binary'
+      encoding = params[:data_import_file][:encoding].present? ? params[:data_import_file][:encoding] : 'binary'
 
       file = Tempfile.new(params[:data_import_file][:filename], Rails.root.join('tmp'))
-      file.write(uploaded_io.read.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''))
+      file.write(uploaded_io.read.encode('UTF-8', encoding, invalid: :replace, undef: :replace, replace: ''))
       file.close
       uploaded_io.rewind
 
