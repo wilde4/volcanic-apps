@@ -42,10 +42,10 @@ class DataImport::FilesController < ApplicationController
       
       # Set the encoding for when we read the uploaded file io into a temp file
       # Use the selected encoding if given or default to 'binary'
-      encoding = params[:data_import_file][:encoding].present? ? params[:data_import_file][:encoding] : 'binary'
+      params[:data_import_file][:encoding] = 'binary' if params[:data_import_file][:encoding].blank?
 
       file = Tempfile.new(params[:data_import_file][:filename], Rails.root.join('tmp'))
-      file.write(uploaded_io.read.encode('UTF-8', encoding, invalid: :replace, undef: :replace, replace: ''))
+      file.write(uploaded_io.read.encode('UTF-8', params[:data_import_file][:encoding], invalid: :replace, undef: :replace, replace: ''))
       file.close
       uploaded_io.rewind
 
@@ -83,9 +83,15 @@ class DataImport::FilesController < ApplicationController
         uploaded_io = params[:data_import_file][:file]
         params[:data_import_file][:filename] = params[:data_import_file][:file].original_filename
         params[:data_import_file].delete :file
+        
+        # Set the encoding for when we read the uploaded file io into a temp file
+        # Use the selected encoding if given or default to 'binary'
+        params[:data_import_file][:encoding] = 'binary' if params[:data_import_file][:encoding].blank?
+
+        @file.update(data_import_file_params)
 
         file = Tempfile.new(params[:data_import_file][:filename], Rails.root.join('tmp'))
-        file.write(uploaded_io.read.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: ''))
+        file.write(uploaded_io.read.encode('UTF-8', @file.encoding, invalid: :replace, undef: :replace, replace: ''))
         file.close
         uploaded_io.rewind
 
@@ -219,7 +225,7 @@ class DataImport::FilesController < ApplicationController
   private
 
   def data_import_file_params
-    params.require(:data_import_file).permit(:filename, :user_group_id, :user_id, :post_mapping, :uid, :created_at_mapping, :max_size, :delay_interval, :model, headers_attributes: [ :id, :registration_question_id, :multiple_answers, :column_name, :nl2br ])
+    params.require(:data_import_file).permit(:filename, :user_group_id, :user_id, :post_mapping, :uid, :created_at_mapping, :max_size, :delay_interval, :model, :encoding, headers_attributes: [ :id, :registration_question_id, :multiple_answers, :column_name, :nl2br ])
   end
 
   def check_creating

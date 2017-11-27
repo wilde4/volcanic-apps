@@ -55,12 +55,14 @@
       Update Data
     .well
       = simple_form_for @file, multipart: true do |f|
-        .col-sm-6.col-xs-12
+        .col-sm-4.col-xs-12
           .form-group
             = f.label :file, 'Choose file'
             = f.file_field :file, class: 'form-control'
+        .col-sm-2.col-xs-12
+          = f.input :model, collection: %w{user client job blog}, input_html: { class: 'form-control' }
         .col-sm-4.col-xs-12
-          = f.input :model, collection: %w{user client job blog}
+          = f.input :encoding, collection: Encoding.list.map(&:to_s).sort, input_html: { class: 'form-control' }
         .col-sm-2.col-xs-12.mt25
           .form-group
             = f.submit 'Update', class: 'btn btn-default'
