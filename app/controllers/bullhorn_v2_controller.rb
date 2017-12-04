@@ -215,7 +215,7 @@ class BullhornV2Controller < ApplicationController
 
       @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-      @file_response = @bullhorn_service.send_candidate_cv(@user, params)
+      @file_response = @bullhorn_service.send_candidate_file(@user, params, @user['user_profile']['upload_path'], @user['user_profile']['upload_name'], 'cv')
 
       if @file_response == true
         create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
