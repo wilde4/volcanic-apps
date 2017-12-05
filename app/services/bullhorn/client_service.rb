@@ -33,6 +33,12 @@ class Bullhorn::ClientService < BaseService
       client_secret: @bullhorn_setting.bh_client_secret,
       refresh_token: @bullhorn_setting.refresh_token
     )
+
+    authenticate_client
+
+  end
+
+  def authenticate_client
     
     # Attempt to authenticate, this will use the access token or refresh token if present
     @client.authenticate rescue nil
@@ -692,8 +698,21 @@ class Bullhorn::ClientService < BaseService
   end
 
   def query_job_order(job_id, custom_fields = [])
+    retries ||= 0
     fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     job = @client.job_order(job_id, fields: fields).data
+  rescue ArgumentError => e
+    # Sometimes Bullhorn throws a wobbly and the client needs to be re-authenticated
+    if (retries += 1) < 3
+      authenticate_client
+      retry
+    else
+      Honeybadger.notify(e)
+      bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: job_id)
+      bullhorn_job.update_attribute :error, true
+      create_log(bullhorn_job, @key, 'query_job_order', 'entity/JobOrder', job_id, e.message, true, true)
+      nil
+    end
   rescue StandardError => e
     Honeybadger.notify(e)
     bullhorn_job = @key.bullhorn_jobs.find_or_create_by(bullhorn_uid: job_id)
