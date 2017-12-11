@@ -193,7 +193,7 @@ class DataImport::FilesController < ApplicationController
       parsed_response["clients"].each { |c| @client_ids[c["name"]] = c["id"] }
     end
     seconds_delay = 0
-    @file.lines.where(processed: false).first(5).in_groups_of(@file.max_size || 5) do |group|
+    @file.lines.where(processed: false).in_groups_of(@file.max_size || 5) do |group|
       send_time = Time.zone.now + seconds_delay.seconds
       group.each do |line|
         # Group can return nils as padding

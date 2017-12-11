@@ -25,9 +25,9 @@ class ImportRedirectsWorker
   
   def json_post(endpoint, payload)
     
-    endpoint_url = URI("http://awesome-recruitment.localhost.volcanic.co:3000/api/v1/#{endpoint}.json")
+    # endpoint_url = URI("http://awesome-recruitment.localhost.volcanic.co:3000/api/v1/#{endpoint}.json")
 
-    # endpoint_url = URI("http://" + @profile.host + "/api/v1/#{endpoint}.json")
+    endpoint_url = URI("http://" + @profile.host + "/api/v1/#{endpoint}.json")
     
     response = HTTParty.post(endpoint_url, {:body => payload.to_json, :headers => { 'Content-Type' => 'application/json' }})
   
