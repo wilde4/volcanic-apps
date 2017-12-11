@@ -423,6 +423,7 @@ Apps::Application.routes.draw do
       get 'updating', :on => :member
       get 'import', :on => :member
       get 'errors', :on => :member
+      get 'clear_errors', :on => :member
       resources :headers
     end
     get "post_to_api" => "post_to_api#index"

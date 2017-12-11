@@ -1,6 +1,8 @@
 .row
   .col-xs-12
-    .pull-right= link_to "Back", data_import_file_path(@file), class: 'btn btn-default'
+    .pull-right
+      = link_to "Back", data_import_file_path(@file), class: 'btn btn-default'
+      = link_to "Clear all errors", clear_errors_data_import_file_path(@file), class: 'btn btn-warning'
     %h2
       = @error_lines.count
       errors returned for
@@ -10,7 +12,7 @@
       %h3
         Line
         = line.number
-      .alert.alert-danger= line.error_messages_hash['errors']
+      .alert.alert-danger= line.error_message
       .well
         - line.values.each do |k,v|
           %b #{k}:

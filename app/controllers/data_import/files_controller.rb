@@ -222,6 +222,11 @@ class DataImport::FilesController < ApplicationController
     @error_lines = @file.lines.errors
   end
 
+  def clear_errors
+    @file.lines.errors.each { |l| l.update_attribute :error, false }
+    redirect_to data_import_file_path(@file)
+  end
+
   private
 
   def data_import_file_params
