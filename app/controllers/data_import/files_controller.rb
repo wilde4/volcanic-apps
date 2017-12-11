@@ -7,7 +7,7 @@ class DataImport::FilesController < ApplicationController
   before_action :check_creating, only: [:index, :creating]
   before_action :check_importing, only: [:index, :importing]
   before_action :check_updating, only: [:index, :updating]
-  before_action :set_file, only: [:show, :edit, :update, :destroy, :import, :importing, :updating, :errors]
+  before_action :set_file, only: [:show, :edit, :update, :destroy, :import, :importing, :updating, :errors, :clear_errors]
 
   IMPORT_WORKERS = %w(ImportUsersWorker ImportClientsWorker ImportJobsWorker ImportBlogsWorker)
 
@@ -193,7 +193,7 @@ class DataImport::FilesController < ApplicationController
       parsed_response["clients"].each { |c| @client_ids[c["name"]] = c["id"] }
     end
     seconds_delay = 0
-    @file.lines.where(processed: false).in_groups_of(@file.max_size || 5) do |group|
+    @file.lines.where(processed: false).first(5).in_groups_of(@file.max_size || 5) do |group|
       send_time = Time.zone.now + seconds_delay.seconds
       group.each do |line|
         # Group can return nils as padding
@@ -210,6 +210,8 @@ class DataImport::FilesController < ApplicationController
             ImportJobsWorker.perform_at(send_time, current_profile.id, line.id, @client_tokens[line.values['company_name']])
           when 'blog'
             ImportBlogsWorker.perform_at(send_time, current_profile.id, line.id)
+          when 'redirect'
+            ImportRedirectsWorker.perform_at(send_time, current_profile.id, line.id)
           end
         end
       end

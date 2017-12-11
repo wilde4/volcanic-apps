@@ -14,7 +14,7 @@ class DataImport::File < ActiveRecord::Base
     case filetype
     when 'csv'
       csv = CSV.parse(data.read, :headers => true)
-      if csv.headers.include?(uid)
+      if csv.headers.include?(uid) || model == 'redirect'
         csv.headers.each do |header|
           headers.create name: header
         end

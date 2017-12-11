@@ -23,4 +23,8 @@ module DataImportHelper
   def blog_columns_collection
     [:title, :body, :publish_date, :source_url].sort
   end
+
+  def redirect_columns_collection
+    [:destination, :source].sort
+  end
 end
