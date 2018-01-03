@@ -269,6 +269,12 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
+    # Delete any blank attributes to avoid overwriting data in Bullhorn
+    attributes.delete_if { |key,value| value.blank? }
+
+    # Bullhorn appears to default to a countryID of '1' (United States) for an address so if none is set, send a '0' value to be ignored
+    attributes['address']['countryID'] = '0' if attributes['address'].present? && attributes['address']['countryID'].blank?
+
     # CREATE/UPDATE CANDIDATE
     if bullhorn_id.present?
       candidate = @client.candidate(user.bullhorn_uid, {})
