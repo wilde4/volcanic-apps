@@ -113,7 +113,7 @@ class Bullhorn::ClientService < BaseService
   # GETS VOLCANIC CANDIDATES FIELDS VIA API
   def volcanic_candidate_fields
     url = "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
-    response = HTTParty.get(url)
+    response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
     
     @volcanic_fields = {}
     response.select { |f| f['default'] == true }.each { |r| 
@@ -160,7 +160,7 @@ class Bullhorn::ClientService < BaseService
   def volcanic_job_fields
     
     url = "#{@key.protocol}#{@key.host}/api/v1/available_job_attributes.json?api_key=#{@key.api_key}&all=true"
-    response = HTTParty.get(url)
+    response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
 
     @default_job_fields = {}
     @other_job_fields = {}
@@ -734,7 +734,7 @@ class Bullhorn::ClientService < BaseService
     @bullhorn_job = @key.bullhorn_jobs.find_by(bullhorn_uid: payload['job[job_reference]'])
     
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs.json"
-    response = HTTParty.post(url, { body: payload })
+    response = HTTParty.post(url, { body: payload, headers: { 'User-Agent' => 'VolcanicBullhornApp' } })
 
     # CREATE APP LOGS
     if response['response'].present? && response['response']['status'] == 'error' && response['response']['errors'].present?
@@ -757,7 +757,7 @@ class Bullhorn::ClientService < BaseService
   def post_payload_for_delete(payload)
 
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/delete.json"
-    response = HTTParty.post(url, { body: payload })
+    response = HTTParty.post(url, { body: payload, headers: { 'User-Agent' => 'VolcanicBullhornApp' } })
 
     puts "#{response.code} - #{response.read_body}"
     
@@ -780,7 +780,7 @@ class Bullhorn::ClientService < BaseService
 
   def post_payload_for_expire(payload)
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/expire.json"
-    response = HTTParty.post(url, { body: payload })
+    response = HTTParty.post(url, { body: payload, headers: { 'User-Agent' => 'VolcanicBullhornApp' } })
 
     puts "#{response.code} - #{response.read_body}"
     
@@ -1196,7 +1196,7 @@ class Bullhorn::ClientService < BaseService
     return @volcanic_job_references if @volcanic_job_references.present?
 
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json"
-    response = HTTParty.get(url)
+    response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
 
     @volcanic_job_references = if response.code == 200
       response.parsed_response.map { |r| r['job_reference'] }
@@ -1213,7 +1213,7 @@ class Bullhorn::ClientService < BaseService
     return @expired_volcanic_job_references if @expired_volcanic_job_references.present?
     
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json?include_expired=true"
-    response = HTTParty.get(url)
+    response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
 
     @all_volcanic_job_references = if response.code == 200
       response.parsed_response.map { |r| r['job_reference'] }
