@@ -1193,7 +1193,7 @@ class Bullhorn::ClientService < BaseService
   end
 
   def live_volcanic_job_references
-    return @volcanic_job_references if @volcanic_job_references.present?
+    return @volcanic_job_references unless @volcanic_job_references.nil?
 
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json"
     response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
@@ -1210,7 +1210,7 @@ class Bullhorn::ClientService < BaseService
   end
 
   def expired_volcanic_job_references
-    return @expired_volcanic_job_references if @expired_volcanic_job_references.present?
+    return @expired_volcanic_job_references unless @expired_volcanic_job_references.nil?
     
     url = "#{@key.protocol}#{@key.host}/api/v1/jobs/job_references.json?include_expired=true"
     response = HTTParty.get url, { headers: { 'User-Agent' => 'VolcanicBullhornApp' } }
