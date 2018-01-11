@@ -82,7 +82,7 @@ class ReedGlobalController < ApplicationController
       country_reference = params[:job][:extra_categorisation]
       reed_country = @reed_countries.find_by country_reference: country_reference
       if reed_country.present?
-        @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
+        @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?", { headers: { 'User-Agent' => 'VolcanicReedGlobalApp' } }).parsed_response
         discipline_ids = job_functions.map do |jf|
 
           job_function = @job_functions.find { |job_function| job_function['reference'] == jf.strip }
@@ -120,8 +120,8 @@ class ReedGlobalController < ApplicationController
   end
 
   def get_remote_data
-    @disciplines = HTTParty.get("#{host_endpoint}/api/v1/disciplines.json?").parsed_response
-    @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?").parsed_response
+    @disciplines = HTTParty.get("#{host_endpoint}/api/v1/disciplines.json?", { headers: { 'User-Agent' => 'VolcanicReedGlobalApp' } }).parsed_response
+    @job_functions = HTTParty.get("#{host_endpoint}/api/v1/job_functions.json?", { headers: { 'User-Agent' => 'VolcanicReedGlobalApp' } }).parsed_response
   end
 
 
