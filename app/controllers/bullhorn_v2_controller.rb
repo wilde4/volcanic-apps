@@ -360,6 +360,7 @@ class BullhornV2Controller < ApplicationController
         :job_status,
         :use_utm_source,
         :full_candidate_registrations_only,
+        :existing_candidate_registrations_only,
         :send_cover_letter,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )

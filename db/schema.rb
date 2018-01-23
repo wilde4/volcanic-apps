@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171127140440) do
+ActiveRecord::Schema.define(version: 20180123103525) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -75,26 +75,27 @@ ActiveRecord::Schema.define(version: 20171127140440) do
     t.string   "encrypted_bh_password"
     t.string   "encrypted_bh_client_id"
     t.string   "encrypted_bh_client_secret"
-    t.boolean  "import_jobs",                       default: false
+    t.boolean  "import_jobs",                           default: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "linkedin_bullhorn_field"
     t.string   "source_text"
-    t.boolean  "always_create",                     default: false
-    t.boolean  "authorised",                        default: false
+    t.boolean  "always_create",                         default: false
+    t.boolean  "authorised",                            default: false
     t.string   "status_text"
     t.string   "cv_type_text"
-    t.boolean  "uses_public_filter",                default: false
-    t.boolean  "custom_job_mapping",                default: false
-    t.boolean  "expire_closed_jobs",                default: false
+    t.boolean  "uses_public_filter",                    default: false
+    t.boolean  "custom_job_mapping",                    default: false
+    t.boolean  "expire_closed_jobs",                    default: false
     t.string   "client_token"
     t.string   "job_status"
-    t.boolean  "use_utm_source",                    default: false
+    t.boolean  "use_utm_source",                        default: false
     t.string   "refresh_token"
     t.string   "access_token"
     t.datetime "access_token_expires_at"
-    t.boolean  "full_candidate_registrations_only", default: false
-    t.boolean  "send_cover_letter",                 default: false
+    t.boolean  "full_candidate_registrations_only",     default: false
+    t.boolean  "send_cover_letter",                     default: false
+    t.boolean  "existing_candidate_registrations_only", default: false
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|

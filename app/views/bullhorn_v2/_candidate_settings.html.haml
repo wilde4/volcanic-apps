@@ -16,7 +16,8 @@
         = f.input :cv_type_text, input_html: { class: 'form-control', value: f.object.cv_type_text.present? ? f.object.cv_type_text : 'CV' }
       .col-md-6
         = f.input :full_candidate_registrations_only, collection: [['Send all candidates that register', false], ['Only send candidates who have filled out their profile and have uploaded a CV', true]], as: :radio_buttons, input_html: { class: 'form-control' }
-        = f.input :always_create, collection: [['Try and update existing candidate records', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
+        #always_create{ class: @bullhorn_setting.existing_candidate_registrations_only? ? 'hidden' : '' }= f.input :always_create, collection: [['Update existing candidate records, or create if not present', false], ['Always create a new candidate record', true]], as: :radio_buttons, input_html: { class: 'form-control' }
+        = f.input :existing_candidate_registrations_only, input_html: { class: 'form-control' }
     %hr
     .row
       .col-xs-12
@@ -65,4 +66,13 @@
       $(this).find( "i" ).addClass('fa-rotate-180');
     }
     
+  });
+
+  $('#bullhorn_app_setting_existing_candidate_registrations_only').change(function() {
+    if(this.checked) {
+      $('#bullhorn_app_setting_always_create_false').prop('checked',true);
+      $('#always_create').addClass('hidden');
+    } else {
+      $('#always_create').removeClass('hidden');
+    }
   });

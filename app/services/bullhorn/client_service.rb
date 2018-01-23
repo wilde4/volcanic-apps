@@ -304,35 +304,38 @@ class Bullhorn::ClientService < BaseService
         create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, params, response.errors, true, true)
       end
     else
-
-      attributes['status'] = @bullhorn_setting.status_text.present? ? @bullhorn_setting.status_text : 'New Lead'
-      if @bullhorn_setting.use_utm_source? && user.user_data['utm_source']
-        attributes['source'] = user.user_data['utm_source']
+      if @bullhorn_setting.existing_candidate_registrations_only?
+        create_log(user, @key, 'create_candidate', nil, params, "User doesn't exist in Bullhorn, ignoring")
       else
-        attributes['source'] = @bullhorn_setting.source_text.present? ? @bullhorn_setting.source_text : 'Company Website'
-      end
+        attributes['status'] = @bullhorn_setting.status_text.present? ? @bullhorn_setting.status_text : 'New Lead'
+        if @bullhorn_setting.use_utm_source? && user.user_data['utm_source']
+          attributes['source'] = user.user_data['utm_source']
+        else
+          attributes['source'] = @bullhorn_setting.source_text.present? ? @bullhorn_setting.source_text : 'Company Website'
+        end
 
 
-      response = @client.create_candidate(attributes.to_json)
+        response = @client.create_candidate(attributes.to_json)
 
-      create_log(user, @key, 'create_candidate', "entity/candidate", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
-      user.update(bullhorn_uid: response['changedEntityId'])
-      
-      if (response.errors.present? || response.errorMessage.present?)
-        @key.bullhorn_report_entry.increment_count(:user_failed)
-      else
-        @key.bullhorn_report_entry.increment_count(:user_create)
-      end
+        create_log(user, @key, 'create_candidate', "entity/candidate", { attributes: attributes }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
+        user.update(bullhorn_uid: response['changedEntityId'])
+        
+        if (response.errors.present? || response.errorMessage.present?)
+          @key.bullhorn_report_entry.increment_count(:user_failed)
+        else
+          @key.bullhorn_report_entry.increment_count(:user_create)
+        end
 
-      bullhorn_id = response['changedEntityId']
-      if response.errors.present?
-        response.errors.each do |e|
-          Honeybadger.notify(
-            :error_class => "Bullhorn Error",
-            :error_message => "Bullhorn Error: #{e.inspect}",
-            :parameters => params
-          )
-          create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, params, response.errors, true, true)
+        bullhorn_id = response['changedEntityId']
+        if response.errors.present?
+          response.errors.each do |e|
+            Honeybadger.notify(
+              :error_class => "Bullhorn Error",
+              :error_message => "Bullhorn Error: #{e.inspect}",
+              :parameters => params
+            )
+            create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, params, response.errors, true, true)
+          end
         end
       end
     end

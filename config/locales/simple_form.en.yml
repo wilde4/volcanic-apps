@@ -25,6 +25,7 @@ en:
         source_text: Bullhorn Source text for Candidate records
         always_create: Saving Candidates in Bullhorn
         full_candidate_registrations_only: Which candidate registrations should be sent to Bullhorn?
+        existing_candidate_registrations_only: Never create a new candidate record, only update existing
         status_text: Bullhorn Status text for Candidate records
         cv_type_text: Bullhorn CV Type text for Candidate CV files
         uses_public_filter: Published Vacancies Filter
