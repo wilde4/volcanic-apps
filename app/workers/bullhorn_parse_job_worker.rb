@@ -6,6 +6,7 @@ class BullhornParseJobWorker
   shoryuken_options queue: queue, body_parser: :json, auto_visibility_timeout: true
 
   def perform(sqs_msg, msg)
+    Honeybadger.context(connection_pool_size: ActiveRecord::Base.connection_config[:pool], connections: ActiveRecord::Base.connection_pool.connections.size)
     
     bullhorn_setting = BullhornAppSetting.find msg['setting_id']
     service = Bullhorn::ClientService.new bullhorn_setting
