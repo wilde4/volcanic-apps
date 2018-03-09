@@ -194,9 +194,9 @@ class Bullhorn::ClientService < BaseService
       'email' => user.email
     }.merge(attrs)
 
-    if user.linkedin_profile.present?
-      attributes['description'] = linkedin_description(user)
-    end
+    # If we don't already have a description set and user has no CV use LinkedIn profile
+    attributes['description'] ||= linkedin_description(user) if user.linkedin_profile.present? && user.user_profile['upload_name'].blank?
+    
     attributes["#{@bullhorn_setting.linkedin_bullhorn_field}"] = user.user_profile['li_publicProfileUrl'] if user.user_profile['li_publicProfileUrl'].present?
 
     # PREPARE ADDRESS
