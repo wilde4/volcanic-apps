@@ -7,7 +7,7 @@ require 'mimemagic'
 require 'mimemagic/overlay'
 
 class Arithon::UserService < BaseService
-    API_ENDPOINT = Rails.env.development? ? "http://dev3--vi-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php" : "http://eu-arithon-com-z3bo3ff0cjp4.runscope.net/ArithonAPI.php"
+    API_ENDPOINT = Rails.env.development? ? "http://dev3-vi.arithon.com/ArithonAPI.php" : "http://eu.arithon.com/ArithonAPI.php"
     # API_ENDPOINT = "http://requestb.in/1doqnnf1"
 
 
