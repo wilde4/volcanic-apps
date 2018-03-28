@@ -100,6 +100,12 @@ class Bullhorn::ClientService < BaseService
     obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'businessSectors' }.each { |field| 
       @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] 
     }
+    obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'primarySkills' }.each { |field| 
+      @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] 
+    }
+    obj['fields'].select { |f| f['type'] == "TO_MANY" && f['name'] == 'secondarySkills' }.each { |field| 
+      @bullhorn_fields << ["#{field['label']} (#{field['name']})", field['name']] 
+    }
 
     @bullhorn_fields.sort! { |x,y| x.first <=> y.first }
 
@@ -236,7 +242,7 @@ class Bullhorn::ClientService < BaseService
            attributes['category']['id'] = category.id
            @category_id = category.id
         end
-      when 'businessSectors'
+      when 'businessSectors', 'primarySkills', 'secondarySkills'
         # UPDATE CANDIDATE AFTER CREATION
       else
         attributes[fm.bullhorn_field_name] = answer if answer.present?
@@ -342,31 +348,36 @@ class Bullhorn::ClientService < BaseService
     
 
     if bullhorn_id.present?
-      #categoies
+      #category
       send_category(bullhorn_id)
-      # CREATE NEW API CALL TO ADD BUSINESS SECTOR TO CANDIDATE
-      # FIND businessSector ID
-      # 'businessSectors'
+
+      # CREATE NEW API CALL TO ADD ASSOCIATIONS TO CANDIDATE
       if user.registration_answers.present?
-        business_sectors = @client.business_sectors
-
-        answer = user.registration_answers['businessSectors']
-        bs_mapping = field_mappings.find_by(bullhorn_field_name: 'businessSectors')
-
-        if bs_mapping.present?
-          business_sector = business_sectors.data.select{ |bs| bs.name == user.registration_answers[bs_mapping.registration_question_reference] }.first
-
-          if business_sector.present?
-            bs_response = @client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'businessSectors', association_ids: "#{business_sector.id}" })
-
-          end
-        end
+        send_associations 'businessSectors', 'business_sectors', field_mappings, user
+        send_associations 'primarySkills', 'skills', field_mappings, user
+        send_associations 'secondarySkills', 'skills', field_mappings, user
       end
 
     end
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'post_user_to_bullhorn', nil, nil, e.message, true, false)
+  end
+
+  def send_associations(association, method, field_mappings, user)
+    associations = @client.send(method) rescue nil
+    mapping = field_mappings.find_by(bullhorn_field_name: association)
+
+    if associations.present? && mapping.present?
+      # use answer array if present or make array of single answer
+      answers = user.registration_answers["#{mapping.registration_question_reference}_array"] || [user.registration_answers[mapping.registration_question_reference]]
+
+      mapped_associations = answers.map { |answer| associations.data.select{ |a| a.name == answer.strip } }.flatten
+      
+      if mapped_associations.present?
+        response = @client.create_candidate({}.to_json, { candidate_id: user.bullhorn_uid, association: association, association_ids: "#{mapped_associations.map(&:id).join(',')}" })
+      end
+    end
   end
 
   #FETCH CLIENT'S BLUHORN JOBS TO IMPORT INTO VOLCANIC
