@@ -9,15 +9,13 @@ Apps::Application.routes.draw do
   get 'get-images', :to => "flickr#get_images", :as => :get_images
   get 'author', :to => "google_plus#author", :as => :author
 
-
-
   scope :mercury_xrm do
-    get 'mercury_xrm_dashboard'  => 'mercury_xrm#mercury_xrm_dashboard'
-    post "activate_app"     => 'pages_created_per_month#activate_app'
-    post "deactivate_app"   => 'pages_created_per_month#deactivate_app'
+    get   "mercury_xrm_dashboard"  => 'mercury_xrm#mercury_xrm_dashboard'
   end
 
-  
+  scope :trisys do
+    get   "trisys_dashboard"  => 'trisys#trisys_dashboard'
+  end
 
   scope :pages_created_per_month do
     get 'get_pages_created'  => 'pages_created_per_month#get_pages_created', as: :pages_created_per_month
@@ -26,8 +24,6 @@ Apps::Application.routes.draw do
     post "activate_app"     => 'pages_created_per_month#activate_app'
     post "deactivate_app"   => 'pages_created_per_month#deactivate_app'
   end
-
-
 
   scope :referrals do
     get 'index'                 => 'referral#index',                as: :referrals_index

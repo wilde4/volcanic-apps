@@ -1,0 +1,33 @@
+%script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"}
+.row.gray-panel
+  .col-md-12{style: "padding-left: 0px; padding-right: 0px;"}
+    #trisys-dashboard
+      %iframe#iframe-page-vacancies{frameborder: "0", sandbox: "allow-top-navigation allow-scripts allow-same-origin allow-modals allow-popups", scrolling: "auto", seamless: "", style: "width: 100%; height: 1130px;"}
+
+:javascript
+  $(document).ready(function() {
+    // The web jobs hyphenated spaces correspond to the Web API Key for the
+    // customer assigned by TriSys Business Software
+    var sWebJobs = "opus-laboris-recruitment";
+    var sApexWebJobs = null;
+
+    // Determine if the URL is a registration confirmation
+    // e.g. http://.../?Candidate.../GUID/opus-laboris-recruitment(13)
+    var sURL = window.location.href;
+    var permitted = ['/?CandidateRegistrationConfirmation/', '/?CandidateLogin/', '/?CandidateVacancy/', '/?ClientLogin/'];
+    for (var i = 0; i < permitted.length; i++) {
+      var sPermitted = permitted[i];
+      var iIndex = sURL.indexOf(sPermitted);
+      if(iIndex > 0) {
+        // Found a match, so pump this URL into the iFrame
+        sApexWebJobs = 'https://apex.trisys.co.uk/' + sURL.substring(iIndex);
+        break;
+      }
+    }              
+
+    // Set the iframes with the URL
+    if(!sApexWebJobs)
+      sApexWebJobs = 'https://apex.trisys.co.uk/?CandidateVacancySearch/0/' + sWebJobs;
+
+    $('#iframe-page-vacancies').attr('src', sApexWebJobs);               
+  });
