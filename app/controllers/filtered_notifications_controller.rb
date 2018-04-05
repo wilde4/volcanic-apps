@@ -78,7 +78,7 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      url = "http://#{@key.host}/api/v1/clients/search.json"
+      url = "https://#{@key.host}/api/v1/clients/search.json"
 
       @clients = HTTParty.get(url, body: data) if @key.present?
 
@@ -99,7 +99,7 @@ class FilteredNotificationsController < ApplicationController
       end
 
       data[:per_page] = 1000
-      url = "http://#{@key.host}/api/v1/clients/search.json"
+      url = "https://#{@key.host}/api/v1/clients/search.json"
 
       @clients = HTTParty.get(url, body: data) if @key.present?
     end
