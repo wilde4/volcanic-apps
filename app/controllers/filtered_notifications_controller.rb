@@ -78,9 +78,9 @@ class FilteredNotificationsController < ApplicationController
         @key = Key.where(app_dataset_id: dataset_id, app_name: "filtered_notifications").first
       end
 
-      url = "https://#{@key.host}/api/v1/clients/search.json"
+      url = "http://#{@key.host}/api/v1/clients/search.json"
 
-      @clients = HTTParty.get(url, body: data) if @key.present?
+      @clients = HTTParty.get(url, query: data) if @key.present?
 
     elsif params[:user].present?
 
@@ -101,7 +101,7 @@ class FilteredNotificationsController < ApplicationController
       data[:per_page] = 1000
       url = "https://#{@key.host}/api/v1/clients/search.json"
 
-      @clients = HTTParty.get(url, body: data) if @key.present?
+      @clients = HTTParty.get(url, query: data) if @key.present?
     end
 
     render json: {success: true, content: render_to_string("modal_content.html") }
