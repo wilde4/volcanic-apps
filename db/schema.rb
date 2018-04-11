@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180123103525) do
+ActiveRecord::Schema.define(version: 20180411084537) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -36,6 +36,7 @@ ActiveRecord::Schema.define(version: 20180123103525) do
     t.boolean  "internal",      default: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "uid"
   end
 
   add_index "app_logs", ["key_id"], name: "index_app_logs_on_key_id", using: :btree

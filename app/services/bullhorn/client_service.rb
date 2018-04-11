@@ -68,6 +68,8 @@ class Bullhorn::ClientService < BaseService
 
     @bullhorn_setting.update_attribute :authorised, !!@client.authenticated? if !!@bullhorn_setting.authorised != !!@client.authenticated?
 
+    @client.errors = nil if @client.authenticated?
+
   end
 
   # GETS BULLHORN CANDIDATES FIELDS VIA API USING THE GEM
@@ -694,7 +696,7 @@ class Bullhorn::ClientService < BaseService
 
     while results > 0
 
-      jobs = @client.query_job_orders(where: 'status IS NOT NULL', fields: 'id,isOpen,isDeleted,isPublic,status', count: 200, start: offset)
+      jobs = @client.query_job_orders(where: 'status IS NOT NULL', fields: 'id,isOpen,isDeleted,isPublic,status', count: 200, start: offset, orderBy: 'id')
       
       puts "Received #{jobs["count"]}"
       puts "Received results - possibly another page" if jobs["count"] > 0
@@ -714,8 +716,9 @@ class Bullhorn::ClientService < BaseService
     retries ||= 0
     fields = (%w(id title owner businessSectors dateAdded externalID address employmentType benefits salary description publicDescription isOpen isDeleted isPublic status salaryUnit) + custom_fields).uniq.join(',')
     job = @client.job_order(job_id, fields: fields).data
-  rescue ArgumentError => e
+  rescue Bullhorn::Rest::AuthenticationError => e
     # Sometimes Bullhorn throws a wobbly and the client needs to be re-authenticated
+    @client.expire
     if (retries += 1) < 3
       authenticate_client
       retry
@@ -1192,8 +1195,8 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
   end 
 
-  def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
-    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
+  def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
+    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: (@client.errors || response), error: error, internal: internal, uid: uid || @client.access_token
     log.id
   rescue StandardError => e
     Honeybadger.notify(e)

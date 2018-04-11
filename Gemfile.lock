@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/volcanic-uk/bullhorn-rest.git
-  revision: 2ce1666267802e149ac7af57b5f8fefb626d1b61
-  branch: create_candidates
+  revision: c9626ae7b375d40c7c805de52e924f9876bb6472
+  branch: auth_errors
   specs:
     bullhorn-rest (0.0.1)
       activesupport

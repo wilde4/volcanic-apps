@@ -42,7 +42,7 @@ gem 'twitter'
 gem 'semrush'
 
 # gem 'bullhorn-rest', git: 'https://github.com/bobop/bullhorn-rest.git', branch: 'create_candidates'
-gem 'bullhorn-rest', git: 'https://github.com/volcanic-uk/bullhorn-rest.git', branch: 'create_candidates'
+gem 'bullhorn-rest', git: 'https://github.com/volcanic-uk/bullhorn-rest.git', branch: 'auth_errors'
 # gem 'bullhorn-rest', :path => "../gems/bullhorn-rest", branch: 'create_candidates'
 gem 'hashie'
 
