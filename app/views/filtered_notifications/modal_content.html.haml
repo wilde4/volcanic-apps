@@ -10,5 +10,8 @@
             %i.fa.fa-external-link 
 - else
   %h3 No matching companies found
+  %div{style: "display: none;"}
+    %p= debug @clients
+    %p= debug params
 
 %style=Apps::Application.assets.find_asset('filtered_notifications.css').body.html_safe
