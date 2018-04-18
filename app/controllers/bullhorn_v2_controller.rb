@@ -171,7 +171,7 @@ class BullhornV2Controller < ApplicationController
 
   def new_search
     # create candidate object
-    user_id = params[:search][:user_id] || params[:user][:user][:id]
+    user_id = params[:search][:user_id] || params[:user][:user][:id] || params[:user][:id]
     @user = BullhornUser.find_by(user_id: user_id)
 
     if @user.present?
