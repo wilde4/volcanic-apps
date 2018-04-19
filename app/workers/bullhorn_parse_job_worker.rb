@@ -16,7 +16,12 @@ class BullhornParseJobWorker
       puts "Job #{msg['job_id']} import NOT run"
     end
   rescue StandardError => e
+    puts "====== BullhornParseJobWorker Exception START ======"
     puts e
+    puts "connection_pool_size: #{ActiveRecord::Base.connection_config[:pool]}"
+    puts "connections: #{ActiveRecord::Base.connection_pool.connections.size}"
+    puts "======= BullhornParseJobWorker Exception END ======="
+
     sqs_msg.delete
     Honeybadger.notify(e, context: { connection_pool_size: ActiveRecord::Base.connection_config[:pool], connections: ActiveRecord::Base.connection_pool.connections.size }, force: true)
   end
