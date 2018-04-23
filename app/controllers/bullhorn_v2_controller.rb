@@ -98,7 +98,8 @@ class BullhornV2Controller < ApplicationController
         user_data: params[:user],
         user_profile: params[:user_profile],
         linkedin_profile: params[:linkedin_profile],
-        registration_answers: params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+        registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil),
+        legal_documents: params[:legal_documents]
       )
         
         user_available = true
@@ -119,6 +120,7 @@ class BullhornV2Controller < ApplicationController
       @user.user_profile = params[:user_profile]
       @user.linkedin_profile = params[:linkedin_profile]
       @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
+      @user.legal_documents = params[:legal_documents]
       user_available = true if @user.save
     end
 
@@ -336,7 +338,48 @@ class BullhornV2Controller < ApplicationController
     end
   end
 
+  def consent
+    user_available = false
+    @key = Key.find_by(app_dataset_id: params[:dataset_id], app_name: params[:controller])
+    @user = BullhornUser.find_by(user_id: params[:user][:id])
+    @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
 
+    if @user.present?
+
+      if @user.update(legal_documents: params[:legal_documents])
+        user_available = true
+      end
+
+    end
+
+    if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+      render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
+    else
+      if @user.present?
+        if user_available
+          @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+
+          if @bullhorn_service.present?
+            @bullhorn_service.post_user_to_bullhorn(@user, params)
+
+            render json: { success: true, user_id: @user.id }
+          else
+            render json: { success: false, status: 'Error: Unable to find Bullhorn settings for this site' }, status: 422
+          end
+        else
+          render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }, status: 422
+        end
+      else
+        render json: { success: false, status: "Error: Unable to find user with id: #{params[:user][:id]}" }, status: 422
+      end
+    end
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    loggable = @user || @bullhorn_setting
+    log_id = create_log(loggable, @key, 'consent', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
+  end
 
   private
 

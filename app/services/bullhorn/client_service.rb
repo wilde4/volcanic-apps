@@ -251,6 +251,19 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
+    # Legal Documents
+    attributes['consentMgmts'] = user.legal_documents.map do |legal_document|
+      {
+        'consentPurpose' => consent_purpose(legal_document),
+        'legalBasis' => legal_basis(legal_document),
+        'dateLastSent' => legal_document['consented_at'],
+        'dateLastReceived' => legal_document['consented_at'],
+        'consentNotes' => "#{legal_document['title']} Version #{legal_document['version']}"
+      }
+    end
+
+    attributes['consentMgmts'].delete_if { |consent| consent['consentPurpose'].blank? }
+
     # GET BULLHORN ID
     if user.bullhorn_uid.present?
       bullhorn_id = user.bullhorn_uid
@@ -1238,5 +1251,26 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'get_volcanic_job_references', url, nil, e.message, true, true)
   end
 
+  def consent_purpose(legal_document)
+    case legal_document['key']
+    when 'term_and_conditions'
+      'Recruiting'
+    when 'job_alerts' #TBC - not implemented in Oliver yet
+      'Direct Mail'
+    when 'privacy_policy'
+      'Sharing with 3rd Parties'
+    when 'first_opt_in', 'second_opt_in'
+      'Promotional Emails'
+    end
+      
+  end
+
+  def legal_basis(legal_document)
+    if legal_document['consent_type'] == 'implied'
+      'Contract Necessity'
+    else
+      legal_document['consented'] ? 'Express Consent' : 'Consent Revoked'
+    end
+  end
 
 end
