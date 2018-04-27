@@ -93,6 +93,9 @@ class BullhornV2Controller < ApplicationController
         @cv = { upload_name: @user.user_profile['upload_name'], upload_path: @user.user_profile['upload_path'] } if @user.user_profile['upload_path'].present?
       end
 
+      # Check if we're getting consents for this user for the first time
+      @user.initial_consents = @user.legal_documents.blank?
+
       if @user.update(
         email: params[:user][:email],
         user_data: params[:user],
@@ -121,6 +124,7 @@ class BullhornV2Controller < ApplicationController
       @user.linkedin_profile = params[:linkedin_profile]
       @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
       @user.legal_documents = params[:legal_documents]
+      @user.initial_consents = true
       user_available = true if @user.save
     end
 

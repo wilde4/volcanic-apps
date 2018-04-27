@@ -10,4 +10,6 @@ class BullhornUser < ActiveRecord::Base
 
   validate :user_id, :email, presence: true
   validates :user_id, uniqueness: true
+
+  attr_accessor :initial_consents
 end
