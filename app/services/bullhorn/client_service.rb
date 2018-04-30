@@ -252,39 +252,14 @@ class Bullhorn::ClientService < BaseService
     end
 
     # Legal Documents
-    if params[:consent].present?
-      # Updating a single consent
+    if @bullhorn_setting.consent_object_name.present? && user.changed_consents.present?
 
-      attributes['customObject1s'] = [
-        {
-          'text1' => consent_purpose(params[:consent]),
-          'text2' => legal_basis(params[:consent]),
-          'date1' => consented_at_timestamp(params[:consent]['occurred_at']),
-          'date2' => consented_at_timestamp(params[:consent]['occurred_at']),
-          'textBlock1' => "#{params[:consent]['title']} Version #{params[:consent]['version']}",
-          'text3' => 'Website'
-        }
-      ]
-
-    elsif user.initial_consents
-      # Setting up initial consents
-
-      attributes['customObject1s'] = Array(user.legal_documents).map do |legal_document|
-        {
-          'text1' => consent_purpose(legal_document),
-          'text2' => legal_basis(legal_document),
-          'date1' => consented_at_timestamp(legal_document['consented_at']),
-          'date2' => consented_at_timestamp(legal_document['consented_at']),
-          'textBlock1' => "#{legal_document['title']} Version #{legal_document['version']}",
-          'text3' => 'Website'
-        }
-      end
+      # Updating consents
+      attributes[@bullhorn_setting.consent_object_name] = user.changed_consents.map { |consent| consent_attributes(consent) }      
+      attributes[@bullhorn_setting.consent_object_name].delete_if { |consent| consent['text1'].blank? }
 
     end
 
-    attributes['customObject1s'].delete_if { |consent| consent['text1'].blank? }
-
-    pp attributes
 
     # GET BULLHORN ID
     if user.bullhorn_uid.present?
@@ -1304,6 +1279,17 @@ class Bullhorn::ClientService < BaseService
 
   def consented_at_timestamp(consented_at)
     consented_at_timestamp = (consented_at ? DateTime.parse(consented_at).to_i : Time.now.to_i) * 1000
+  end
+
+  def consent_attributes(consent)
+    {
+      'text1' => consent_purpose(consent),
+      'text2' => legal_basis(consent),
+      'date1' => consented_at_timestamp(consent['occurred_at']),
+      'date2' => consented_at_timestamp(consent['occurred_at']),
+      'textBlock1' => "#{consent['title']} Version #{consent['version']}",
+      'text3' => 'Website'
+    }
   end
 
 end

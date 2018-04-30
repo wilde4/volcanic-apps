@@ -11,5 +11,11 @@ class BullhornUser < ActiveRecord::Base
   validate :user_id, :email, presence: true
   validates :user_id, uniqueness: true
 
-  attr_accessor :initial_consents
+  after_initialize :initialize_legal_documents
+
+  attr_accessor :changed_consents
+
+  def initialize_legal_documents
+    self.legal_documents ||= []
+  end
 end

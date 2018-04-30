@@ -93,8 +93,18 @@ class BullhornV2Controller < ApplicationController
         @cv = { upload_name: @user.user_profile['upload_name'], upload_path: @user.user_profile['upload_path'] } if @user.user_profile['upload_path'].present?
       end
 
-      # Check if we're getting consents for this user for the first time
-      @user.initial_consents = @user.legal_documents.blank?
+      if params[:legal_documents].present?
+        # Check if any of the consents sent have changed from what we have stored
+
+        @user.changed_consents = params[:legal_documents].map do |param|
+          legal_document = @user.legal_documents.find { |ld| ld['key'] == param['key'] }
+          if legal_document.blank? || legal_document['consented'] != param['consented']
+            param
+          else
+            nil
+          end
+        end.compact
+      end
 
       if @user.update(
         email: params[:user][:email],
@@ -348,34 +358,42 @@ class BullhornV2Controller < ApplicationController
     @user = BullhornUser.find_by(user_id: params[:user][:id])
     @bullhorn_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
 
-    if @user.present?
+    if @bullhorn_setting.consent_object_name.present?
 
-      if @user.update(legal_documents: params[:legal_documents])
-        user_available = true
+      if @user.present?
+
+        @user.changed_consents = [params[:consent]].compact
+
+        if @user.update(legal_documents: params[:legal_documents])
+          user_available = true
+        end
+
       end
 
-    end
+      if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+        render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
+      else
+        if @user.present?
+          if user_available
+            @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 
-    if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
-      render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
-    else
-      if @user.present?
-        if user_available
-          @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
+            if @bullhorn_service.present?
+              @bullhorn_service.post_user_to_bullhorn(@user, params)
 
-          if @bullhorn_service.present?
-            @bullhorn_service.post_user_to_bullhorn(@user, params)
-
-            render json: { success: true, user_id: @user.id }
+              render json: { success: true, user_id: @user.id }
+            else
+              render json: { success: false, status: 'Error: Unable to find Bullhorn settings for this site' }, status: 422
+            end
           else
-            render json: { success: false, status: 'Error: Unable to find Bullhorn settings for this site' }, status: 422
+            render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }, status: 422
           end
         else
-          render json: { success: false, status: "Error: #{@user.errors.full_messages.join(', ')}" }, status: 422
+          render json: { success: false, status: "Error: Unable to find user with id: #{params[:user][:id]}" }, status: 422
         end
-      else
-        render json: { success: false, status: "Error: Unable to find user with id: #{params[:user][:id]}" }, status: 422
       end
+
+    else
+      render json: { success: false, status: 'Error: Unable to find Bullhorn consent object name' }, status: 422
     end
 
   rescue StandardError => e
