@@ -100,8 +100,6 @@ class BullhornV2Controller < ApplicationController
           legal_document = @user.legal_documents.find { |ld| ld['key'] == param['key'] }
           if legal_document.blank? || legal_document['consented'] != param['consented'] || legal_document['consent_type'] != param['consent_type']
             param
-          else
-            nil
           end
         end.compact
       end
