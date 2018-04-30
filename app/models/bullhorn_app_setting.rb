@@ -17,5 +17,18 @@ class BullhornAppSetting < ActiveRecord::Base
   def auth_settings_changed
     previous_changes['encrypted_bh_username'].present? || previous_changes['encrypted_bh_password'].present? || previous_changes['encrypted_bh_client_id'].present? || previous_changes['encrypted_bh_client_secret'].present?
   end
+
+  def consent_object_name
+    unless cached_consent_object_name.present?
+      @bullhorn_service = Bullhorn::ClientService.new(self)
+      path = "meta/Candidate"
+      client_params = {fields: '*'}
+      res = @bullhorn_service.client.conn.get path, client_params
+      obj = @bullhorn_service.client.decorate_response JSON.parse(res.body)
+      field = obj['fields'].find { |f| f.associatedEntity && f.associatedEntity.label == 'Consent' }
+      self.update_attribute :cached_consent_object_name, field.try(:name)
+    end
+    cached_consent_object_name
+  end
   
 end
