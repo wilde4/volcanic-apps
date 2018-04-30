@@ -133,8 +133,7 @@ class BullhornV2Controller < ApplicationController
       @user.user_profile = params[:user_profile]
       @user.linkedin_profile = params[:linkedin_profile]
       @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-      @user.legal_documents = params[:legal_documents]
-      @user.initial_consents = true
+      @user.legal_documents = @user.changed_consents = params[:legal_documents]
       user_available = true if @user.save
     end
 
