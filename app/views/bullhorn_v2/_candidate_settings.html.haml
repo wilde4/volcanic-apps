@@ -58,6 +58,20 @@
                       %td.text-center
                         %i.icon-arrow-right16
                       %td= bfm.input :bullhorn_field_name, collection: @bh_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
+    %hr
+    .row
+      .col-xs-12
+        %h6
+          Candidate Consents
+          - if @bullhorn_setting.cached_consent_object_name.present?
+            %i.icon-checkmark.text-success
+          - else
+            %i.icon-cross2.text-danger
+        - if @bullhorn_setting.cached_consent_object_name.present?
+          Your Bullhorn account is configured to receive consent data and this is being sent along with your candidate data.
+        - else
+          Your Bullhorn account doesn't appear to be set up to receive candidate consent data. Please contact Bullhorn if you wish to have this set up.
+
 :javascript
   $( "a.btn" ).click(function() {
     if ($(this).find( "i" ).hasClass('fa-rotate-180')){
