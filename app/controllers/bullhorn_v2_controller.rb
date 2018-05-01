@@ -61,6 +61,8 @@ class BullhornV2Controller < ApplicationController
     @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
     
     @bullhorn_setting.reload
+
+    @bullhorn_setting.consent_object_name
     
     get_fields if @bullhorn_service.present?
 
