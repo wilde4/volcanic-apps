@@ -206,7 +206,7 @@ Apps::Application.routes.draw do
     get 'jobs'              => 'bullhorn_v2#jobs'
     get 'add_file_mapping_field' => 'bullhorn_v2#add_file_mapping_field'
     get 'get_user'          => 'bullhorn_v2#get_user'
-    post "update"    => 'bullhorn_v2#update'
+    post "update"           => 'bullhorn_v2#update'
     post 'save_user'        => 'bullhorn_v2#save_user'
     post 'upload_cv'        => 'bullhorn_v2#upload_cv'
     post 'job_application'  => 'bullhorn_v2#job_application'
@@ -215,7 +215,8 @@ Apps::Application.routes.draw do
     post 'update_settings'  => 'bullhorn_v2#update_settings'
     post 'new_search'       => 'bullhorn_v2#new_search'
     get 'report'            => 'bullhorn_v2#report'
-    get 'import_jobs/:id'       => 'bullhorn_v2#import_jobs'
+    get 'import_jobs/:id'   => 'bullhorn_v2#import_jobs'
+    post 'consent'          => 'bullhorn_v2#consent'
   end
 
   scope :reed_global do

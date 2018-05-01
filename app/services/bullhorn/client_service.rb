@@ -251,6 +251,16 @@ class Bullhorn::ClientService < BaseService
       end
     end
 
+    # Legal Documents
+    if @bullhorn_setting.consent_object_name.present? && user.changed_consents.present?
+
+      # Updating consents
+      attributes[@bullhorn_setting.consent_object_name] = user.changed_consents.map { |consent| consent_attributes(consent) }      
+      attributes[@bullhorn_setting.consent_object_name].delete_if { |consent| consent['text1'].blank? }
+
+    end
+
+
     # GET BULLHORN ID
     if user.bullhorn_uid.present?
       bullhorn_id = user.bullhorn_uid
@@ -372,7 +382,7 @@ class Bullhorn::ClientService < BaseService
 
     if associations.present? && mapping.present?
       # use answer array if present or make array of single answer
-      answers = user.registration_answers["#{mapping.registration_question_reference}_array"] || [user.registration_answers[mapping.registration_question_reference]]
+      answers = (user.registration_answers["#{mapping.registration_question_reference}_array"] || [user.registration_answers[mapping.registration_question_reference]]).compact
 
       mapped_associations = answers.map { |answer| associations.data.select{ |a| a.name == answer.strip } }.flatten
       
@@ -1238,5 +1248,48 @@ class Bullhorn::ClientService < BaseService
     create_log(@bullhorn_setting, @key, 'get_volcanic_job_references', url, nil, e.message, true, true)
   end
 
+  def consent_purpose(consent)
+    case consent['key']
+    when 'term_and_conditions'
+      'Recruiting'
+    when 'job_alerts' #TBC - not implemented in Oliver yet
+      'Direct Mail'
+    when 'privacy_policy'
+      'Sharing with 3rd Parties'
+    when 'first_opt_in', 'second_opt_in'
+      'Promotional Emails'
+    end
+      
+  end
+
+  def legal_basis(consent)
+    if consent['consent_type'] == 'implied'
+      'Contract Necessity'
+    elsif consent['event'].present?
+      case consent['event']
+      when 'consent_given', true
+        'Express Consent'
+      when 'consent_removed', false
+        'Consent Revoked'
+      end
+    elsif !consent['consented'].nil?
+      consent['consented'] ? 'Express Consent' : 'Consent Revoked'
+    end
+  end
+
+  def consented_at_timestamp(consented_at)
+    consented_at_timestamp = (consented_at ? DateTime.parse(consented_at).to_i : Time.now.to_i) * 1000
+  end
+
+  def consent_attributes(consent)
+    {
+      'text1' => consent_purpose(consent),
+      'text2' => legal_basis(consent),
+      'date1' => consented_at_timestamp(consent['occurred_at']),
+      'date2' => consented_at_timestamp(consent['occurred_at']),
+      'textBlock1' => "#{consent['title']} Version #{consent['version']}",
+      'text3' => 'Website'
+    }
+  end
 
 end
