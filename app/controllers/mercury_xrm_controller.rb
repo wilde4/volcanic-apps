@@ -19,5 +19,4 @@ class MercuryXrmController < ApplicationController
   # which constructs a HTTP GET request to Volcanic Apps server, passing the current_users email
   # once VA receives this request: then it performs some logic
   # and renders/returns a view which is then displayed on the user dashboard
-  
 end
