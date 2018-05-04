@@ -6,9 +6,9 @@ module Payloadable
     puts "\n\n Posting to API - Sending Notification \n\n"
 
     if action
-      endpoint_str = "http://#{@key.host}/api/v1/#{resource}/#{action}.json"
+      endpoint_str = "https://#{@key.host}/api/v1/#{resource}/#{action}.json"
     else
-      endpoint_str = "http://#{@key.host}/api/v1/#{resource}.json"
+      endpoint_str = "https://#{@key.host}/api/v1/#{resource}.json"
     end
 
     data = {
