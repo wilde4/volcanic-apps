@@ -13,7 +13,8 @@ class BullhornDeleteJobWorker
 
     sqs_msg.delete
   rescue StandardError => e
-    sqs_msg.delete
+    puts e
+    # sqs_msg.delete
     Honeybadger.notify(e, force: true)
   end
 end
