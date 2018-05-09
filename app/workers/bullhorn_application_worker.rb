@@ -59,7 +59,8 @@ class BullhornApplicationWorker
     end
     
   rescue StandardError => e
-    sqs_msg.delete
+    puts e
+    # sqs_msg.delete
     @key = Key.find_by(app_dataset_id: msg['dataset_id'])
     @user.app_logs.create key: @bullhorn_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: attributes, response: @response, error: e.message, internal: true
     Honeybadger.notify(e, force: true)
