@@ -4,7 +4,7 @@ class MercuryXrmController < ApplicationController
 
   def mercury_xrm_dashboard
     @encrypted_email = encrypt_email(params[:data][:email])
-    @encrypted_email.gsub!("\n", '\n')
+    @encrypted_email.gsub!("\n", '')
     render "mercury_xrm_dashboard"
   end
 
