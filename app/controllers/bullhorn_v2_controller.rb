@@ -148,6 +148,9 @@ class BullhornV2Controller < ApplicationController
           @bullhorn_service.post_user_to_bullhorn(@user, params)
 
           if params[:user_profile][:upload_path].present? || (@cv.present? && @cv[:upload_path].present?)
+
+            # Don't send consents twice
+            @user.changed_consents = nil
           
             if @bullhorn_service.send_candidate_file(@user, params, @user['user_profile']['upload_path'], @user['user_profile']['upload_name'], 'cv') == true
               create_log(@user, @key, 'upload_cv_successfull', nil, nil, nil, false, false)
