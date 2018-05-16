@@ -89,6 +89,9 @@ class BullhornV2Controller < ApplicationController
     user_available = false
     @user = BullhornUser.find_by(user_id: params[:user][:id])
 
+    # Ignore legal_documents params if we're not a fully registered candidate and the app is checking for this
+    params[:legal_documents] = nil if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+
     if @user.present?
       # If the user hasn't been sent to BH yet save previous CV details
       if @user.bullhorn_uid.blank?
@@ -107,12 +110,13 @@ class BullhornV2Controller < ApplicationController
       end
 
       if @user.update(
-        email: params[:user][:email],
-        user_data: params[:user],
-        user_profile: params[:user_profile],
-        linkedin_profile: params[:linkedin_profile],
-        registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil),
-        legal_documents: params[:legal_documents]
+        {
+          email: params[:user][:email],
+          user_data: params[:user],
+          user_profile: params[:user_profile],
+          linkedin_profile: params[:linkedin_profile],
+          registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
+        }.merge(params[:legal_documents] ? { legal_documents: params[:legal_documents] } : {})
       )
         
         user_available = true
@@ -133,7 +137,7 @@ class BullhornV2Controller < ApplicationController
       @user.user_profile = params[:user_profile]
       @user.linkedin_profile = params[:linkedin_profile]
       @user.registration_answers = params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil
-      @user.legal_documents = @user.changed_consents = params[:legal_documents]
+      @user.legal_documents = @user.changed_consents = params[:legal_documents] if params[:legal_documents]
       user_available = true if @user.save
     end
 
@@ -230,6 +234,19 @@ class BullhornV2Controller < ApplicationController
     if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
       render json: { success: false, status: "Only accepting fully registered candidates" }, status: 403
     elsif params[:user_profile][:upload_path].present? && user_available
+
+      if params[:legal_documents].present?
+        # Check if any of the consents sent have changed from what we have stored
+
+        @user.changed_consents = params[:legal_documents].map do |param|
+          legal_document = @user.legal_documents.find { |ld| ld['key'] == param['key'] }
+          if legal_document.blank? || legal_document['consented'] != param['consented'] || legal_document['consent_type'] != param['consent_type']
+            param
+          end
+        end.compact
+      end
+
+      @user.update legal_documents: params[:legal_documents] if @user.changed_consents.present?
 
       @bullhorn_service = Bullhorn::ClientService.new(@bullhorn_setting) if @bullhorn_setting.present?
 

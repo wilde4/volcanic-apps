@@ -632,8 +632,6 @@ class Bullhorn::ClientService < BaseService
 
     if @file_attributes.present?
 
-      @file_response = @client.put_candidate_file(user.bullhorn_uid, @file_attributes.to_json)
-
       if type == 'cv'
 
         # PARSE FILE
@@ -647,6 +645,11 @@ class Bullhorn::ClientService < BaseService
         end
 
       end
+
+      user.reload
+
+      @file_response = @client.put_candidate_file(user.bullhorn_uid, @file_attributes.to_json)
+
     end
 
     if @file_response && @file_response['fileId'].present?
