@@ -244,6 +244,8 @@ class Bullhorn::ClientService < BaseService
            attributes['category']['id'] = category.id
            @category_id = category.id
         end
+      when 'experience'
+        attributes[fm.bullhorn_field_name] = answer.to_i if answer.present?
       when 'businessSectors', 'primarySkills', 'secondarySkills'
         # UPDATE CANDIDATE AFTER CREATION
       else
