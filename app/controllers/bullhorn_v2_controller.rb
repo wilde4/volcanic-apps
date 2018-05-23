@@ -89,8 +89,8 @@ class BullhornV2Controller < ApplicationController
     user_available = false
     @user = BullhornUser.find_by(user_id: params[:user][:id])
 
-    # Ignore legal_documents params if we're not a fully registered candidate and the app is checking for this
-    params[:legal_documents] = nil if @bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration]
+    # Ignore legal_documents params if client's BH account is not configured or if we're not a fully registered candidate and the app is checking for this
+    params[:legal_documents] = nil if @bullhorn_setting.cached_consent_object_name.blank? || (@bullhorn_setting.full_candidate_registrations_only? && !params[:user][:full_registration])
 
     if @user.present?
       # If the user hasn't been sent to BH yet save previous CV details
