@@ -254,7 +254,7 @@ class Bullhorn::ClientService < BaseService
     end
 
     # Legal Documents
-    if @bullhorn_setting.consent_object_name.present? && user.changed_consents.present?
+    if user.changed_consents.present? && @bullhorn_setting.consent_object_name.present?
 
       # Updating consents
       attributes[@bullhorn_setting.consent_object_name] = user.changed_consents.map { |consent| consent_attributes(consent) }      
