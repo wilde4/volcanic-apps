@@ -451,8 +451,8 @@ class Bullhorn::ClientService < BaseService
             sectors << b_sector.data.name.strip
           end
           value = sectors.join(',')
-        when 'dateEnd'
-          value = Time.at(job.dateEnd / 1000).to_date.to_s rescue nil
+        when /date/i
+          value = Time.at(job.send(fm.bullhorn_field_name) / 1000).to_date.to_s rescue nil
         else
           bullhorn_value = job.send(fm.bullhorn_field_name)
           if bullhorn_value.is_a? Hash
