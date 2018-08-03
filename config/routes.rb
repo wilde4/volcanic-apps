@@ -260,11 +260,11 @@ Apps::Application.routes.draw do
     get 'disable', to: 'twitter#disable'
   end
 
-  scope :job_adder do
-    post "activate_app"     => 'job_adder#activate_app'
-    post "deactivate_app"   => 'job_adder#deactivate_app'
-    get  "index"            => 'job_adder#index'
-    post "capture_jobs"     => 'job_adder#capture_jobs'
+  scope :jobadder do
+    get  "index"            => 'jobadder#index'
+    post "activate_app"     => 'jobadder#activate_app'
+    post "deactivate_app"   => 'jobadder#deactivate_app'
+    post "update_ja_settings"           => 'jobadder#update_ja_settings'
   end
 
   scope :yu_talent do
