@@ -1,8 +1,9 @@
-- @url_post = Rails.env.development? ? 'http://localhost:3001/jobadder/update_ja_settings' : " https://#{ENV['DOMAIN_NAME']}/jobadder/update_ja_settings"
+- @url_post = Rails.env.development? ? 'http://localhost:3001/jobadder/update' : " https://#{ENV['DOMAIN_NAME']}/jobadder/update"
+- authorize_url = @authorize_url
 = simple_form_for @ja_setting, url: @url_post, method: :post, remote: true do |f|
 
   = f.input :dataset_id, as: :hidden
-  .panel
+  .panel{class: @ja_setting.authorised? ? 'panel-success' : 'panel-danger'}
     .panel-heading
       %h5.panel-title
         1. Authentication Settings
@@ -24,6 +25,7 @@
 
 
 :javascript
+
   $("#submit-btn").click(function(e) {
     e.preventDefault();
     $("#ja_settings_form form").submit();
@@ -33,13 +35,6 @@
     $(this).addClass("disabled");
     $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
   });
-
-  $("#import-btn").click(function(e){
-    $(this).addClass("disabled");
-    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
-  });
-
-  $('[data-toggle="tooltip"]').tooltip();
 
   $(document).ready(function() {
     $('.select2').select2({width: '100%', placeholder: ' ', allowClear: true});

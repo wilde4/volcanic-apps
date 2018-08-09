@@ -261,10 +261,11 @@ Apps::Application.routes.draw do
   end
 
   scope :jobadder do
-    get  "index"            => 'jobadder#index'
-    post "activate_app"     => 'jobadder#activate_app'
-    post "deactivate_app"   => 'jobadder#deactivate_app'
-    post "update_ja_settings"           => 'jobadder#update_ja_settings'
+    get  'index'           => 'jobadder#index'
+    post 'activate_app'     => 'jobadder#activate_app'
+    post 'deactivate_app'   => 'jobadder#deactivate_app'
+    post "update"          => 'jobadder#update'
+    get 'callback'         =>  'jobadder#callback'
   end
 
   scope :yu_talent do
