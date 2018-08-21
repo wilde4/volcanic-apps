@@ -2,7 +2,7 @@
 <project version="4">
   <component name="dataSourceStorageLocal">
     <data-source name="Rails volcanic-apps: development" uuid="72cba864-70c5-47dc-8bd7-e17bf87ef039">
-      <database-info product="MySQL" version="5.7.22" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.46 ( Revision: 9cc87a48e75c2d2e87c1a293b2862ce651cb256e )">
+      <database-info product="MySQL" version="5.7.22" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.46 ( Revision: 9cc87a48e75c2d2e87c1a293b2862ce651cb256e )" family="MYSQL" exact-version="5.7.22">
         <extra-name-characters>#@</extra-name-characters>
         <identifier-quote-string>`</identifier-quote-string>
       </database-info>
@@ -11,11 +11,11 @@
       <introspection-schemas>*:apps_development</introspection-schemas>
     </data-source>
     <data-source name="Rails volcanic-apps: test" uuid="aedd0c7a-5372-41b7-b553-6e8d29f460f8">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" family="MYSQL" exact-version="0.0" />
       <user-name>root</user-name>
     </data-source>
     <data-source name="Rails volcanic-apps: production" uuid="f306f211-3b12-4564-97c5-1ccf4400fbfe">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" />
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" family="MYSQL" exact-version="0.0" />
       <user-name>apps</user-name>
     </data-source>
   </component>

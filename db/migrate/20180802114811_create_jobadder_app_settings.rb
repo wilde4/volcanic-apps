@@ -2,8 +2,6 @@ class CreateJobadderAppSettings < ActiveRecord::Migration
   def change
     create_table :jobadder_app_settings do |t|
       t.integer  :dataset_id
-      t.string   :encrypted_ja_username
-      t.string   :encrypted_ja_password
       t.string   :encrypted_ja_client_id
       t.string   :encrypted_ja_client_secret
       t.boolean  :import_jobs, default: false
@@ -16,6 +14,7 @@ class CreateJobadderAppSettings < ActiveRecord::Migration
       t.string   :client_token
       t.string   :refresh_token
       t.string   :access_token
+      t.string   :app_url
       t.datetime :access_token_expires_at
     end
   end
