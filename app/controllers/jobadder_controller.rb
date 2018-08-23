@@ -14,6 +14,12 @@ class JobadderController < ApplicationController
         JobadderAppSetting.new(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
     @ja_setting.save
 
+    @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
+
+    if @ja_service.present? && @ja_service.client
+     get_fields
+    end
+
     render layout: false
 
   end
@@ -177,6 +183,21 @@ class JobadderController < ApplicationController
     end
   end
 
+  def get_fields
+
+    # @ja_candidate_fields        = @ja_service.ja_candidate_fields
+    # @bh_job_fields              = @bullhorn_service.bullhorn_job_fields
+    @volcanic_candidate_fields  = @ja_service.volcanic_candidate_fields
+    # @volcanic_job_fields        = @bullhorn_service.volcanic_job_fields
+
+    @volcanic_candidate_fields.each do |reference, label|
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+
+    # @volcanic_job_fields.each do |reference, label|
+    #   @bullhorn_setting.bullhorn_field_mappings.build(job_attribute: reference) unless @bullhorn_setting.bullhorn_field_mappings.find_by(job_attribute: reference)
+    # end
+  end
 
 end
   

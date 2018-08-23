@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180816102810) do
+ActiveRecord::Schema.define(version: 20180823133333) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -347,6 +347,15 @@ ActiveRecord::Schema.define(version: 20180816102810) do
     t.string   "access_token"
     t.string   "app_url"
     t.datetime "access_token_expires_at"
+  end
+
+  create_table "jobadder_field_mappings", force: true do |t|
+    t.integer  "jobadder_app_setting_id"
+    t.string   "jobadder_field_name"
+    t.string   "registration_question_reference"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "job_attribute"
   end
 
   create_table "jobadder_users", force: true do |t|
