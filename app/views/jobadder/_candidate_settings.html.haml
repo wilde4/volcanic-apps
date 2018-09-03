@@ -11,7 +11,7 @@
             (Error ID: #{@net_error})
         - else
           %p
-            Here you can set how registration fields within your Volcanic website correspond to fields within your Bullhorn application.
+            Here you can set how registration fields within your Volcanic website correspond to fields within your JobAdder application.
             Only the data set up here will be sent to Bullhorn when a Candidate registers.
           %a.btn.btn-primary{"aria-controls" => "collapse-candidate-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-candidate-fields"}
             Mappings
@@ -24,18 +24,18 @@
                   %th
                   %th JobAdder Candidate Field
                 %tbody
-                  = f.simple_fields_for :ja_field_mappings, @ja_setting.ja_field_mappings.select { |m| m.job_attribute.nil? } do |bfm|
+                  = f.simple_fields_for :jobadder_field_mappings, @ja_setting.jobadder_field_mappings.select { |m| m.job_attribute.nil? } do |jfm|
                     %tr
                       %td
-                        - if @volcanic_candidate_fields[bfm.object.registration_question_reference].present?
-                          = @volcanic_candidate_fields[bfm.object.registration_question_reference]
+                        - if @volcanic_candidate_fields[jfm.object.registration_question_reference].present?
+                          = @volcanic_candidate_fields[jfm.object.registration_question_reference]
                         - else
-                          = bfm.object.registration_question_reference
+                          = jfm.object.registration_question_reference
                           %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
-                        = bfm.input :registration_question_reference, as: :hidden
+                        = jfm.input :registration_question_reference, as: :hidden
                       %td.text-center
                         %i.icon-arrow-right16
-                      %td= bfm.input :bullhorn_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
+                      %td= jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
 
 :javascript
   $( "a.btn" ).click(function() {
@@ -45,13 +45,4 @@
       $(this).find( "i" ).addClass('fa-rotate-180');
     }
 
-  });
-
-  $('#bullhorn_app_setting_existing_candidate_registrations_only').change(function() {
-    if(this.checked) {
-      $('#bullhorn_app_setting_always_create_false').prop('checked',true);
-      $('#always_create').addClass('hidden');
-    } else {
-      $('#always_create').removeClass('hidden');
-    }
   });

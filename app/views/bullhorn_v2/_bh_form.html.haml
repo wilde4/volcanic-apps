@@ -28,13 +28,6 @@
     
     -# JOB SETTINGS
     = render partial: 'job_settings', locals: {f: f}
-    
-
-
-
-
-
-
 
   = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
 
@@ -68,9 +61,3 @@
   $(document).ready(function() {
     $('.select2').select2({width: '100%', placeholder: ' ', allowClear: true});
   });
-
-- Bullhorn::ClientService::DEFAULT_JOB_FIELDS.each do |default_job_field, bh_field|
-  :javascript
-    $(document).ready(function() {
-      $('.select2#{default_job_field}').select2({width: '100%', placeholder: '#{bh_field}', allowClear: true});
-    });

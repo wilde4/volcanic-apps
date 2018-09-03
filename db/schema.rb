@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180823133333) do
+ActiveRecord::Schema.define(version: 20180830102813) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -356,6 +356,15 @@ ActiveRecord::Schema.define(version: 20180823133333) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "job_attribute"
+  end
+
+  create_table "jobadder_request_bodies", force: true do |t|
+    t.string   "request_type"
+    t.string   "endpoint"
+    t.string   "name"
+    t.text     "json"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "jobadder_users", force: true do |t|

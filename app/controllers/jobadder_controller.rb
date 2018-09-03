@@ -17,7 +17,7 @@ class JobadderController < ApplicationController
     @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
 
     if @ja_service.present? && @ja_service.client
-     get_fields
+      get_fields
     end
 
     render layout: false
@@ -28,6 +28,11 @@ class JobadderController < ApplicationController
 
     @key = Key.find_by(app_dataset_id: params[:jobadder_app_setting][:dataset_id], app_name: params[:controller])
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:jobadder_app_setting][:dataset_id])
+
+    unless (@ja_setting.ja_client_id === (params[:jobadder_app_setting][:ja_client_id]) && @ja_setting.ja_client_secret === params[:jobadder_app_setting][:ja_client_secret])
+      @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
+      render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
+    end
 
     if @ja_setting.present? #UPDATE CURRENT SETTINGS
 
@@ -49,12 +54,21 @@ class JobadderController < ApplicationController
 
     end
 
+    if params[:jobadder_app_setting][:jobadder_field_mappings_attributes].present?
+      params[:jobadder_app_setting][:jobadder_field_mappings_attributes].each do |i, mapping_attributes|
+        if mapping_attributes[:jobadder_field_name].blank? && mapping_attributes[:id].present?
+          @mapping = @ja_setting.jobadder_field_mappings.find(mapping_attributes[:id])
+          @mapping.destroy
+        end
+      end
+    end
+
     @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
+    @ja_setting.reload
     @@client = @ja_service.client
     @@dataset_id = params[:jobadder_app_setting][:dataset_id]
 
-
-    render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
+    get_fields if @ja_service.present?
 
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -94,7 +108,9 @@ class JobadderController < ApplicationController
 
     @ja_user = JobadderUser.find_by(user_id: params[:user][:id])
 
-    @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
+    @key = Key.find_by app_dataset_id: params[:user][:dataset_id], app_name: params[:controller]
+
+    @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback')
 
     if @ja_user.present?
       @ja_user.update(
@@ -106,11 +122,11 @@ class JobadderController < ApplicationController
               registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
           }
       )
-      #TODO: update candidate properly
-      @response = Jobadder::ClientService.update_candidate(params[:user][:dataset_id], @ja_user.user_id)
+
+      @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id)
 
     else
-      @ja_user = JobadderUser.create(user_id:params[:user][:id],
+      @ja_user = JobadderUser.create(user_id: params[:user][:id],
                                      email: params[:user][:email],
                                      user_data: params[:user],
                                      user_profile: params[:user_profile],
@@ -118,10 +134,10 @@ class JobadderController < ApplicationController
                                      registration_answers: params[:registration_answer_hash].present? ?
                                                                format_reg_answer(params[:registration_answer_hash]) : nil)
 
-      @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback')
+
       @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id, @key)
 
-
+      render json: { success: true, user_id: @ja_user.user_id }
     end
 
   end
@@ -144,7 +160,6 @@ class JobadderController < ApplicationController
     end
   end
 
-
   private
 
   def ja_params
@@ -153,7 +168,8 @@ class JobadderController < ApplicationController
         :import_jobs,
         :ja_params,
         :ja_client_id,
-        :ja_client_secret
+        :ja_client_secret,
+        jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
     )
   end
 
@@ -185,9 +201,9 @@ class JobadderController < ApplicationController
 
   def get_fields
 
-    # @ja_candidate_fields        = @ja_service.ja_candidate_fields
+    @ja_candidate_fields = @ja_service.jobadder_candidate_fields
     # @bh_job_fields              = @bullhorn_service.bullhorn_job_fields
-    @volcanic_candidate_fields  = @ja_service.volcanic_candidate_fields
+    @volcanic_candidate_fields = @ja_service.volcanic_candidate_fields
     # @volcanic_job_fields        = @bullhorn_service.volcanic_job_fields
 
     @volcanic_candidate_fields.each do |reference, label|

@@ -25,7 +25,11 @@
 
   = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
 
-
+:css
+  .select2-dropdown {
+    border: 1px solid #ddd !important;
+    border-radius: 3px !important;
+  }
 :javascript
 
   $("#submit-btn").click(function(e) {

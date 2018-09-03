@@ -10,6 +10,7 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 gem 'haml'
 gem 'simple_form'
+gem 'countries', '~> 2.1', '>= 2.1.4'
 
 #API gems
 gem 'gibbon'
