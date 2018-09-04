@@ -11,12 +11,12 @@ class JobadderController < ApplicationController
     app_url.slice! "/app_html"
     @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) ||
-        JobadderAppSetting.new(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
-    @ja_setting.save
+        JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
+
 
     @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
 
-    if @ja_service.present? && @ja_service.client
+    if@ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
       get_fields
     end
 
@@ -28,11 +28,6 @@ class JobadderController < ApplicationController
 
     @key = Key.find_by(app_dataset_id: params[:jobadder_app_setting][:dataset_id], app_name: params[:controller])
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:jobadder_app_setting][:dataset_id])
-
-    unless (@ja_setting.ja_client_id === (params[:jobadder_app_setting][:ja_client_id]) && @ja_setting.ja_client_secret === params[:jobadder_app_setting][:ja_client_secret])
-      @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
-      render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
-    end
 
     if @ja_setting.present? #UPDATE CURRENT SETTINGS
 
@@ -64,12 +59,13 @@ class JobadderController < ApplicationController
     end
 
     @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
-    @ja_setting.reload
-    @@client = @ja_service.client
-    @@dataset_id = params[:jobadder_app_setting][:dataset_id]
 
-    get_fields if @ja_service.present?
 
+    unless @ja_setting.authorised
+      render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
+    end
+
+    get_fields if @ja_service.present? && @ja_setting.access_token.present?
   rescue StandardError => e
     Honeybadger.notify(e)
     @net_error = create_log(@ja_setting, @key, 'update_ja_settings', nil, nil, e.message, true, true)
@@ -77,12 +73,13 @@ class JobadderController < ApplicationController
   end
 
   def callback
+    @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:state])
     @attributes = Hash.new
     @attributes[:authorization_code] = params[:code]
-    @attributes[:access_token] = Jobadder::AuthenticationService.get_access_token(params[:code], @@client)
+    @attributes[:access_token] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
 
     unless !@attributes[:access_token].token.present?
-      @ja_setting = JobadderAppSetting.find_by(dataset_id: @@dataset_id)
+
       if @ja_setting.present?
         if update_ja_params_token(@ja_setting, @attributes[:access_token])
           flash[:notice] = "App successfully authorised."
@@ -123,7 +120,6 @@ class JobadderController < ApplicationController
           }
       )
 
-      @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id)
 
     else
       @ja_user = JobadderUser.create(user_id: params[:user][:id],
@@ -135,9 +131,17 @@ class JobadderController < ApplicationController
                                                                format_reg_answer(params[:registration_answer_hash]) : nil)
 
 
-      @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id, @key)
+    end
 
-      render json: { success: true, user_id: @ja_user.user_id }
+    get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email], params[:user][:dataset_id])
+
+    candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
+    if candidate_id
+      update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, candidate_id)
+      render json: update_response
+    else
+      create_response = @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id, @key)
+      render json: create_response
     end
 
   end
@@ -182,6 +186,7 @@ class JobadderController < ApplicationController
   def check_api_access
     head :unauthorized unless @key.present?
   end
+
   def format_reg_answer(registration_answers = nil)
     if registration_answers.present?
       if registration_answers.is_a?(Hash)

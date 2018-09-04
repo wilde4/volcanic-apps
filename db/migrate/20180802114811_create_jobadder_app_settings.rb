@@ -11,7 +11,6 @@ class CreateJobadderAppSettings < ActiveRecord::Migration
       t.boolean  :authorised, default: false
       t.boolean  :custom_job_mapping, default: false
       t.boolean  :expire_closed_jobs, default: false
-      t.string   :client_token
       t.string   :refresh_token
       t.string   :access_token
       t.string   :app_url

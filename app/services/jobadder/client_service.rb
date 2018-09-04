@@ -22,13 +22,13 @@ class Jobadder::ClientService < BaseService
 
 
   def setup_client
-    unless @ja_setting.auth_settings_filled
-      @client = nil
-      return
-    end
+    # unless @ja_setting.auth_settings_filled
+    #   @client = nil
+    #   return
+    # end
 
     @client = Jobadder::AuthenticationService.client(@ja_setting)
-    @authorize_url = Jobadder::AuthenticationService.authorize_url(@callback_url, @client)
+    @authorize_url = Jobadder::AuthenticationService.authorize_url(@callback_url, @client, @ja_setting.dataset_id)
 
     if @ja_setting.access_token_expires_at.present?
       if DateTime.current > @ja_setting.access_token_expires_at
@@ -74,11 +74,11 @@ class Jobadder::ClientService < BaseService
                                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
                                                         "Content-type" => "application/json"},
                                            :body => @request_body.to_json)
-    puts add_candidate_response
+    return add_candidate_response
 
   end
 
-  def update_candidate(dataset_id, user_id)
+  def update_candidate(dataset_id, user_id, candidate_id)
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
     @ja_user = JobadderUser.find_by(user_id: user_id)
@@ -88,24 +88,13 @@ class Jobadder::ClientService < BaseService
 
     @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
 
-
-
-    get_candidate_response = get_candidate_by_email(@ja_user.user_data['email'], dataset_id)
-
-    candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
-
-    if candidate_id
-
-      @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
-
-      update_candidate_response = HTTParty.put(BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}",
-                                               :headers => {'User-Agent' => 'VolcanicJobadderApp',
-                                                            'Content-Type' => 'application/json',
-                                                            "Authorization" => "Bearer " + @ja_setting.access_token},
-                                               :body => @request_body.to_json
-      )
-      puts update_candidate_response
-    end
+    update_candidate_response = HTTParty.put(BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}",
+                                             :headers => {'User-Agent' => 'VolcanicJobadderApp',
+                                                          'Content-Type' => 'application/json',
+                                                          "Authorization" => "Bearer " + @ja_setting.access_token},
+                                             :body => @request_body.to_json
+    )
+    return update_candidate_response
 
 
   end

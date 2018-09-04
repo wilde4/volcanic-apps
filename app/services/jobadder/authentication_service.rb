@@ -14,23 +14,24 @@ class Jobadder::AuthenticationService < BaseService
           jobadder_setting.ja_client_id,
           jobadder_setting.ja_client_secret,
           {authorize_url: CREDENTIALS[:auth_url],
-           token_url: CREDENTIALS[:access_token_url]}
+           token_url: CREDENTIALS[:access_token_url],}
       )
       return @client
     rescue => e
       Rails.logger.info "--- jobadder client exception ----- : #{e.message}"
     end
 
-    def authorize_url(callback_url, client)
+    def authorize_url(callback_url, client, dataset_id)
       @callback_url = callback_url
-      auth_url = client.auth_code.authorize_url({redirect_uri: @callback_url, access_type: 'offline', scope: 'read write offline_access'})
+      auth_url = client.auth_code.authorize_url({redirect_uri: @callback_url, access_type: 'offline', scope: 'read write offline_access', state: dataset_id})
       @auth_url = URI.decode(auth_url)
     rescue => e
       Rails.logger.info "--- jobadder auth_url exception ----- : #{e.message}"
     end
 
-    def get_access_token(authorization_code, client)
+    def get_access_token(authorization_code, ja_setting)
       begin
+        client = client(ja_setting)
         @callback_url = callback_url
         @token = client.auth_code.get_token(authorization_code, :redirect_uri => @callback_url)
 
