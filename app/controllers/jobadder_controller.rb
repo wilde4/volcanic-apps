@@ -103,10 +103,6 @@ class JobadderController < ApplicationController
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
-    @ja_user = JobadderUser.find_by(user_id: params[:user][:id])
-
-    @key = Key.find_by app_dataset_id: params[:user][:dataset_id], app_name: params[:controller]
-
     @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback')
 
     if @ja_user.present?
@@ -140,15 +136,22 @@ class JobadderController < ApplicationController
       update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, candidate_id)
       render json: update_response
     else
-      create_response = @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id, @key)
+      create_response = @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id)
       render json: create_response
     end
 
   end
 
-  #TODO
-  def add_job
+  def job_application
 
+    JobadderApplicationWorker.perform_async params
+    render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    @ja_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+    log_id = create_log(@ja_setting, @key, 'job_application', nil, nil, e.message, true, true)
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def deactivate_app
@@ -207,17 +210,11 @@ class JobadderController < ApplicationController
   def get_fields
 
     @ja_candidate_fields = @ja_service.jobadder_candidate_fields
-    # @bh_job_fields              = @bullhorn_service.bullhorn_job_fields
     @volcanic_candidate_fields = @ja_service.volcanic_candidate_fields
-    # @volcanic_job_fields        = @bullhorn_service.volcanic_job_fields
 
     @volcanic_candidate_fields.each do |reference, label|
       @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
     end
-
-    # @volcanic_job_fields.each do |reference, label|
-    #   @bullhorn_setting.bullhorn_field_mappings.build(job_attribute: reference) unless @bullhorn_setting.bullhorn_field_mappings.find_by(job_attribute: reference)
-    # end
   end
 
 end

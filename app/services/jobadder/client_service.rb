@@ -1,13 +1,17 @@
 class Jobadder::ClientService < BaseService
   attr_accessor :client, :key, :authorize_url, :original_url
   require 'net/http'
+  require 'tempfile'
+  require 'rest_client'
+
+  TEMP_FILES_DIR = './tmp/files'
 
   BASE_URL = {
       job_adder: 'https://api.jobadder.com/v2',
       volcanic: 'https://www.volcanic.co.uk/api/v1'
   }
   ENDPOINT = {
-      job_applications: '/jobboards/{boardId}/ads/{adId}/applications',
+      jobs: '/jobs',
       candidates: '/candidates',
       users: '/users',
       candidate_custom_fields: '/candidates/fields/custom'
@@ -28,7 +32,10 @@ class Jobadder::ClientService < BaseService
     # end
 
     @client = Jobadder::AuthenticationService.client(@ja_setting)
-    @authorize_url = Jobadder::AuthenticationService.authorize_url(@callback_url, @client, @ja_setting.dataset_id)
+
+    if @callback_url.present?
+      @authorize_url = Jobadder::AuthenticationService.authorize_url(@callback_url, @client, @ja_setting.dataset_id)
+    end
 
     if @ja_setting.access_token_expires_at.present?
       if DateTime.current > @ja_setting.access_token_expires_at
@@ -41,24 +48,88 @@ class Jobadder::ClientService < BaseService
 
   end
 
-  def post_job_application(dataset_id, params)
+  # def save_candidate(dataset_id, user_id, email, ja_setting)
+  #
+  #   @ja_setting = ja_setting
+  #
+  #   @ja_user = JobadderUser.find_by(user_id: user_id)
+  #
+  #   if @ja_user.present?
+  #     @ja_user.update(
+  #         {
+  #             email: params[:user][:email],
+  #             user_data: params[:user],
+  #             user_profile: params[:user_profile],
+  #             linkedin_profile: params[:linkedin_profile],
+  #             registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
+  #         }
+  #     )
+  #
+  #
+  #   else
+  #     @ja_user = JobadderUser.create(user_id: params[:user][:id],
+  #                                    email: params[:user][:email],
+  #                                    user_data: params[:user],
+  #                                    user_profile: params[:user_profile],
+  #                                    linkedin_profile: params[:linkedin_profile],
+  #                                    registration_answers: params[:registration_answer_hash].present? ?
+  #                                                              format_reg_answer(params[:registration_answer_hash]) : nil)
+  #
+  #
+  #   end
+  #
+  #   get_candidate_response = get_candidate_by_email(email, dataset_id)
+  #
+  #   candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
+  #   if candidate_id
+  #     update_candidate(dataset_id, user_id, candidate_id)
+  #   else
+  #     add_candidate(:dataset_id, user_id)
+  #
+  #   end
+  # end
+  #
 
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
 
-    @response = HTTParty.post(BASE_URL[:job_adder] + ENDPOINT[:candidates],
-                              :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
-                                           "Content-type" => "application/json"},
-                              :body => {:subject => 'This is the screen name',
-                                        :issue_type => 'Application Problem',
-                                        :status => 'Open',
-                                        :priority => 'Normal',
-                                        :description => 'This is the description for the problem'
-                              }.to_json)
-    puts @response
+  def add_candidate_to_job(candidate_id, job_id)
 
+    url = BASE_URL[:job_adder] + ENDPOINT[:jobs] + "/#{job_id}/applications"
+
+    candidate_ids = [candidate_id]
+
+
+    response = HTTParty.post(url,
+                             :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
+                                          "Content-type" => "application/json"},
+                             :body => {'candidateId' => candidate_ids,
+                                       'source' => 'VolcanicApp'
+
+                             }.to_json)
+    return response
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(ja_setting, @key, 'add_candidate_to_job', url, nil, e.message, true, true)
+    {error: 'Error adding candidate to a job'}
   end
 
-  def add_candidate(dataset_id, user_id, key)
+  def get_applications_for_job(job_id)
+
+    url = BASE_URL[:job_adder] + ENDPOINT[:jobs] + "/#{job_id}/applications"
+
+
+    response = HTTParty.get(url,
+                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
+                                         "Content-type" => "application/json"})
+    return response
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(ja_setting, @key, 'get_submissions_for_job', url, nil, e.message, true, true)
+    {error: "Error getting submissions for a job id - #{job_id}"}
+  end
+
+  def add_candidate(dataset_id, user_id)
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
     @ja_user = JobadderUser.find_by(user_id: user_id)
@@ -75,6 +146,36 @@ class Jobadder::ClientService < BaseService
                                                         "Content-type" => "application/json"},
                                            :body => @request_body.to_json)
     return add_candidate_response
+
+  end
+
+  def add_single_attachment(candidate_id, file_url, file_name, attachment_type)
+
+    endpoint_url = BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}/attachments/#{attachment_type}"
+
+
+    # file_ext = file_name.split('.').last
+
+    #@temp_file = Tempfile.new(["#{file_name.split('.').first}_", ".#{file_ext}"])
+    file = File.new("#{TEMP_FILES_DIR}/#{file_name}", 'w')
+
+    open(file_url) do |url_file|
+      #@temp_file.write(url_file.read.force_encoding("UTF-8"))
+      file.write(url_file.read.force_encoding("UTF-8"))
+    end
+    # @temp_file.rewind
+    #
+    file = File.open(file.path(), 'r')
+    @response = RestClient.post endpoint_url, {:fileData => file}, {:Authorization => "Bearer " + @ja_setting.access_token}
+    File.delete(file.path()) if File.exist?(file.path())
+
+    return true
+  rescue StandardError => e
+
+    Honeybadger.notify(e)
+    create_log(ja_setting, @key, 'upload_single_attachment', url, nil, e.message, true, true)
+    {error: "Error uploading single attachment"}
+    return false
 
   end
 
@@ -99,8 +200,7 @@ class Jobadder::ClientService < BaseService
 
   end
 
-  def get_candidate_by_email(candidate_email, dataset_id)
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
+  def get_candidate_by_email(candidate_email)
 
     response = HTTParty.get(BASE_URL[:job_adder] + ENDPOINT[:candidates] + "?email=#{candidate_email}",
                             :headers => {'User-Agent' => 'VolcanicJobadderApp',

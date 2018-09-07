@@ -267,7 +267,7 @@ Apps::Application.routes.draw do
     post "update"          => 'jobadder#update'
     get 'callback'         =>  'jobadder#callback'
     post 'save_candidate'   =>  'jobadder#save_candidate'
-    post 'add_job'           =>  'jobadder#add_job'
+    post 'job_application'           =>  'jobadder#job_application'
   end
 
   scope :yu_talent do

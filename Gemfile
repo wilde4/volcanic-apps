@@ -66,6 +66,8 @@ gem 'sinatra', :require => nil
 group :development do
   gem 'sqlite3'
   gem 'bootstrap-sass'
+  gem 'debase'
+  gem 'ruby-debug-ide', '0.7.0.beta4'
 end
 
 group :test do
