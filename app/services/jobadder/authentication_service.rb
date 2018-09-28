@@ -21,7 +21,7 @@ class Jobadder::AuthenticationService < BaseService
       Rails.logger.info "--- jobadder client exception ----- : #{e.message}"
     end
 
-    def authorize_url(callback_url, client, dataset_id)
+    def authorize_url(client, dataset_id)
       @callback_url = callback_url
       auth_url = client.auth_code.authorize_url({redirect_uri: @callback_url, access_type: 'offline', scope: 'read write offline_access', state: dataset_id})
       @auth_url = URI.decode(auth_url)

@@ -13,7 +13,7 @@ class JobadderApplicationWorker
     if @ja_user.present? && @job_reference.present?
 
       @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
-      @ja_service = Jobadder::ClientService.new(@ja_setting, nil) if @ja_setting.present?
+      @ja_service = Jobadder::ClientService.new(@ja_setting) if @ja_setting.present?
 
       get_candidate_response = @ja_service.get_candidate_by_email(@ja_user.email)
 
@@ -33,7 +33,7 @@ class JobadderApplicationWorker
       end
       unless @candidate_applied
         add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
-
+        @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].empty?
       end
 
       attachments = %w(cover_letter cv)
@@ -44,7 +44,7 @@ class JobadderApplicationWorker
 
         if uploads.present? && uploads["#{attachment}_url"].present?
 
-          unless Array(@ja_user.sent_upload_ids).include?(msg['application']["#{attachment}_upload_id"] || msg['application']['covering_letter_upload_id'])
+          unless Array(@ja_user.sent_upload_ids).include?(msg['application']["#{attachment}_upload_id"] || msg['application']['covering_letter_upload_id']) && @application_id
 
             if (attachment == 'cv')
               @attachment_type = 'Resume'
@@ -54,8 +54,8 @@ class JobadderApplicationWorker
               @id = msg['application']['covering_letter_upload_id']
             end
 
-            if @ja_service.add_single_attachment(@candidate_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], @attachment_type) == true
-              if @ja_user.sent_upload_ids.empty?
+            if @ja_service.add_single_attachment(@application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], @attachment_type, 'application', msg['job']['job_reference']) == true
+              if @ja_user.sent_upload_ids.nil?
                 @ja_user.sent_upload_ids = [@id]
               else
                 @ja_user.sent_upload_ids << @id
@@ -68,8 +68,6 @@ class JobadderApplicationWorker
           end
         end
       end
-
-
       sqs_msg.delete
     end
 
@@ -77,7 +75,7 @@ class JobadderApplicationWorker
     puts e
     # sqs_msg.delete
     @key = Key.find_by(app_dataset_id: msg['dataset_id'])
-    #@ja_user.app_logs.create key: @ja_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: attributes, response: @response, error: e.message, internal: true
+    @ja_user.app_logs.create key: @ja_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: attributes, response: @response, error: e.message, internal: true
     Honeybadger.notify(e, force: true)
   end
 end

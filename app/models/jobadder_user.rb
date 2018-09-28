@@ -8,14 +8,7 @@ class JobadderUser < ActiveRecord::Base
   serialize :legal_documents, JSON
   serialize :sent_upload_ids
 
-  validate :user_id, :email, presence: true
+  validates :user_id, :email, presence: true
   validates :user_id, uniqueness: true
 
-  # after_initialize :initialize_legal_documents
-
-  # attr_accessor :changed_consents
-
-  # def initialize_legal_documents
-  #   self.legal_documents ||= []
-  # end
 end

@@ -13,10 +13,9 @@ class JobadderController < ApplicationController
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) ||
         JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
+    @ja_service = Jobadder::ClientService.new(@ja_setting)
 
-    @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
-
-    if@ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
+    if @ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
       get_fields
     end
 
@@ -26,10 +25,16 @@ class JobadderController < ApplicationController
 
   def update
 
-    @key = Key.find_by(app_dataset_id: params[:jobadder_app_setting][:dataset_id], app_name: params[:controller])
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:jobadder_app_setting][:dataset_id])
+    jobadder_app_setting = params[:jobadder_app_setting]
+
+    @key = Key.find_by(app_dataset_id: jobadder_app_setting[:dataset_id], app_name: params[:controller])
+    @ja_setting = JobadderAppSetting.find_by(dataset_id: jobadder_app_setting[:dataset_id])
 
     if @ja_setting.present? #UPDATE CURRENT SETTINGS
+
+      unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
+        @ja_setting.authorised = false
+      end
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -49,8 +54,8 @@ class JobadderController < ApplicationController
 
     end
 
-    if params[:jobadder_app_setting][:jobadder_field_mappings_attributes].present?
-      params[:jobadder_app_setting][:jobadder_field_mappings_attributes].each do |i, mapping_attributes|
+    if jobadder_app_setting[:jobadder_field_mappings_attributes].present?
+      jobadder_app_setting[:jobadder_field_mappings_attributes].each do |i, mapping_attributes|
         if mapping_attributes[:jobadder_field_name].blank? && mapping_attributes[:id].present?
           @mapping = @ja_setting.jobadder_field_mappings.find(mapping_attributes[:id])
           @mapping.destroy
@@ -58,8 +63,7 @@ class JobadderController < ApplicationController
       end
     end
 
-    @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback');
-
+    @ja_service = Jobadder::ClientService.new(@ja_setting);
 
     unless @ja_setting.authorised
       render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
@@ -103,7 +107,12 @@ class JobadderController < ApplicationController
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
-    @ja_service = Jobadder::ClientService.new(@ja_setting, 'http://127.0.0.1:3001/jobadder/callback')
+    @ja_service = Jobadder::ClientService.new(@ja_setting)
+
+    @ja_user = JobadderUser.find_by(user_id: params[:user][:id])
+
+    @cv = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
+
 
     if @ja_user.present?
       @ja_user.update(
@@ -129,15 +138,20 @@ class JobadderController < ApplicationController
 
     end
 
-    get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email], params[:user][:dataset_id])
+    get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
-    candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
-    if candidate_id
-      update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, candidate_id)
+    @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
+    if @candidate_id
+      update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, @candidate_id)
       render json: update_response
     else
       create_response = @ja_service.add_candidate(params[:user][:dataset_id], @ja_user.user_id)
+      @candidate_id = create_response['candidateId']
       render json: create_response
+    end
+
+    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present?
+      upload_cv_response = @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
     end
 
   end
@@ -145,13 +159,13 @@ class JobadderController < ApplicationController
   def job_application
 
     JobadderApplicationWorker.perform_async params
-    render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
+    render json: {success: true, status: 'Application has been queued for submission to JobAdder'}
 
   rescue StandardError => e
     Honeybadger.notify(e)
     @ja_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
     log_id = create_log(@ja_setting, @key, 'job_application', nil, nil, e.message, true, true)
-    render json: { success: false, status: "Error ID: #{log_id}" }
+    render json: {success: false, status: "Error ID: #{log_id}"}
   end
 
   def deactivate_app
@@ -209,8 +223,8 @@ class JobadderController < ApplicationController
 
   def get_fields
 
-    @ja_candidate_fields = @ja_service.jobadder_candidate_fields
-    @volcanic_candidate_fields = @ja_service.volcanic_candidate_fields
+    @ja_candidate_fields = @ja_service.get_jobadder_candidate_fields
+    @volcanic_candidate_fields = @ja_service.get_volcanic_candidate_fields
 
     @volcanic_candidate_fields.each do |reference, label|
       @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)

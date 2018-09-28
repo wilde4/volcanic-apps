@@ -8,7 +8,6 @@ class JobadderAppSetting < ActiveRecord::Base
 
   accepts_nested_attributes_for :jobadder_field_mappings, allow_destroy: true, reject_if: proc { |attributes| attributes['jobadder_field_name'].blank? }
 
-
   def auth_settings_filled
     ja_client_id.present? && ja_client_secret.present?
   end

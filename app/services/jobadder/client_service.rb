@@ -13,28 +13,30 @@ class Jobadder::ClientService < BaseService
   ENDPOINT = {
       jobs: '/jobs',
       candidates: '/candidates',
+      applications: '/applications',
       users: '/users',
       candidate_custom_fields: '/candidates/fields/custom'
   }
 
-  def initialize(ja_setting, callback_url)
+  def initialize(ja_setting)
     @ja_setting = ja_setting
-    @callback_url = callback_url
+    @callback_url = get_callback_url
     @key = Key.find_by(app_dataset_id: ja_setting.dataset_id, app_name: 'jobadder')
     setup_client
   end
 
 
   def setup_client
-    # unless @ja_setting.auth_settings_filled
-    #   @client = nil
-    #   return
-    # end
+
+    unless @ja_setting.auth_settings_filled
+      @client = nil
+      return
+    end
 
     @client = Jobadder::AuthenticationService.client(@ja_setting)
 
     if @callback_url.present?
-      @authorize_url = Jobadder::AuthenticationService.authorize_url(@callback_url, @client, @ja_setting.dataset_id)
+      @authorize_url = Jobadder::AuthenticationService.authorize_url(@client, @ja_setting.dataset_id)
     end
 
     if @ja_setting.access_token_expires_at.present?
@@ -47,49 +49,6 @@ class Jobadder::ClientService < BaseService
     end
 
   end
-
-  # def save_candidate(dataset_id, user_id, email, ja_setting)
-  #
-  #   @ja_setting = ja_setting
-  #
-  #   @ja_user = JobadderUser.find_by(user_id: user_id)
-  #
-  #   if @ja_user.present?
-  #     @ja_user.update(
-  #         {
-  #             email: params[:user][:email],
-  #             user_data: params[:user],
-  #             user_profile: params[:user_profile],
-  #             linkedin_profile: params[:linkedin_profile],
-  #             registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
-  #         }
-  #     )
-  #
-  #
-  #   else
-  #     @ja_user = JobadderUser.create(user_id: params[:user][:id],
-  #                                    email: params[:user][:email],
-  #                                    user_data: params[:user],
-  #                                    user_profile: params[:user_profile],
-  #                                    linkedin_profile: params[:linkedin_profile],
-  #                                    registration_answers: params[:registration_answer_hash].present? ?
-  #                                                              format_reg_answer(params[:registration_answer_hash]) : nil)
-  #
-  #
-  #   end
-  #
-  #   get_candidate_response = get_candidate_by_email(email, dataset_id)
-  #
-  #   candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
-  #   if candidate_id
-  #     update_candidate(dataset_id, user_id, candidate_id)
-  #   else
-  #     add_candidate(:dataset_id, user_id)
-  #
-  #   end
-  # end
-  #
-
 
   def add_candidate_to_job(candidate_id, job_id)
 
@@ -109,7 +68,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(ja_setting, @key, 'add_candidate_to_job', url, nil, e.message, true, true)
+    create_log(@ja_setting, @key, 'add_candidate_to_job', url, nil, e.message, true, true)
     {error: 'Error adding candidate to a job'}
   end
 
@@ -139,42 +98,61 @@ class Jobadder::ClientService < BaseService
 
     @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
 
-
+    url = BASE_URL[:job_adder] + ENDPOINT[:candidates]
     # Add candidate
-    add_candidate_response = HTTParty.post(BASE_URL[:job_adder] + ENDPOINT[:candidates],
+    add_candidate_response = HTTParty.post(url,
                                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
                                                         "Content-type" => "application/json"},
                                            :body => @request_body.to_json)
     return add_candidate_response
 
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'add_candidate', url, nil, e.message, true, true)
+    {error: 'Error adding candidate'}
+
   end
 
-  def add_single_attachment(candidate_id, file_url, file_name, attachment_type)
+  def add_single_attachment(id, upload_path, file_name, attachment_type, receiver, prefix)
 
-    endpoint_url = BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}/attachments/#{attachment_type}"
+    case receiver
+    when 'candidate'
+      endpoint = ENDPOINT[:candidates]
+    when 'application'
+      endpoint = ENDPOINT[:applications]
+    end
 
+    endpoint_url = BASE_URL[:job_adder] + endpoint + "/#{id}/attachments/#{attachment_type}"
 
+    # Receiving different forms of url in development
+    if Rails.env.development?
+      receiver == 'candidate' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+    else
+      # UPLOAD PATHS USE CLOUDFRONT URL
+      @file_url = upload_path
+    end
     # file_ext = file_name.split('.').last
 
     #@temp_file = Tempfile.new(["#{file_name.split('.').first}_", ".#{file_ext}"])
-    file = File.new("#{TEMP_FILES_DIR}/#{file_name}", 'w')
+    file = File.new("#{TEMP_FILES_DIR}/#{prefix}_#{file_name}", 'w')
 
-    open(file_url) do |url_file|
+    open(@file_url) do |url_file|
       #@temp_file.write(url_file.read.force_encoding("UTF-8"))
       file.write(url_file.read.force_encoding("UTF-8"))
     end
     # @temp_file.rewind
     #
     file = File.open(file.path(), 'r')
-    @response = RestClient.post endpoint_url, {:fileData => file}, {:Authorization => "Bearer " + @ja_setting.access_token}
+    @response = RestClient.post endpoint_url, {:fileData => file},
+                                {:Authorization => "Bearer " + @ja_setting.access_token}
     File.delete(file.path()) if File.exist?(file.path())
 
     return true
   rescue StandardError => e
 
     Honeybadger.notify(e)
-    create_log(ja_setting, @key, 'upload_single_attachment', url, nil, e.message, true, true)
-    {error: "Error uploading single attachment"}
+    create_log(@ja_setting, @key, 'upload_single_attachment', endpoint_url, nil, e.message, true, true)
+    {error: "Error uploading single attachment - #{file_name}"}
     return false
 
   end
@@ -189,40 +167,61 @@ class Jobadder::ClientService < BaseService
 
     @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
 
-    update_candidate_response = HTTParty.put(BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}",
+    url = BASE_URL[:job_adder] + ENDPOINT[:candidates] + "/#{candidate_id}"
+    update_candidate_response = HTTParty.put(url,
                                              :headers => {'User-Agent' => 'VolcanicJobadderApp',
                                                           'Content-Type' => 'application/json',
                                                           "Authorization" => "Bearer " + @ja_setting.access_token},
                                              :body => @request_body.to_json
     )
     return update_candidate_response
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'update_candidate', url, nil, e.message, true, true)
+    {error: "Error updating JobAdder candidate with user_id - #{user_id}"}
 
 
   end
 
   def get_candidate_by_email(candidate_email)
 
-    response = HTTParty.get(BASE_URL[:job_adder] + ENDPOINT[:candidates] + "?email=#{candidate_email}",
+    url = BASE_URL[:job_adder] + ENDPOINT[:candidates] + "?email=#{candidate_email}"
+
+    response = HTTParty.get(url,
                             :headers => {'User-Agent' => 'VolcanicJobadderApp',
                                          "Authorization" => "Bearer " + @ja_setting.access_token}
     )
     return response
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true)
+    {error: "Error getting JobAdder candidate by email - #{candidate_email}"}
+
   end
 
   def get_candidate_custom_fields
 
-    response = HTTParty.get(BASE_URL[:job_adder] + ENDPOINT[:candidate_custom_fields],
+    url = BASE_URL[:job_adder] + ENDPOINT[:candidate_custom_fields]
+
+    response = HTTParty.get(url,
                             headers: {'User-Agent' => 'VolcanicJobadderApp',
                                       "Authorization" => "Bearer " + @ja_setting.access_token})
     response.code == 200 ? response.body : {}
 
     return response
 
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_candidate_custom_fields', url, nil, e.message, true, true)
+    {error: "Error getting JobAdder candidate custom fields"}
+
+
   end
 
   # GETS VOLCANIC CANDIDATES FIELDS VIA API
-  def volcanic_candidate_fields
-    url = URI("#{@key.protocol}#{@key.host}/api/v1/user_groups.json")
+  def get_volcanic_candidate_fields
+    url = "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
     response = HTTParty.get(url, headers: {'User-Agent' => 'VolcanicJobadderApp'})
 
     @volcanic_fields = {}
@@ -239,11 +238,13 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_volcanic_candidate_fields', url, nil, e.message, true, true)
-    {error: 'Error retrieving candidate fields'}
+    {error: 'Error retrieving volcanic candidate fields'}
   end
 
-  def jobadder_candidate_fields
+  def get_jobadder_candidate_fields
+
     url = BASE_URL[:job_adder] + ENDPOINT[:candidates] + "?limit=1"
+
     response = HTTParty.get(url,
                             headers: {'User-Agent' => 'VolcanicJobadderApp',
                                       "Authorization" => "Bearer " + @ja_setting.access_token})
@@ -253,16 +254,17 @@ class Jobadder::ClientService < BaseService
     @response = response.parsed_response
 
 
-    @ja_candidate_fields = get_all_keys(request_body, '', [])
-
+    @ja_candidate_fields = get_all_keys(request_body)
 
   rescue StandardError => e
     puts e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_ja_candidate_fields', url, nil, e.message, true, true)
-    {error: 'Error retrieving candidate fields'}
+    create_log(@ja_setting, @key, 'get_jobadder_candidate_fields', url, nil, e.message, true, true)
+    {error: 'Error retrieving JobAdder candidate fields'}
   end
 
+
+  private
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: (@client.errors || response), error: error, internal: internal, uid: uid || @client.access_token
@@ -270,8 +272,6 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
   end
-
-  private
 
   def construct_custom_fields_answers(candidate_custom_fields, registration_answers)
     custom_fields_answer = Hash.new
@@ -297,100 +297,106 @@ class Jobadder::ClientService < BaseService
     request_body["firstName"] = ja_user.user_profile['first_name']
     request_body["lastName"] = ja_user.user_profile['last_name']
     request_body["email"] = ja_user.user_data['email']
-    address = Hash.new
-    social = Hash.new
-    employment = Hash.new
-    employment_current = Hash.new
-    current_salary = Hash.new
-    employment_ideal = Hash.new
-    ideal_salary = Hash.new
-    address_street = []
-    skill_tags = []
-    recruiter_user_id = []
-    employment_other = Hash.new
-    employment_history = Hash.new
-    other_salary = Hash.new
-    availability = Hash.new
-    availability_relative = Hash.new
-    education = Hash.new
 
-    ja_setting.jobadder_field_mappings.each do |m|
-      reg_answer = registration_answers[m.registration_question_reference]
-      field = m.jobadder_field_name
-      if reg_answer.present?
-        case field
-        when 'address_countryCode'
-          address['countryCode'] = ISO3166::Country.find_country_by_name(reg_answer).alpha2
-        when 'address_street'
-          address_street << reg_answer
-        when 'address_city', 'address_state', 'address_postalCode'
-          #remove all characters from beginning of the string till _ inclusive
-          field = field.sub /^[^_]*_/, ''
-          address[field] = reg_answer
-        when 'skillTags'
-          skill_tags << reg_answer
-        when 'recruiterUserId'
-          recruiter_user_id << reg_answer if reg_answer.is_a?(Numeric)
-        when 'social_property1' 'social_property1'
-          #remove all characters from beginning of the string till _ inclusive
-          field = field.sub /^[^_]*_/, ''
-          social[field] = reg_answer
-        when field.include?('employment')
-          if field.include?('current')
-            employment_current['employer'] = reg_answer if field.include? 'employer'
-            employment_current['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
-            employment_current['salary'] = salary(reg_answer, field, current_salary) if field.include? 'salary'
-          end
-          if field.include?('ideal')
-            employment_ideal['position'] = reg_answer if field.include? 'position'
-            employment_ideal['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
-            employment_ideal['salary'] = salary(reg_answer, field, ideal_salary) if field.include? 'salary'
-          end
-          if field.include?('other')
-            employment_other['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
-            employment_other['salary'] = salary(reg_answer, field, other_salary) if field.include? 'salary'
-          end
+    if registration_answers
+      address = Hash.new
+      social = Hash.new
+      employment = Hash.new
+      employment_current = Hash.new
+      current_salary = Hash.new
+      employment_ideal = Hash.new
+      ideal_salary = Hash.new
+      address_street = []
+      skill_tags = []
+      recruiter_user_id = []
+      employment_other = Hash.new
+      employment_history = Hash.new
+      other_salary = Hash.new
+      availability = Hash.new
+      availability_relative = Hash.new
+      education = Hash.new
 
-          if field.include?('history')
-            employment_history['position'] = reg_answer if field.include? 'position'
-            employment_history['employer'] = reg_answer if field.include? 'employer'
-            employment_history['start'] = reg_answer if field.include? 'start'
-            employment_history['end'] = reg_answer if field.include? 'end'
+      ja_setting.jobadder_field_mappings.each do |m|
+        reg_answer = registration_answers[m.registration_question_reference]
+        field = m.jobadder_field_name
+        if reg_answer.present?
+          case field
+          when 'address_countryCode'
+            address['countryCode'] = ISO3166::Country.find_country_by_name(reg_answer).alpha2
+          when 'address_street'
+            address_street << reg_answer
+          when 'address_city', 'address_state', 'address_postalCode'
+            #remove all characters from beginning of the string till _ inclusive
+            field = field.sub /^[^_]*_/, ''
+            address[field] = reg_answer
+          when 'skillTags'
+            skill_tags << reg_answer
+          when 'recruiterUserId'
+            recruiter_user_id << reg_answer if reg_answer.is_a?(Numeric)
+          when 'social_property1' 'social_property1'
+            #remove all characters from beginning of the string till _ inclusive
+            field = field.sub /^[^_]*_/, ''
+            social[field] = reg_answer
+          when field.include?('employment')
+            if field.include?('current')
+              employment_current['employer'] = reg_answer if field.include? 'employer'
+              employment_current['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
+              employment_current['salary'] = salary(reg_answer, field, current_salary) if field.include? 'salary'
+            end
+            if field.include?('ideal')
+              employment_ideal['position'] = reg_answer if field.include? 'position'
+              employment_ideal['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
+              employment_ideal['salary'] = salary(reg_answer, field, ideal_salary) if field.include? 'salary'
+            end
+            if field.include?('other')
+              employment_other['workTypeId'] = reg_answer if field.include? 'workTypeId' && reg_answer.is_a?(Numeric)
+              employment_other['salary'] = salary(reg_answer, field, other_salary) if field.include? 'salary'
+            end
+
+            if field.include?('history')
+              employment_history['position'] = reg_answer if field.include? 'position'
+              employment_history['employer'] = reg_answer if field.include? 'employer'
+              employment_history['start'] = reg_answer if field.include? 'start'
+              employment_history['end'] = reg_answer if field.include? 'end'
+            end
+          when field.include?('availability')
+            availability['immediate'] = reg_answer if field.include? 'immediate' && !!reg_answer == reg_answer
+            availability['date'] = reg_answer if field.include? 'date'
+            if field.include?('relative')
+              availability_relative['period'] = reg_answer if field.include? 'period' && reg_answer.is_a?(Numeric)
+              availability_relative['unit'] = reg_answer if field.include? 'uni' && (reg_answer.casecmp('week').zero? || reg_answer.casecmp('month').zero?)
+            end
+          when field.include?('education')
+            education['institution'] = reg_answer if field.include? 'institution'
+            education['course'] = reg_answer if field.include? 'course'
+            education['date'] = reg_answer if field.include? 'date'
+          else
+            request_body[field] = reg_answer if field.include? field.to_s
           end
-        when field.include?('availability')
-          availability['immediate'] = reg_answer if field.include? 'immediate' && !!reg_answer == reg_answer
-          availability['date'] = reg_answer if field.include? 'date'
-          if field.include?('relative')
-            availability_relative['period'] = reg_answer if field.include? 'period' && reg_answer.is_a?(Numeric)
-            availability_relative['unit'] = reg_answer if field.include? 'uni' && (reg_answer.casecmp('week').zero? || reg_answer.casecmp('month').zero?)
-          end
-        when field.include?('education')
-          education['institution'] = reg_answer if field.include? 'institution'
-          education['course'] = reg_answer if field.include? 'course'
-          education['date'] = reg_answer if field.include? 'date'
-        else
-          request_body[field] = reg_answer if field.include? field.to_s
         end
       end
+      request_body["custom"] = custom_fields_answers if custom_fields_answers.present?
+      address["street"] = address_street if address_street.present?
+      request_body["address"] = address if address.present?
+      request_body["social"] = social if social.present?
+      request_body["skillTags"] = skill_tags if skill_tags.present?
+      request_body["recruiterUserId"] = recruiter_user_id if recruiter_user_id.present?
+      employment_ideal["other"] = [] << employment_other if employment_other.present?
+      employment["current"] = employment_current if employment_current.present?
+      employment["current"] = employment_current if employment_current.present?
+      request_body["ideal"] = employment_ideal if employment_ideal.present?
+      employment["history"] = [] << employment_history if employment_history.present?
+      request_body["availability"] = availability if availability.present?
+      request_body["education"] = [] << education if education.present?
     end
-    request_body["custom"] = custom_fields_answers if custom_fields_answers.present?
-    address["street"] = address_street if address_street.present?
-    request_body["address"] = address if address.present?
-    request_body["social"] = social if social.present?
-    request_body["skillTags"] = skill_tags if skill_tags.present?
-    request_body["recruiterUserId"] = recruiter_user_id if recruiter_user_id.present?
-    employment_ideal["other"] = [] << employment_other if employment_other.present?
-    employment["current"] = employment_current if employment_current.present?
-    employment["current"] = employment_current if employment_current.present?
-    request_body["ideal"] = employment_ideal if employment_ideal.present?
-    employment["history"] = [] << employment_history if employment_history.present?
-    request_body["availability"] = availability if availability.present?
-    request_body["education"] = [] << education if education.present?
+
     return request_body
 
   end
 
-  def get_all_keys(target_hash, field, array)
+  # extract all keys from deep nested JSON
+  # nested key will have parent key name as prefix
+  def get_all_keys(target_hash, field = '', array = [])
     target_hash.each {|k, v|
       if k.is_a?(String)
         @field = field + '_' + k
@@ -409,7 +415,6 @@ class Jobadder::ClientService < BaseService
     }
     @field = ''
     return array.sort
-
   end
 
   def salary(reg_answer, jobadder_field_name, salary)
@@ -418,6 +423,10 @@ class Jobadder::ClientService < BaseService
     salary['rateHigh'] = reg_answer if jobadder_field_name.include? 'rateHigh' && reg_answer.is_a?(Numeric)
     salary['currency'] = reg_answer if jobadder_field_name.include? 'currency'
     return salary
+  end
+
+  def get_callback_url
+    return Rails.env.development? ? 'http://127.0.0.1:3001/jobadder/callback' : "https://#{ENV['DOMAIN_NAME']}/jobadder/callback"
   end
 
 

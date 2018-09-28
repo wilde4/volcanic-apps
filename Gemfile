@@ -67,13 +67,23 @@ group :development do
   gem 'sqlite3'
   gem 'bootstrap-sass'
   gem 'debase'
-  gem 'ruby-debug-ide', '0.7.0.beta4'
+  gem 'ruby-debug-ide', '~> 0.7.0.beta4'
 end
 
 group :test do
   gem "factory_girl_rails"
   gem "faker"
   # gem "byebug"
+  gem 'chromedriver-helper'
+  gem 'selenium-webdriver'
+  gem 'shoulda', '~> 3.5'
+  gem 'shoulda-matchers', '~> 2.0'
+  gem 'simplecov', require: false
+  gem 'vcr'
+  gem 'webmock'
+  gem 'rspec'
+  gem 'rspec-rails'
+  gem 'minitest'
 end
 
 group :development, :test do
