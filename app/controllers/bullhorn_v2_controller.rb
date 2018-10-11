@@ -284,7 +284,7 @@ class BullhornV2Controller < ApplicationController
   def report
     key = Key.where(app_dataset_id: params[:dataset_id], app_name: 'bullhorn_v2').first
     bullhorn_app_setting = BullhornAppSetting.find_by(dataset_id: key.app_dataset_id)
-    if params[:filter]
+    if params[:filter].present?
       this_period_start = params[:filter][:start_date].to_date
       this_period_end = params[:filter][:end_date].to_date + 1.day
     else
