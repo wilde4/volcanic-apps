@@ -7,12 +7,11 @@
         %h6 Candidate Fields Mappings
         - if @ja_candidate_fields.blank?
           .alert.alert-danger
-            Retrieving the latest data for your candidate fields from Bullhorn took too long, please refresh the page to try again. If the problem persists please contact Volcanic support.
-            (Error ID: #{@net_error})
+            Retrieving the latest data for your candidate fields from JobAdder took too long, please refresh the page to try again. If the problem persists please contact Volcanic support.
         - else
           %p
             Here you can set how registration fields within your Volcanic website correspond to fields within your JobAdder application.
-            Only the data set up here will be sent to Bullhorn when a Candidate registers.
+            Only the data set up here will be sent to JobAdder when a Candidate registers.
           %a.btn.btn-primary{"aria-controls" => "collapse-candidate-fields", "aria-expanded" => "false", "data-toggle" => "collapse", :href => "#collapse-candidate-fields"}
             Mappings
             %i.fa.fa-lg.fa-angle-down

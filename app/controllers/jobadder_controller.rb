@@ -10,13 +10,15 @@ class JobadderController < ApplicationController
     app_url = params[:data][:original_url]
     app_url.slice! "/app_html"
     @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) ||
-        JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
+    @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
-    @ja_service = Jobadder::ClientService.new(@ja_setting)
 
-    if @ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
-      get_fields
+    if @ja_setting.present?
+      @ja_service = Jobadder::ClientService.new(@ja_setting)
+
+      if @ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
+        get_fields
+      end
     end
 
     render layout: false
@@ -53,7 +55,7 @@ class JobadderController < ApplicationController
       end
 
     end
-
+    #destroy mappings
     if jobadder_app_setting[:jobadder_field_mappings_attributes].present?
       jobadder_app_setting[:jobadder_field_mappings_attributes].each do |i, mapping_attributes|
         if mapping_attributes[:jobadder_field_name].blank? && mapping_attributes[:id].present?
@@ -70,6 +72,7 @@ class JobadderController < ApplicationController
     end
 
     get_fields if @ja_service.present? && @ja_setting.access_token.present?
+
   rescue StandardError => e
     Honeybadger.notify(e)
     @net_error = create_log(@ja_setting, @key, 'update_ja_settings', nil, nil, e.message, true, true)
@@ -80,12 +83,11 @@ class JobadderController < ApplicationController
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:state])
     @attributes = Hash.new
     @attributes[:authorization_code] = params[:code]
-    @attributes[:access_token] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
-
-    unless !@attributes[:access_token].token.present?
+    @attributes[:response] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
+    unless !@attributes[:response].token.present?
 
       if @ja_setting.present?
-        if update_ja_params_token(@ja_setting, @attributes[:access_token])
+        if update_ja_params_token(@ja_setting, @attributes[:response])
           flash[:notice] = "App successfully authorised."
           @ja_setting.update_attribute(:authorised, true)
         else

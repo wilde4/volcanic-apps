@@ -97,6 +97,7 @@ GEM
       safe_yaml (~> 1.0.0)
     crass (0.2.0)
     daemons (1.1.9)
+    database_cleaner (1.7.0)
     debase (0.2.2)
       debase-ruby_core_source (>= 0.10.2)
     debase-ruby_core_source (0.10.3)
@@ -441,6 +442,7 @@ DEPENDENCIES
   coffee-rails (~> 4.0.0)
   countries (~> 2.1, >= 2.1.4)
   daemons
+  database_cleaner
   debase
   devise
   dragonfly (~> 1.0.10)
@@ -497,4 +499,4 @@ DEPENDENCIES
   youtube_it
 
 BUNDLED WITH
-   1.16.4
+   1.16.5

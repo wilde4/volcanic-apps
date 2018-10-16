@@ -1,5 +1,3 @@
-source 'https://rubygems.org'
-
 gem 'rails', '4.0.1'
 gem "mysql2", '0.3.18'
 gem 'sass-rails', '~> 4.0.0'
@@ -74,6 +72,7 @@ group :test do
   gem "factory_girl_rails"
   gem "faker"
   # gem "byebug"
+  gem 'database_cleaner'
   gem 'chromedriver-helper'
   gem 'selenium-webdriver'
   gem 'shoulda', '~> 3.5'

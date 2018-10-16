@@ -2,9 +2,6 @@ require 'rails_helper'
 
 describe JobadderFieldMapping do
 
-  after(:each) do
-    JobadderFieldMapping.delete_all
-  end
 
   context 'When testing the JobadderFieldMapping model' do
 
@@ -15,11 +12,11 @@ describe JobadderFieldMapping do
 
     it 'should pass creating field mapping with all params' do
 
-      field_mapping = JobadderFieldMapping.new({jobadder_app_setting_id: jobadder_app_setting_id,
-                                                jobadder_field_name: jobadder_field_name,
-                                                registration_question_reference: registration_question_reference,
-                                                job_attribute: job_attribute})
-      field_mapping.save
+      JobadderFieldMapping.create({jobadder_app_setting_id: jobadder_app_setting_id,
+                                   jobadder_field_name: jobadder_field_name,
+                                   registration_question_reference: registration_question_reference,
+                                   job_attribute: job_attribute})
+
 
       field_mapping_fetched = JobadderFieldMapping.find_by_jobadder_app_setting_id(jobadder_app_setting_id)
 
@@ -28,8 +25,7 @@ describe JobadderFieldMapping do
                                                        :registration_question_reference => registration_question_reference,
                                                        :job_attribute => job_attribute)
 
-      puts 'valid field mapping'
     end
-    puts 'JobadderFieldMapping spec passes!'
+    puts 'JobadderFieldMapping spec passed!'
   end
 end

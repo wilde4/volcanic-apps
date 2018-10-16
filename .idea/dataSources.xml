@@ -49,5 +49,10 @@
         <property name="yearIsDateType" value="false" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="User Data Source -" uuid="223dcfed-c979-4be3-bc14-8696106b948b">
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>java.sql.Driver</jdbc-driver>
+    </data-source>
   </component>
 </project>

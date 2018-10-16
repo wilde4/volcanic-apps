@@ -2,7 +2,7 @@
 <dataSource name="Rails volcanic-apps: development">
   <database-model serializer="dbm" rdbms="MYSQL" format-version="4.11">
     <root id="1">
-      <ServerVersion>5.7.22</ServerVersion>
+      <ServerVersion>5.7.23</ServerVersion>
       <DefaultEngine>InnoDB</DefaultEngine>
       <DefaultTmpEngine>InnoDB</DefaultTmpEngine>
       <DefaultCasing>mixed/mixed</DefaultCasing>
