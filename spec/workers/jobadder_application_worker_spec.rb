@@ -96,21 +96,18 @@ describe JobadderApplicationWorker do
 
       ja_service = Jobadder::ClientService.new(@ja_setting)
 
-      allow(ja_service).to receive(:add_single_attachment).and_return(true)
-
-      worker.instance_variable_set("@ja_service", ja_service)
 
       worker.send(:perform, msg, msg)
 
       user_fetched = JobadderUser.find_by(user_id: @user.user_id)
 
-        # expect(user_fetched.sent_upload_ids.size).to eq(5)
-        #
-        # user_fetched.sent_upload_ids.each do |item|
-        #
-        #   expect(item === 1 || item === 2 || item === 3 || item === 4 || item === 5).to be_truthy
-        #
-        # end
+      # expect(user_fetched.sent_upload_ids.size).to eq(5)
+      #
+      # user_fetched.sent_upload_ids.each do |item|
+      #
+      #   expect(item === 1 || item === 2 || item === 3 || item === 4 || item === 5).to be_truthy
+      #
+      # end
 
     end
 
@@ -118,6 +115,9 @@ describe JobadderApplicationWorker do
 
 
   def get_message(new_files)
+
+    cv = fixture_file_upload('files/cv_sample.pdf', 'application/pdf')
+    cover_letter = fixture_file_upload('files/cover_letter_sample.pdf', 'application/pdf')
 
     if new_files
       # return files which weren't uploaded previously
@@ -142,9 +142,9 @@ describe JobadderApplicationWorker do
                  'covering_letter_upload_id' => 4,
                  'status' => 'new',
                  'uploads' => {
-                     'cv_url' => 'www.example.com/files/cv',
+                     'cv_url' => cv.path(),
                      'cv_name' => 'CV_sample.pdf',
-                     'cover_letter_url' => 'www.example.com/files/cover_letter',
+                     'cover_letter_url' => cover_letter.path(),
                      'cover_letter_name' => 'Cover_Letter_sample.pdf'
                  }
              },

@@ -24,18 +24,13 @@ class Jobadder::ClientService < BaseService
       @authorize_url = Jobadder::AuthenticationService.authorize_url(@ja_setting.dataset_id, @ja_setting)
     end
 
-    if @ja_setting.access_token_expires_at.present?
-      if DateTime.current > @ja_setting.access_token_expires_at
-        @response = Jobadder::AuthenticationService.refresh_token(@ja_setting)
-        @ja_setting.update({access_token: @response.token,
-                            access_token_expires_at: Time.at(@response.expires_at)})
-
-      end
-    end
+    check_token_expiration(@ja_setting)
 
   end
 
   def add_candidate_to_job(candidate_id, job_id)
+
+    check_token_expiration(@ja_setting)
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:jobs] + "/#{job_id}/applications"
 
@@ -59,6 +54,8 @@ class Jobadder::ClientService < BaseService
 
   def get_applications_for_job(job_id)
 
+    check_token_expiration(@ja_setting)
+
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:jobs] + "/#{job_id}/applications"
 
 
@@ -74,6 +71,8 @@ class Jobadder::ClientService < BaseService
   end
 
   def add_candidate(dataset_id, user_id)
+
+    check_token_expiration(@ja_setting)
 
     ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
     ja_user = JobadderUser.find_by(user_id: user_id)
@@ -120,6 +119,8 @@ class Jobadder::ClientService < BaseService
 
     file = create_file(prefix, file_name, @file_url)
 
+    check_token_expiration(@ja_setting)
+
     @response = RestClient.post url, {:fileData => file},
                                 {:Authorization => "Bearer " + @ja_setting.access_token}
     delete_file(file)
@@ -147,6 +148,9 @@ class Jobadder::ClientService < BaseService
     @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates] + "/#{candidate_id}"
+
+    check_token_expiration(@ja_setting)
+
     update_candidate_response = HTTParty.put(url,
                                              :headers => {'User-Agent' => 'VolcanicJobadderApp',
                                                           'Content-Type' => 'application/json',
@@ -166,6 +170,8 @@ class Jobadder::ClientService < BaseService
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates] + "?email=#{candidate_email}"
 
+    check_token_expiration(@ja_setting)
+
     response = HTTParty.get(url,
                             :headers => {'User-Agent' => 'VolcanicJobadderApp',
                                          "Authorization" => "Bearer " + @ja_setting.access_token}
@@ -182,6 +188,8 @@ class Jobadder::ClientService < BaseService
   def get_candidate_custom_fields
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidate_custom_fields]
+
+    check_token_expiration(@ja_setting)
 
     response = HTTParty.get(url,
                             headers: {'User-Agent' => 'VolcanicJobadderApp',
@@ -232,7 +240,6 @@ class Jobadder::ClientService < BaseService
     create_log(@ja_setting, @key, 'get_jobadder_candidate_fields', url, nil, e.message, true, true)
     {error: 'Error retrieving JobAdder candidate fields'}
   end
-
 
   private
 
@@ -437,5 +444,16 @@ class Jobadder::ClientService < BaseService
     return salary
   end
 
+  def check_token_expiration(ja_setting)
+
+    if ja_setting.access_token_expires_at.present?
+      if DateTime.current > ja_setting.access_token_expires_at
+        response = Jobadder::AuthenticationService.refresh_token(ja_setting)
+        ja_setting.update({access_token: response.token,
+                           access_token_expires_at: Time.at(response.expires_at)})
+
+      end
+    end
+  end
 
 end

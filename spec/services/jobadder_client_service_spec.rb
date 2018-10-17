@@ -46,15 +46,6 @@ describe Jobadder::ClientService do
 
       ja_setting = build(:jobadder_app_setting, access_token_expires_at: 1.hour.ago.to_s, dataset_id: 3)
 
-      # ja_setting = JobadderAppSetting.create({dataset_id: 2,
-      #                                         ja_client_id: @ja_client_id,
-      #                                         ja_client_secret: @ja_client_secret,
-      #                                         app_url: @app_url,
-      #                                         access_token: @access_token,
-      #                                         refresh_token: @refresh_token,
-      #                                         access_token_expires_at: access_token_expires_at})
-
-
       stub_request(:post, "https://id.jobadder.com/connect/token").
           with(:body => {"client_id" => "s4voea33fvrepcbzgtil2yt3di", "client_secret" => "n2hna72abr6uxf4y6mpz7od7pqubnu4bkte5oexb34w4ulnrwbtq", "grant_type" => "refresh_token", "refresh_token" => "12499b75ab67dd226ad82ea8e8558b44"},
                :headers => {'Accept' => '*/*', 'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type' => 'application/x-www-form-urlencoded', 'User-Agent' => 'Faraday v0.9.1'}).
@@ -63,9 +54,6 @@ describe Jobadder::ClientService do
                                               :token_type => 'Bearer',
                                               :refresh_token => 'e1b495fa69c9bdacbc7e5dd535d4564f',
                                               :api => 'https://api.jobadder.com/v2'}.to_s, :headers => {'Content' => 'application/json'})
-
-
-
 
 
       allow(Jobadder::AuthenticationService).to receive_message_chain(:refresh_token, :token).and_return('abc123')
