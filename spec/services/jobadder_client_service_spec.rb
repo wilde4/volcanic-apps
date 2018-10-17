@@ -93,25 +93,23 @@ describe Jobadder::ClientService do
 
     it 'should pass  get all keys from deep nested JSON' do
 
-      json = JSON.parse(get_JSON_string)
+      create(:jobadder_request_body)
 
-      extracted_keys = @ja_service.send(:get_all_keys, json)
+      json_body = JSON.parse(JobadderRequestBody.find_by(name: 'add_candidate')[:json])
+
+      extracted_keys = @ja_service.send(:get_all_keys, json_body)
+
+
+      mappings = get_field_mapping_names
 
       expect(extracted_keys.nil?).to be false
       expect(extracted_keys.is_a? Array).to be true
-      expect(extracted_keys.length).to eq(12)
-      expect(extracted_keys.include?('address_city')).to be true
-      expect(extracted_keys.include?('address_street')).to be true
-      expect(extracted_keys.include?('employment_current_employer')).to be true
-      expect(extracted_keys.include?('employment_current_salary_rate')).to be true
-      expect(extracted_keys.include?('employment_history_employer')).to be true
-      expect(extracted_keys.include?('employment_ideal_other_salary_currency')).to be true
-      expect(extracted_keys.include?('employment_ideal_other_workTypeId')).to be true
-      expect(extracted_keys.include?('employment_ideal_position')).to be true
-      expect(extracted_keys.include?('employment_ideal_salary_currency')).to be true
-      expect(extracted_keys.include?('firstName')).to be true
-      expect(extracted_keys.include?('skillTags')).to be true
-      expect(extracted_keys.include?('social_facebook')).to be true
+      expect(extracted_keys.length).to eq(mappings.size)
+
+      extracted_keys.each do |key|
+        expect(mappings).to include(key)
+      end
+
 
     end
 

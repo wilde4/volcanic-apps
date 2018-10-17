@@ -1,5 +1,5 @@
-JobadderRequestBody.create(request_type: 'POST', endpoint: '/candidates', name: 'add_candidate',
-                           json: '{
+FactoryGirl.define do
+  json_body = '{
   "firstName": "string",
   "lastName": "string",
   "email": "string",
@@ -97,4 +97,13 @@ JobadderRequestBody.create(request_type: 'POST', endpoint: '/candidates', name: 
     0
   ]
 }
-')
+'
+  factory :jobadder_request_body do
+    request_type 'POST'
+    endpoint '/candidates'
+    name 'add_candidate'
+    json json_body
+  end
+
+end
+
