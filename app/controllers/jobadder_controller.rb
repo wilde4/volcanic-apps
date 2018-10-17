@@ -115,6 +115,7 @@ class JobadderController < ApplicationController
 
     @cv = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
 
+    # @cover_letter = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
 
     if @ja_user.present?
       @ja_user.update(
@@ -126,7 +127,6 @@ class JobadderController < ApplicationController
               registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
           }
       )
-
 
     else
       @ja_user = JobadderUser.create(user_id: params[:user][:id],
@@ -153,6 +153,9 @@ class JobadderController < ApplicationController
     end
 
     if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present?
+      # unless @ja_user.user_profile['upload_path'] === @cv[:upload_path]
+      #
+      # end
       upload_cv_response = @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
     end
 

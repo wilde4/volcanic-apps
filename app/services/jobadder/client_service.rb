@@ -110,7 +110,7 @@ class Jobadder::ClientService < BaseService
 
     url = JobadderHelper.base_urls[:job_adder] + endpoint + "/#{id}/attachments/#{attachment_type}"
 
-    # Receiving different forms of url in development
+    # Receiving different forms of url in the development
     if Rails.env.development?
       receiver == 'candidate' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
@@ -118,29 +118,20 @@ class Jobadder::ClientService < BaseService
       @file_url = upload_path
     end
 
-    # file = File.new("#{TEMP_FILES_DIR}/#{prefix}_#{file_name}", 'w')
-    #     #
-    #     # open(@file_url) do |url_file|
-    #     #   #@temp_file.write(url_file.read.force_encoding("UTF-8"))
-    #     #   file.write(url_file.read.force_encoding("UTF-8"))
-    #     # end
-    #     # # @temp_file.rewind
-    #     # #
-    #     # file = File.open(file.path(), 'r')
-    #
     file = create_file(prefix, file_name, @file_url)
 
     @response = RestClient.post url, {:fileData => file},
                                 {:Authorization => "Bearer " + @ja_setting.access_token}
-
     delete_file(file)
 
     return true
+
   rescue StandardError => e
 
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'upload_single_attachment', url, nil, e.message, true, true)
     {error: "Error uploading single attachment - #{file_name}"}
+
     return false
 
   end
@@ -251,7 +242,6 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
   end
-
 
 
   def create_file(prefix, file_name, file_url)

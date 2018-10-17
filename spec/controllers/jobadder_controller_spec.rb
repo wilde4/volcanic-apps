@@ -374,29 +374,28 @@ describe JobadderController, :type => :controller do
               :email => ja_user.email
       }
 
-      access_token = 'd2534958b2d3b9e3b0e16c98f91f0184'
-      refresh_token = 'e1b495fa69c9bdacbc7e5dd535d4564f'
       expiry_date = (DateTime.now + 1).to_i
 
-      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :token).and_return(access_token)
-      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :refresh_token).and_return(refresh_token)
+      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :token).and_return(ja_setting.access_token)
+      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :refresh_token).and_return(ja_setting.refresh_token)
       allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :expires_at).and_return((expiry_date))
 
-
       stub_request(:get, "https://api.jobadder.com/v2/candidates?email=johny@email.com").
-          with(:headers => {'Authorization' => 'Bearer 669ffc69f8a360c61c06c7f87672a280', 'User-Agent' => 'VolcanicJobadderApp'}).
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "{items:[]}", :headers => {})
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates/fields/custom").
-          with(:headers => {'Authorization' => 'Bearer 669ffc69f8a360c61c06c7f87672a280', 'User-Agent' => 'VolcanicJobadderApp'}).
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
           with(:body => "{\"firstName\":\"#{ja_user.user_profile['first_name']}\",\"lastName\":\"#{ja_user.user_profile['last_name']}\",\"email\":\"#{ja_user.email}\"}",
-               :headers => {'Authorization' => 'Bearer 669ffc69f8a360c61c06c7f87672a280', 'Content-Type' => 'application/json'}).
-          to_return(:status => 200, :body => "{'candidateId' : 1}", :headers => {})
+               :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => '{}', :headers => {'Content-Type' => 'application/json'})
 
       post :save_candidate, :user => user, :user_profile => ja_user.user_profile
+
+      expect(response.status).to eq(200)
 
     end
 
