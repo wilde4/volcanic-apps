@@ -71,7 +71,7 @@ class JobadderApplicationWorker
             id = msg['application']['covering_letter_upload_id']
           end
 
-          if ja_service.add_single_attachment(application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, 'application', msg['job']['job_reference']) == true
+          if add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type,  msg['job']['job_reference']) == true
             if ja_user.sent_upload_ids.nil?
               ja_user.sent_upload_ids = [id]
             else
@@ -85,5 +85,9 @@ class JobadderApplicationWorker
         end
       end
     end
+  end
+
+  def add_single_attachment(ja_service, application_id, attachment_url, attachment_name, attachment_type, job_reference)
+    ja_service.add_single_attachment(application_id, attachment_url, attachment_name, attachment_type, 'application', job_reference)
   end
 end

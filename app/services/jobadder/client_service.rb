@@ -445,15 +445,12 @@ class Jobadder::ClientService < BaseService
   end
 
   def check_token_expiration(ja_setting)
-
     if ja_setting.access_token_expires_at.present?
       if DateTime.current > ja_setting.access_token_expires_at
         response = Jobadder::AuthenticationService.refresh_token(ja_setting)
         ja_setting.update({access_token: response.token,
                            access_token_expires_at: Time.at(response.expires_at)})
-
       end
     end
   end
-
 end

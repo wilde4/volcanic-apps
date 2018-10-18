@@ -142,6 +142,7 @@ class JobadderController < ApplicationController
 
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
+
     @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
     if @candidate_id
       update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, @candidate_id)

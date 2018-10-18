@@ -362,16 +362,15 @@ describe JobadderController, :type => :controller do
 
     end
 
-    #TODO: finish this
-    it 'should pass POST #save_candidate' do
+    it 'should pass POST #save_candidate create new user' do
 
       ja_setting = create(:jobadder_app_setting)
-      ja_user = create(:jobadder_user)
 
 
-      user = {:id => ja_user.id,
-              :dataset_id => ja_setting.dataset_id,
-              :email => ja_user.email
+      user = {'id' => 5,
+              'dataset_id' => ja_setting.dataset_id,
+              'email' => 'myemail@email.com',
+              'user_profile' => {'first_name' => 'Johny', 'last_name' => 'Deep'}
       }
 
       expiry_date = (DateTime.now + 1).to_i
@@ -382,20 +381,89 @@ describe JobadderController, :type => :controller do
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates?email=johny@email.com").
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
-          to_return(:status => 200, :body => "{items:[]}", :headers => {})
+          to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates/fields/custom").
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"#{ja_user.user_profile['first_name']}\",\"lastName\":\"#{ja_user.user_profile['last_name']}\",\"email\":\"#{ja_user.email}\"}",
+          with(:body => "{\"firstName\":\"#{user['user_profile']['first_name']}\",\"lastName\":\"#{user['user_profile']['last_name']}\",\"email\":\"#{user['email']}\"}",
                :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
-          to_return(:status => 200, :body => '{}', :headers => {'Content-Type' => 'application/json'})
+          to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
 
-      post :save_candidate, :user => user, :user_profile => ja_user.user_profile
+      stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{user['email']}").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
+
+
+      user_fetched_before = JobadderUser.find_by(user_id: user['id'])
+
+      expect(user_fetched_before).to be_nil
+
+      post :save_candidate, :user => user, :user_profile => user['user_profile']
 
       expect(response.status).to eq(200)
+
+      user_fetched_after = JobadderUser.find_by(user_id: user['id'])
+
+      expect(user_fetched_after).to have_attributes(:user_id => user['id'],
+                                              :email => user['email'],
+                                              :user_profile => user['user_profile'])
+
+    end
+
+    it 'should pass POST #save_candidate update  existing user' do
+
+      ja_setting = create(:jobadder_app_setting)
+
+      user = create(:jobadder_user)
+
+
+      user_updated = {'id' => user['user_id'],
+                      'dataset_id' => ja_setting.dataset_id,
+                      'email' => 'updated@email.com',
+                      'user_profile' => {'first_name' => 'Johny', 'last_name' => 'Shallow'}
+      }
+
+
+      expiry_date = (DateTime.now + 1).to_i
+
+      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :token).and_return(ja_setting.access_token)
+      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :refresh_token).and_return(ja_setting.refresh_token)
+      allow(Jobadder::AuthenticationService).to receive_message_chain(:get_access_token, :expires_at).and_return((expiry_date))
+
+      stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{user_updated['email']}").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
+
+      stub_request(:get, "https://api.jobadder.com/v2/candidates/fields/custom").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "{}", :headers => {})
+
+      stub_request(:post, "https://api.jobadder.com/v2/candidates").
+          with(:body => "{\"firstName\":\"#{user_updated['user_profile']['first_name']}\",\"lastName\":\"#{user_updated['user_profile']['last_name']}\",\"email\":\"#{user_updated['email']}\"}",
+               :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
+
+      stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{user_updated['email']}").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
+
+
+      user_fetched_before = JobadderUser.find_by(user_id: user['user_id'])
+
+      expect(user_fetched_before).not_to be_nil
+
+      post :save_candidate, :user => user_updated, :user_profile => user_updated['user_profile']
+
+      expect(response.status).to eq(200)
+
+      user_fetched_after = JobadderUser.find_by(user_id: user['user_id'])
+
+      expect(user_fetched_after).to have_attributes(:user_id => user_updated['id'],
+                                                    :email => user_updated['email'],
+                                                    :user_profile => user_updated['user_profile'])
 
     end
 
