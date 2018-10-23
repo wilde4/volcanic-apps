@@ -66,23 +66,47 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(ja_setting, @key, 'get_submissions_for_job', url, nil, e.message, true, true)
+    create_log(@ja_setting, @key, 'get_submissions_for_job', url, nil, e.message, true, true)
     {error: "Error getting submissions for a job id - #{job_id}"}
+  end
+
+  def get_worktypes
+
+    check_token_expiration(@ja_setting)
+
+    url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:worktypes]
+
+    response = HTTParty.get(url,
+                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
+                                         "Content-type" => "application/json"})
+
+
+    return response
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_worktypes', url, nil, e.message, true, true)
+    {error: "Error getting worktypes"}
+
   end
 
   def add_candidate(dataset_id, user_id)
 
-    check_token_expiration(@ja_setting)
-
     ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
+
     ja_user = JobadderUser.find_by(user_id: user_id)
+
     candidate_custom_fields = get_candidate_custom_fields
 
     custom_fields_answers = construct_custom_fields_answers(candidate_custom_fields, ja_user.registration_answers)
 
-    request_body = construct_candidate_request_body(ja_setting, ja_user.registration_answers, ja_user, custom_fields_answers)
+    worktypes = get_worktypes
+
+    request_body = construct_candidate_request_body(ja_setting, ja_user.registration_answers, ja_user, custom_fields_answers, worktypes)
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates]
+
+    check_token_expiration(ja_setting)
     # Add candidate
     add_candidate_response = HTTParty.post(url,
                                            :headers => {"Authorization" => "Bearer " + ja_setting.access_token,
@@ -93,7 +117,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'add_candidate', url, nil, e.message, true, true)
+    create_log(ja_setting, @key, 'add_candidate', url, nil, e.message, true, true)
     {error: 'Error adding candidate'}
 
   end
@@ -139,28 +163,28 @@ class Jobadder::ClientService < BaseService
 
   def update_candidate(dataset_id, user_id, candidate_id)
 
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
-    @ja_user = JobadderUser.find_by(user_id: user_id)
-    @candidate_custom_fields = get_candidate_custom_fields
+    ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
+    ja_user = JobadderUser.find_by(user_id: user_id)
+    candidate_custom_fields = get_candidate_custom_fields
 
-    @custom_fields_answers = construct_custom_fields_answers(@candidate_custom_fields, @ja_user.registration_answers)
+    custom_fields_answers = construct_custom_fields_answers(candidate_custom_fields, ja_user.registration_answers)
 
-    @request_body = construct_candidate_request_body(@ja_setting, @ja_user.registration_answers, @ja_user, @custom_fields_answers)
+    request_body = construct_candidate_request_body(ja_setting, ja_user.registration_answers, ja_user, custom_fields_answers, nil)
 
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates] + "/#{candidate_id}"
 
-    check_token_expiration(@ja_setting)
+    check_token_expiration(ja_setting)
 
     update_candidate_response = HTTParty.put(url,
                                              :headers => {'User-Agent' => 'VolcanicJobadderApp',
                                                           'Content-Type' => 'application/json',
-                                                          "Authorization" => "Bearer " + @ja_setting.access_token},
-                                             :body => @request_body.to_json
+                                                          "Authorization" => "Bearer " + ja_setting.access_token},
+                                             :body => request_body.to_json
     )
     return update_candidate_response
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'update_candidate', url, nil, e.message, true, true)
+    create_log(ja_setting, @key, 'update_candidate', url, nil, e.message, true, true)
     {error: "Error updating JobAdder candidate with user_id - #{user_id}"}
 
 
@@ -291,11 +315,12 @@ class Jobadder::ClientService < BaseService
 
   end
 
-  def construct_candidate_request_body(ja_setting, registration_answers, ja_user, custom_fields_answers)
+  def construct_candidate_request_body(ja_setting, registration_answers, ja_user, custom_fields_answers, work_types)
     request_body = Hash.new
     request_body["firstName"] = ja_user.user_profile['first_name']
     request_body["lastName"] = ja_user.user_profile['last_name']
     request_body["email"] = ja_user.user_data['email']
+    request_body["source"] = ja_user.user_data['utm_source']
 
     if registration_answers
       address = Hash.new
@@ -319,13 +344,14 @@ class Jobadder::ClientService < BaseService
         reg_answer = registration_answers[m.registration_question_reference]
         field = m.jobadder_field_name
         if reg_answer.present?
-          if field.include?('address_countryCode')
-            # address['countryCode'] = ISO3166::Country.find_country_by_name(reg_answer).alpha2
-            address['countryCode'] = reg_answer
+          if field.include?('address_country')
+            country = ISO3166::Country.find_country_by_name(reg_answer)
+            address['countryCode'] = country.alpha2 unless country.nil?
+            # address['countryCode'] = reg_answer
           elsif field.include?('address_street')
             address_street << reg_answer
           elsif field.include?('address_city') || field.include?('address_state') || field.include?('address_postalCode')
-            #remove all characters from beginning of the string till _ inclusive
+            #remove all characters from beginning of the string till '_' inclusive
             field = field.sub /^[^_]*_/, ''
             address[field] = reg_answer
           elsif field.include?('skillTags')
@@ -336,18 +362,19 @@ class Jobadder::ClientService < BaseService
             if field.include?('current')
               employment_current['employer'] = reg_answer if field.include? 'employer'
               employment_current['position'] = reg_answer if field.include? 'position'
-              employment_current['workTypeId'] = Integer(reg_answer) if (field.include?('workTypeId') && is_number?(reg_answer))
+              employment_current['workTypeId'] = get_work_type_id(reg_answer, work_types) if (field.include?('workType'))
               employment_current['salary'] = salary(reg_answer, field, current_salary, true) if field.include? 'salary'
             end
             if field.include?('ideal')
               employment_ideal['position'] = reg_answer if field.include? 'position'
-              employment_ideal['workTypeId'] = Integer(reg_answer) if field.include?('workTypeId') && is_number?(reg_answer)
+              employment_ideal['workTypeId'] = get_work_type_id(reg_answer, work_types) if (field.include?('workType'))
               employment_ideal['salary'] = salary(reg_answer, field, ideal_salary, false) if field.include? 'salary'
+              if field.include?('other')
+                employment_other['workTypeId'] = get_work_type_id(reg_answer, work_types) if (field.include?('workType'))
+                employment_other['salary'] = salary(reg_answer, field, other_salary, false) if field.include? 'salary'
+              end
             end
-            if field.include?('other')
-              employment_other['workTypeId'] = Integer(reg_answer) if field.include?('workTypeId') && is_number?(reg_answer)
-              employment_other['salary'] = salary(reg_answer, field, other_salary, false) if field.include? 'salary'
-            end
+
             if field.include?('history')
               employment_history['position'] = reg_answer if field.include? 'position'
               employment_history['employer'] = reg_answer if field.include? 'employer'
@@ -368,7 +395,7 @@ class Jobadder::ClientService < BaseService
             education['date'] = reg_answer if field.include? 'date'
 
           elsif field.include?('social')
-            #remove all characters from beginning of the string till _ inclusive
+            #remove all characters from beginning of the string till '_' inclusive
             field = field.sub /^[^_]*_/, ''
             social[field] = reg_answer
 
@@ -420,6 +447,12 @@ class Jobadder::ClientService < BaseService
       else
         @field = @field[1..-1]
         @field = @field.chomp('_string')
+        if @field.include?('workTypeId')
+          @field.sub! 'workTypeId', 'workType'
+        end
+        if @field.include?('countryCode')
+          @field.sub! 'countryCode', 'country'
+        end
         array.push(@field)
         @field, = @field.rpartition('_')
       end
@@ -444,6 +477,17 @@ class Jobadder::ClientService < BaseService
     return salary
   end
 
+  def get_work_type_id(reg_answer, work_types)
+    id = nil
+    if work_types && work_types['items'].size > 0
+      work_types['items'].each do |item|
+        id = item['workTypeId'] if item['name'].casecmp(reg_answer) === 0
+      end
+    end
+    return id
+
+  end
+
   def check_token_expiration(ja_setting)
     if ja_setting.access_token_expires_at.present?
       if DateTime.current > ja_setting.access_token_expires_at
@@ -454,3 +498,4 @@ class Jobadder::ClientService < BaseService
     end
   end
 end
+

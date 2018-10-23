@@ -25,7 +25,8 @@ module JobadderHelper
           candidates: '/candidates',
           applications: '/applications',
           users: '/users',
-          candidate_custom_fields: '/candidates/fields/custom'
+          candidate_custom_fields: '/candidates/fields/custom',
+          worktypes: '/worktypes'
       }
     end
 

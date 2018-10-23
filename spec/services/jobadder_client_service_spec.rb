@@ -119,9 +119,11 @@ describe Jobadder::ClientService do
 
       registration_answers = construct_registration_answers
 
+      work_types = get_worktypes
+
       custom_fields = [{'fieldId' => 0, 'value' => 'black'}, {'fieldId' => 1, 'value' => 'red'}, {'fieldId' => 2, 'value' => 'blue'}]
 
-      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, custom_fields)
+      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, custom_fields, work_types)
 
       expect(json.length).to eq(18)
 
@@ -150,24 +152,30 @@ describe Jobadder::ClientService do
       expect(json['address']['city']).to eq('answer_address_city')
       expect(json['address']['state']).to eq('answer_address_state')
       expect(json['address']['postalCode']).to eq('answer_address_postalCode')
-      expect(json['address']['countryCode']).to eq('answer_address_countryCode')
+      expect(json['address']['countryCode']).to eq('MY')
       expect(json['address']['street'][0]).to eq('answer_address_street')
 
       expect(json['skillTags'][0]).to eq('answer_skillTags')
 
       expect(json['employment']['current']['employer']).to eq('answer_employment_current_employer')
       expect(json['employment']['current']['position']).to eq('answer_employment_current_position')
-      expect(json['employment']['current']['workTypeId']).to eq(0)
+      expect(json['employment']['current']['workTypeId']).to eq(1154)
       expect(json['employment']['current']['salary']['ratePer']).to eq('week')
       expect(json['employment']['current']['salary']['rate']).to eq(0)
       expect(json['employment']['current']['salary']['currency']).to eq('answer_employment_current_salary_currency')
 
       expect(json['employment']['ideal']['position']).to eq('answer_employment_ideal_position')
-      expect(json['employment']['ideal']['workTypeId']).to eq(0)
+      expect(json['employment']['ideal']['workTypeId']).to eq(1154)
       expect(json['employment']['ideal']['salary']['ratePer']).to eq('week')
       expect(json['employment']['ideal']['salary']['rateHigh']).to eq(0)
       expect(json['employment']['ideal']['salary']['rateLow']).to eq(0)
       expect(json['employment']['ideal']['salary']['currency']).to eq('answer_employment_ideal_salary_currency')
+
+      expect(json['employment']['ideal']['other'][0]['workTypeId']).to eq(1154)
+      expect(json['employment']['ideal']['other'][0]['salary']['ratePer']).to eq('week')
+      expect(json['employment']['ideal']['other'][0]['salary']['rateHigh']).to eq(0)
+      expect(json['employment']['ideal']['other'][0]['salary']['rateLow']).to eq(0)
+      expect(json['employment']['ideal']['other'][0]['salary']['currency']).to eq('answer_employment_ideal_other_salary_currency')
 
       expect(json['employment']['history'][0]['position']).to eq('answer_employment_history_position')
       expect(json['employment']['history'][0]['employer']).to eq('answer_employment_history_employer')
@@ -201,18 +209,19 @@ describe Jobadder::ClientService do
       get_field_mapping_names.each do |name|
         # set all values as String
         registration_answers["ref_#{name}"] = "answer_#{name}"
+
       end
 
-      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, nil)
+      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, nil, nil)
       # recruiterId and statusId accept only integer
       expect(json.length).to eq(16)
 
       expect(json['seeking']).to be_nil
 
-      expect(json['employment']['current']['workTypeId']).to be_nil
+      expect(json['employment']['current']['workType']).to be_nil
       expect(json['employment']['current']['salary']['rate']).to be_nil
 
-      expect(json['employment']['ideal']['workTypeId']).to be_nil
+      expect(json['employment']['ideal']['workType']).to be_nil
       expect(json['employment']['ideal']['salary']['rateHigh']).to be_nil
       expect(json['employment']['ideal']['salary']['rateLow']).to be_nil
 
@@ -222,6 +231,59 @@ describe Jobadder::ClientService do
       expect(json['availability']['relative']).to be_nil
 
       expect(json['recruiterUserId']).to be_nil
+
+    end
+
+    it 'should pass candidate json body convert country to countryCode' do
+
+      registration_answers = {}
+      registration_answers["ref_address_country"] = "Comoros"
+
+
+      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, nil, nil)
+
+      expect(json['address']['countryCode']).to eq("KM")
+
+    end
+
+    it 'should pass candidate json body return empty address hash for non-existing country' do
+
+      registration_answers = {}
+      registration_answers["ref_address_country"] = "Dorne"
+
+      json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, nil, nil)
+
+      expect(json['address']).to be_nil
+
+    end
+
+    it 'should pass get work type id' do
+
+      work_types = get_worktypes
+
+      reg_answer = 'Permanent'
+
+      work_type_id = @ja_service.send(:get_work_type_id, reg_answer, work_types)
+
+      expect(work_type_id).to eq(work_types['items'][0]['workTypeId'])
+
+      reg_answer = 'Contract'
+
+      work_type_id = @ja_service.send(:get_work_type_id, reg_answer, work_types)
+
+      expect(work_type_id).to eq(work_types['items'][1]['workTypeId'])
+
+      reg_answer = 'Permanent or Contract'
+
+      work_type_id = @ja_service.send(:get_work_type_id, reg_answer, work_types)
+
+      expect(work_type_id).to eq(work_types['items'][2]['workTypeId'])
+
+      reg_answer = 'Petata'
+
+      work_type_id = @ja_service.send(:get_work_type_id, reg_answer, work_types)
+
+      expect(work_type_id).to be_nil
 
     end
 
@@ -353,6 +415,10 @@ describe Jobadder::ClientService do
           registration_answers["ref_#{name}"] = 'week'
         elsif name.include?('seeking')
           registration_answers["ref_#{name}"] = 'yes'
+        elsif name.include?('workType')
+          registration_answers["ref_#{name}"] = 'Permanent'
+        elsif name.include?('country')
+          registration_answers["ref_#{name}"] = 'Malaysia'
         else
           registration_answers["ref_#{name}"] = "answer_#{name}"
         end
@@ -361,49 +427,14 @@ describe Jobadder::ClientService do
     return registration_answers
   end
 
-  def get_JSON_string
-    return '{
-  "firstName": "string",
-  "social": {
-    "facebook": "https://www.facebook.com/JobAdder"
-  },
-  "address": {
-    "street": [
-      "string"
-    ],
-    "city": "string"
-  },
-  "skillTags": [
-    "string"
-  ],
-  "employment": {
-    "current": {
-      "employer": "string",
-      "salary": {
-        "rate": 0
-      }
-    },
-    "ideal": {
-      "position": "string",
-      "salary": {
-        "currency": "string"
-      },
-      "other": [
-        {
-          "workTypeId": 0,
-          "salary": {
-            "currency": "string"
-          }
-        }
-      ]
-    },
-    "history": [
-      {
-        "employer": "string"
-      }
-    ]
-  }
-}'
+  def get_worktypes
+    {"items" => [
+        {"workTypeId" => 1154, "name" => "Permanent", "ratePer" => "Year"},
+        {"workTypeId" => 1155, "name" => "Contract", "ratePer" => "Hour"},
+        {"workTypeId" => 1156, "name" => "Permanent or Contract", "ratePer" => "Hour"},
+        {"workTypeId" => 1226, "name" => "Part Time", "ratePer" => "Day"},
+        {"workTypeId" => 1227, "name" => "Casual"}
+    ]}
   end
 
   def create_mappings
@@ -423,15 +454,15 @@ describe Jobadder::ClientService do
   end
 
   def get_field_mapping_names
-    return %w{address_city address_countryCode address_postalCode address_state address_street
+    return %w{address_city address_country address_postalCode address_state address_street
                       availability_date availability_immediate availability_relative_period availability_relative_unit
                       custom_fieldId custom_value education_course education_date education_institution email
                       employment_current_employer employment_current_position employment_current_salary_currency
-                      employment_current_salary_rate employment_current_salary_ratePer employment_current_workTypeId employment_history_description
+                      employment_current_salary_rate employment_current_salary_ratePer employment_current_workType employment_history_description
                       employment_history_employer employment_history_end employment_history_position employment_history_start employment_ideal_other_salary_currency
                       employment_ideal_other_salary_rateHigh employment_ideal_other_salary_rateLow employment_ideal_other_salary_ratePer
-                      employment_ideal_other_workTypeId employment_ideal_position employment_ideal_salary_currency employment_ideal_salary_rateHigh
-                      employment_ideal_salary_rateLow employment_ideal_salary_ratePer employment_ideal_workTypeId firstName lastName mobile phone
+                      employment_ideal_other_workType employment_ideal_position employment_ideal_salary_currency employment_ideal_salary_rateHigh
+                      employment_ideal_salary_rateLow employment_ideal_salary_ratePer employment_ideal_workType firstName lastName mobile phone
                       rating recruiterUserId salutation seeking skillTags social_facebook social_googleplus social_linkedin social_other social_twitter
                       social_youtube source statusId}
   end

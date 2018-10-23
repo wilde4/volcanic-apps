@@ -388,13 +388,17 @@ describe JobadderController, :type => :controller do
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"#{user['user_profile']['first_name']}\",\"lastName\":\"#{user['user_profile']['last_name']}\",\"email\":\"#{user['email']}\"}",
+          with(:body => "{\"firstName\":\"#{user['user_profile']['first_name']}\",\"lastName\":\"#{user['user_profile']['last_name']}\",\"email\":\"#{user['email']}\",\"source\":null}",
                :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{user['email']}").
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
+
+      stub_request(:get, "https://api.jobadder.com/v2/worktypes").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
 
 
       user_fetched_before = JobadderUser.find_by(user_id: user['id'])
@@ -408,8 +412,8 @@ describe JobadderController, :type => :controller do
       user_fetched_after = JobadderUser.find_by(user_id: user['id'])
 
       expect(user_fetched_after).to have_attributes(:user_id => user['id'],
-                                              :email => user['email'],
-                                              :user_profile => user['user_profile'])
+                                                    :email => user['email'],
+                                                    :user_profile => user['user_profile'])
 
     end
 
@@ -442,13 +446,17 @@ describe JobadderController, :type => :controller do
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"#{user_updated['user_profile']['first_name']}\",\"lastName\":\"#{user_updated['user_profile']['last_name']}\",\"email\":\"#{user_updated['email']}\"}",
+          with(:body => "{\"firstName\":\"#{user_updated['user_profile']['first_name']}\",\"lastName\":\"#{user_updated['user_profile']['last_name']}\",\"email\":\"#{user_updated['email']}\",\"source\":null}",
                :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{user_updated['email']}").
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "{\"items\":[]}", :headers => {'Content-Type' => 'application/json'})
+
+      stub_request(:get, "https://api.jobadder.com/v2/worktypes").
+          with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
 
 
       user_fetched_before = JobadderUser.find_by(user_id: user['user_id'])

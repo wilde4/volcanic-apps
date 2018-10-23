@@ -80,7 +80,7 @@ describe JobadderApplicationWorker do
           to_return(:status => 200, :body => "", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"Johny\",\"lastName\":\"Apple\",\"email\":null}",
+          with(:body => "{\"firstName\":\"Johny\",\"lastName\":\"Apple\",\"email\":null,\"source\":null}",
                :headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 201, :body => "{\"candidateId\" : #{candidate_id}}", headers: {"Content-Type" => "application/json"})
 
@@ -92,6 +92,10 @@ describe JobadderApplicationWorker do
           with(:body => "{\"candidateId\":[1],\"source\":\"VolcanicApp\"}",
                :headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"items\" : [{\"applicationId\" : 12345}]}", :headers => {"Content-Type" => "application/json"})
+
+      stub_request(:get, "https://api.jobadder.com/v2/worktypes").
+          with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
 
       allow(worker).to receive(:add_single_attachment).and_return(true)
 
@@ -125,7 +129,7 @@ describe JobadderApplicationWorker do
           to_return(:status => 200, :body => "", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"Johny\",\"lastName\":\"Apple\",\"email\":null}",
+          with(:body => "{\"firstName\":\"Johny\",\"lastName\":\"Apple\",\"email\":null,\"source\":null}",
                :headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 201, :body => "{\"candidateId\" : #{candidate_id}}", headers: {"Content-Type" => "application/json"})
 
@@ -137,6 +141,10 @@ describe JobadderApplicationWorker do
           with(:body => "{\"candidateId\":[1],\"source\":\"VolcanicApp\"}",
                :headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"items\" : [{\"applicationId\" : 12345}]}", :headers => {"Content-Type" => "application/json"})
+
+      stub_request(:get, "https://api.jobadder.com/v2/worktypes").
+          with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
 
       allow(worker).to receive(:add_single_attachment).and_return(true)
 
