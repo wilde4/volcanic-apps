@@ -424,6 +424,7 @@ describe Jobadder::ClientService do
         end
       end
     end
+    registration_answers["ref_custom_field_name"] = "custom_field_name_answer"
     return registration_answers
   end
 
@@ -446,6 +447,11 @@ describe Jobadder::ClientService do
                                    jobadder_field_name: name,
                                    registration_question_reference: "ref_#{name}"})
     end
+
+    JobadderFieldMapping.create({jobadder_app_setting_id: @ja_setting.id,
+                                 jobadder_field_name: 'Custom field name',
+                                 registration_question_reference: "ref_custom_field_name"})
+
   end
 
   def get_json_keys

@@ -359,7 +359,7 @@ def construct_candidate_request_body(ja_setting, registration_answers, ja_user, 
 
     ja_setting.jobadder_field_mappings.each do |m|
       reg_answer = registration_answers[m.registration_question_reference]
-      field = m.jobadder_field_name
+      field = m.jobadder_field_name.strip
       if reg_answer.present?
         if field.include?('address_country')
           country = ISO3166::Country.find_country_by_name(reg_answer)
@@ -379,7 +379,7 @@ def construct_candidate_request_body(ja_setting, registration_answers, ja_user, 
           if field.include?('current')
             employment_current['employer'] = reg_answer if field.include? 'employer'
             employment_current['position'] = reg_answer if field.include? 'position'
-            employment_current['workTypeId'] = get_work_type_id(reg_answer, work_types) if (field.include?('workType'))
+            employment_current['workTypeId'] = get_work_type_id(reg_answer, work_types) if field.include? 'workType'
             employment_current['salary'] = salary(reg_answer, field, current_salary, true) if field.include? 'salary'
           end
           if field.include?('ideal')
@@ -420,6 +420,9 @@ def construct_candidate_request_body(ja_setting, registration_answers, ja_user, 
           request_body[field] = Integer(reg_answer) if is_number?(reg_answer)
         elsif field.include?('seeking')
           request_body[field] = reg_answer if (reg_answer.casecmp('yes').zero? || reg_answer.casecmp('maybe').zero? || reg_answer.casecmp('no').zero?)
+        elsif field.include? ' '
+          # prevent custom questions to be inside request body
+          next
         else
           request_body[field] = reg_answer
         end
