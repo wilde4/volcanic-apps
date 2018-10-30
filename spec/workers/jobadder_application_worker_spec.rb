@@ -73,7 +73,7 @@ describe JobadderApplicationWorker do
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates?email=#{@user.email}").
           with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).
-          to_return(:status => 200, :body => '{"items" : []}', headers: {"Content-Type" => "application/json"})
+          to_return(:status => 200, :body => '{"items" : [{"candidateId": 1}]}', headers: {"Content-Type" => "application/json"})
 
       stub_request(:get, "https://api.jobadder.com/v2/candidates/fields/custom").
           with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'User-Agent' => 'VolcanicJobadderApp'}).

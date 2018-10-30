@@ -33,10 +33,6 @@ class Jobadder::AuthenticationService < BaseService
     def refresh_token(jobadder_setting)
       client = client(jobadder_setting)
       @response = OAuth2::AccessToken.from_hash(client, :refresh_token => jobadder_setting.refresh_token).refresh!
-      #TODO:remove later
-      puts "Refreshed Token"
-      puts @response.token
-      puts @response
       return @response
     rescue => e
       Rails.logger.info "--- jobadder refresh_token exception ----- : #{e.message}"

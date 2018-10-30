@@ -43,7 +43,7 @@ describe JobadderController, :type => :controller do
 
       create_json
       create(:jobadder_app_setting)
-      stub_get_volcanic_fields
+      stub_get_fields
 
       get :index, :data => data
 
@@ -79,7 +79,7 @@ describe JobadderController, :type => :controller do
 
 
       create_json
-      stub_get_volcanic_fields
+      stub_get_fields
 
 
       post :update, :jobadder_app_setting => ja_setting_upd
@@ -126,7 +126,7 @@ describe JobadderController, :type => :controller do
                         :dataset_id => ja_setting_init.dataset_id}
 
       create_json
-      stub_get_volcanic_fields
+      stub_get_fields
 
       post :update, :jobadder_app_setting => ja_setting_upd
 
@@ -171,7 +171,7 @@ describe JobadderController, :type => :controller do
                         :dataset_id => ja_setting_init.dataset_id}
 
       create_json
-      stub_get_volcanic_fields
+      stub_get_fields
 
       post :update, :jobadder_app_setting => ja_setting_upd
 
@@ -251,7 +251,7 @@ describe JobadderController, :type => :controller do
       }
 
       create_json
-      stub_get_volcanic_fields
+      stub_get_fields
 
       post :update, :jobadder_app_setting => ja_setting_upd
 
@@ -317,7 +317,7 @@ describe JobadderController, :type => :controller do
       }
 
       create_json
-      stub_get_volcanic_fields
+      stub_get_fields
 
       post :update, :jobadder_app_setting => ja_setting_upd
 
@@ -388,7 +388,7 @@ describe JobadderController, :type => :controller do
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"#{user['user_profile']['first_name']}\",\"lastName\":\"#{user['user_profile']['last_name']}\",\"email\":\"#{user['email']}\",\"source\":null}",
+          with(:body => "{\"firstName\":\"#{user['user_profile']['first_name']}\",\"lastName\":\"#{user['user_profile']['last_name']}\",\"email\":\"#{user['email']}\"}",
                :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
 
@@ -446,7 +446,7 @@ describe JobadderController, :type => :controller do
           to_return(:status => 200, :body => "{}", :headers => {})
 
       stub_request(:post, "https://api.jobadder.com/v2/candidates").
-          with(:body => "{\"firstName\":\"#{user_updated['user_profile']['first_name']}\",\"lastName\":\"#{user_updated['user_profile']['last_name']}\",\"email\":\"#{user_updated['email']}\",\"source\":null}",
+          with(:body => "{\"firstName\":\"#{user_updated['user_profile']['first_name']}\",\"lastName\":\"#{user_updated['user_profile']['last_name']}\",\"email\":\"#{user_updated['email']}\"}",
                :headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "{\"candidateId\" : 12345}", :headers => {'Content-Type' => 'application/json'})
 
@@ -486,7 +486,7 @@ describe JobadderController, :type => :controller do
 
       ja_service = Jobadder::ClientService.new(ja_setting)
 
-      stub_get_volcanic_fields
+      stub_get_fields
 
       controller.instance_variable_set('@ja_setting', ja_setting)
       controller.instance_variable_set('@ja_service', ja_service)
@@ -513,12 +513,16 @@ describe JobadderController, :type => :controller do
 
   private
 
-  def stub_get_volcanic_fields
+  def stub_get_fields
     volcanic_fields = get_volcanic_fields
 
     stub_request(:get, "http://test.localhost.volcanic.co/api/v1/user_groups.json").
         with(:headers => {'User-Agent' => 'VolcanicJobadderApp'}).
         to_return(:status => 200, :body => volcanic_fields, :headers => {'Content-Type' => 'application/json'})
+
+    stub_request(:get, "https://api.jobadder.com/v2/candidates/fields/custom").
+        with(:headers => {'Authorization' => 'Bearer 669ffc69f8a360c61c06c7f87672a280', 'User-Agent' => 'VolcanicJobadderApp'}).
+        to_return(:status => 200, :body => "", :headers => {})
   end
 
   def create_json

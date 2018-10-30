@@ -32,7 +32,9 @@ class JobadderController < ApplicationController
     @key = Key.find_by(app_dataset_id: jobadder_app_setting[:dataset_id], app_name: params[:controller])
     @ja_setting = JobadderAppSetting.find_by(dataset_id: jobadder_app_setting[:dataset_id])
 
-    if @ja_setting.present? #UPDATE CURRENT SETTINGS
+    if @ja_setting.present?
+
+      #UPDATE CURRENT SETTINGS
 
       unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
         @ja_setting.authorised = false

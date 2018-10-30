@@ -18,8 +18,7 @@ class JobadderApplicationWorker
       if @ja_service.present?
         get_candidate_response = @ja_service.get_candidate_by_email(@ja_user.email)
         if get_candidate_response['items'].empty?
-          add_candidate_response = @ja_service.add_candidate(msg['dataset_id'], msg['user']['id'])
-          @candidate_id = add_candidate_response['candidateId'] if add_candidate_response.code == 201
+          return
         else
           @candidate_id = get_candidate_response['items'][0]['candidateId']
         end
@@ -43,7 +42,6 @@ class JobadderApplicationWorker
 
   rescue StandardError => e
     puts e
-    # sqs_msg.delete
     @key = Key.find_by(app_dataset_id: msg['dataset_id'])
     @ja_user.app_logs.create key: @ja_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: '', response: nil, error: e.message, internal: true
     Honeybadger.notify(e, force: true)
@@ -71,7 +69,7 @@ class JobadderApplicationWorker
             id = msg['application']['covering_letter_upload_id']
           end
 
-          if add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type,  msg['job']['job_reference']) == true
+          if add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, msg['job']['job_reference']) == true
             if ja_user.sent_upload_ids.nil?
               ja_user.sent_upload_ids = [id]
             else

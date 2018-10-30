@@ -73,21 +73,21 @@ describe Jobadder::ClientService do
 
     it 'should pass  construct custom fields answers' do
 
-      candidate_custom_fields = {'items' => [{'fieldId' => 0, 'name' => 'fav_color', 'type' => 'Text'},
-                                             {'fieldId' => 1, 'name' => 'fav_fruit', 'type' => 'Text'},
-                                             {'fieldId' => 2, 'name' => 'fav_number', 'type' => 'Number'},
+      candidate_custom_fields = {'items' => [{'fieldId' => 0, 'name' => 'address_city', 'type' => 'Text'},
+                                             {'fieldId' => 1, 'name' => 'address_street', 'type' => 'Text'},
+                                             {'fieldId' => 2, 'name' => 'address_postalCode', 'type' => 'Number'},
                                              {'fieldId' => 3, 'name' => 'not_fav_number', 'type' => 'Number'}]}
 
-      registration_answers = {'fav_color' => 'black', 'fav_fruit' => 'durian', 'fav_number' => 6}
+      registration_answers = {'ref_address_street' => 'Tivot Dale', 'ref_address_city' => 'Stockport', 'ref_address_postalCode' => 53300}
 
-      custom_fields_answers = @ja_service.send(:construct_custom_fields_answers, candidate_custom_fields, registration_answers)
+      custom_fields_answers = @ja_service.send(:construct_custom_fields_answers, @ja_setting, candidate_custom_fields, registration_answers)
 
       expect(custom_fields_answers.nil?).to be false
       expect(custom_fields_answers.is_a? Array).to be true
       expect(custom_fields_answers.length).to eq(3)
-      expect(custom_fields_answers.include?({'fieldId' => 0, 'value' => 'black'})).to be true
-      expect(custom_fields_answers.include?({'fieldId' => 1, 'value' => 'durian'})).to be true
-      expect(custom_fields_answers.include?({'fieldId' => 2, 'value' => 6})).to be true
+      expect(custom_fields_answers.include?({'fieldId' => 0, 'value' => 'Stockport'})).to be true
+      expect(custom_fields_answers.include?({'fieldId' => 1, 'value' => 'Tivot Dale'})).to be true
+      expect(custom_fields_answers.include?({'fieldId' => 2, 'value' => 53300})).to be true
 
     end
 
@@ -214,7 +214,7 @@ describe Jobadder::ClientService do
 
       json = @ja_service.send(:construct_candidate_request_body, @ja_setting, registration_answers, @user, nil, nil)
       # recruiterId and statusId accept only integer
-      expect(json.length).to eq(16)
+      expect(json.length).to eq(14)
 
       expect(json['seeking']).to be_nil
 
@@ -456,7 +456,7 @@ describe Jobadder::ClientService do
   def get_field_mapping_names
     return %w{address_city address_country address_postalCode address_state address_street
                       availability_date availability_immediate availability_relative_period availability_relative_unit
-                      custom_fieldId custom_value education_course education_date education_institution email
+                      education_course education_date education_institution email
                       employment_current_employer employment_current_position employment_current_salary_currency
                       employment_current_salary_rate employment_current_salary_ratePer employment_current_workType employment_history_description
                       employment_history_employer employment_history_end employment_history_position employment_history_start employment_ideal_other_salary_currency
