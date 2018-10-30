@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="15587f5b-2050-4a6a-af49-bc15ad729f9e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/jobadder/authentication_service.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/jobadder/authentication_service.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/jobadder/client_service.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/jobadder/client_service.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/views/jobadder/index.html.haml" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/jobadder/index.html.haml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.bundle/" />
     <ignored path="$PROJECT_DIR$/components/" />
@@ -54,7 +53,7 @@
     <SUITE FILE_PATH="coverage/volcanic_apps@Jobadder__ClientService_When_testing_the_Jobadder__ClientService_should_fail_construct_candidate_json_body_with_all_params_string__volcanic_apps.rcov" NAME="Jobadder::ClientService When testing the Jobadder::ClientService should fail construct candidate json body with all params string: volcanic-apps Coverage Results" MODIFIED="1538665726363" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@client_service.rcov" NAME="client_service Coverage Results" MODIFIED="1539784434319" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services/jobadder" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@Development__unicorn.rcov" NAME="Development: unicorn Coverage Results" MODIFIED="1540909606646" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
-    <SUITE FILE_PATH="coverage/volcanic_apps@Run_spec__jobadder_client_service_spec___volcanic_apps.rcov" NAME="Run spec 'jobadder_client_service_spec': volcanic-apps Coverage Results" MODIFIED="1540375097484" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
+    <SUITE FILE_PATH="coverage/volcanic_apps@Run_spec__jobadder_client_service_spec___volcanic_apps.rcov" NAME="Run spec 'jobadder_client_service_spec': volcanic-apps Coverage Results" MODIFIED="1540910347459" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@Jobadder__ClientService_When_testing_the_Jobadder__ClientService__volcanic_apps.rcov" NAME="Jobadder::ClientService When testing the Jobadder::ClientService: volcanic-apps Coverage Results" MODIFIED="1540308824223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker__volcanic_apps.rcov" NAME="JobadderApplicationWorker When testing the JobadderApplicationWorker: volcanic-apps Coverage Results" MODIFIED="1540828638730" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@Jobadder__ClientService_When_testing_the_Jobadder__ClientService_should_pass_construct_candidate_json_body_with_all_params__volcanic_apps.rcov" NAME="Jobadder::ClientService When testing the Jobadder::ClientService should pass construct candidate json body with all params: volcanic-apps Coverage Results" MODIFIED="1540206158717" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
@@ -85,7 +84,7 @@
     <SUITE FILE_PATH="coverage/volcanic_apps@Run_spec__jobadder_app_setting_spec___volcanic_apps.rcov" NAME="Run spec 'jobadder_app_setting_spec': volcanic-apps Coverage Results" MODIFIED="1539094379799" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@JobadderController_When_testing_the_JobadderController_has_a_sort_parameter_in_the_url__volcanic_apps.rcov" NAME="JobadderController When testing the JobadderController has a sort parameter in the url: volcanic-apps Coverage Results" MODIFIED="1539246682047" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@Jobadder__ClientService_When_testing_the_Jobadder__ClientService_should_pass_candidate_json_body_return_empty_address_hash_for_non_existing_country__volcanic_apps.rcov" NAME="Jobadder::ClientService When testing the Jobadder::ClientService should pass candidate json body return empty address hash for non-existing country: volcanic-apps Coverage Results" MODIFIED="1540207118936" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
-    <SUITE FILE_PATH="coverage/volcanic_apps@All_specs_in_spec__volcanic_apps.rcov" NAME="All specs in spec: volcanic-apps Coverage Results" MODIFIED="1540894986908" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
+    <SUITE FILE_PATH="coverage/volcanic_apps@All_specs_in_spec__volcanic_apps.rcov" NAME="All specs in spec: volcanic-apps Coverage Results" MODIFIED="1540909891491" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@JobadderAppSetting_When_testing_the_JobadderAppSetting_model_should_pass_accept_nested_mappings__volcanic_apps.rcov" NAME="JobadderAppSetting When testing the JobadderAppSetting model should pass accept nested mappings: volcanic-apps Coverage Results" MODIFIED="1538019847231" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@Jobadder__ClientService_When_testing_the_Jobadder__ClientService_should_pass_candidate_json_body_convert_country_to_countryCode__volcanic_apps.rcov" NAME="Jobadder::ClientService When testing the Jobadder::ClientService should pass candidate json body convert country to countryCode: volcanic-apps Coverage Results" MODIFIED="1540206855451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
     <SUITE FILE_PATH="coverage/volcanic_apps@JobadderController_When_testing_the_JobadderController_should_pass_GET__index_with_jobadder_auth_settings_filled__volcanic_apps.rcov" NAME="JobadderController When testing the JobadderController should pass GET #index with jobadder auth settings filled: volcanic-apps Coverage Results" MODIFIED="1539341633156" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="volcanic-apps" />
@@ -261,17 +260,17 @@
           <entry key="client_vat_rates" value="1" />
           <entry key="erb" value="1" />
           <entry key="gitignore" value="2" />
-          <entry key="haml" value="9" />
+          <entry key="haml" value="10" />
           <entry key="job_token_settings" value="1" />
           <entry key="jobadder_app_settings" value="21" />
-          <entry key="jobadder_field_mappings" value="19" />
+          <entry key="jobadder_field_mappings" value="20" />
           <entry key="jobadder_request_bodies" value="9" />
           <entry key="jobadder_users" value="11" />
           <entry key="keys" value="1" />
           <entry key="lock" value="7" />
           <entry key="log" value="2" />
           <entry key="rails" value="1" />
-          <entry key="rb" value="771" />
+          <entry key="rb" value="772" />
           <entry key="reed_countries" value="1" />
           <entry key="rspec" value="1" />
           <entry key="ru" value="1" />
@@ -282,12 +281,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Database Element" value="65" />
-          <entry key="Haml" value="9" />
+          <entry key="Database Element" value="66" />
+          <entry key="Haml" value="10" />
           <entry key="Log" value="2" />
           <entry key="PLAIN_TEXT" value="11" />
           <entry key="RHTML" value="1" />
-          <entry key="Ruby" value="785" />
+          <entry key="Ruby" value="786" />
           <entry key="Scratch" value="1" />
           <entry key="YAML" value="21" />
         </counts>
@@ -297,18 +296,18 @@
           <entry key="Gemfile" value="19" />
           <entry key="Ruby Console" value="101" />
           <entry key="cell" value="35" />
-          <entry key="haml" value="37" />
+          <entry key="haml" value="62" />
           <entry key="lock" value="1" />
-          <entry key="rb" value="17960" />
+          <entry key="rb" value="18122" />
           <entry key="txt" value="5" />
           <entry key="yml" value="23" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Haml" value="37" />
+          <entry key="Haml" value="62" />
           <entry key="PLAIN_TEXT" value="6" />
-          <entry key="Ruby" value="18080" />
+          <entry key="Ruby" value="18242" />
           <entry key="Scratch" value="35" />
           <entry key="YAML" value="23" />
         </counts>
@@ -320,11 +319,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/services/jobadder/client_service.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="361" column="41" lean-forward="true" selection-start-line="361" selection-start-column="41" selection-end-line="361" selection-end-column="41" />
+            <state relative-caret-position="232">
+              <caret line="428" column="9" lean-forward="true" selection-start-line="428" selection-start-column="9" selection-end-line="428" selection-end-column="9" />
               <folding>
                 <element signature="e#10187#10269#0" />
               </folding>
@@ -332,11 +331,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/activesupport-4.0.1/lib/active_support/core_ext/object/blank.rb">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/views/jobadder/index.html.haml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
+            <state relative-caret-position="120">
+              <caret line="8" column="8" lean-forward="true" selection-end-line="16" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -344,17 +343,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/services/jobadder/authentication_service.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="690">
-              <caret line="46" column="5" selection-start-line="46" selection-start-column="5" selection-end-line="46" selection-end-column="5" />
+            <state relative-caret-position="510">
+              <caret line="34" column="114" selection-start-line="34" selection-start-column="114" selection-end-line="34" selection-end-column="114" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="das://72cba864-70c5-47dc-8bd7-e17bf87ef039/schema/apps_development/table/jobadder_field_mappings">
-          <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-            <state>
-              <filtering enabled="true" />
+        <entry file="file://$PROJECT_DIR$/spec/services/jobadder_client_service_spec.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-2365">
+              <caret line="115" column="4" selection-start-line="115" selection-start-column="4" selection-end-line="115" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -372,7 +371,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>cou</find>
       <find>ISO3166</find>
       <find>countries</find>
       <find>country</find>
@@ -386,7 +384,6 @@
       <find>custom_fields_answers</find>
       <find>ENV</find>
       <find>stub_get_volcanic_fields</find>
-      <find>custom</find>
       <find>custom_fields</find>
       <find>each</find>
       <find>.present? &amp;&amp;</find>
@@ -401,6 +398,8 @@
       <find>add_candidate</find>
       <find>add_candi</find>
       <find>worktype</find>
+      <find>custom</find>
+      <find>JobAdder is able to post jobs to this website.</find>
       <find>work_types</find>
     </findStrings>
     <replaceStrings>
@@ -479,15 +478,15 @@
         <option value="$PROJECT_DIR$/Gemfile" />
         <option value="$PROJECT_DIR$/app/helpers/jobadder_helper.rb" />
         <option value="$PROJECT_DIR$/config/shoryuken-queues.yml" />
-        <option value="$PROJECT_DIR$/app/views/jobadder/index.html.haml" />
         <option value="$PROJECT_DIR$/app/views/jobadder/_ja_form.html.haml" />
         <option value="$PROJECT_DIR$/app/controllers/jobadder_controller.rb" />
         <option value="$PROJECT_DIR$/app/workers/jobadder_application_worker.rb" />
-        <option value="$PROJECT_DIR$/spec/services/jobadder_client_service_spec.rb" />
         <option value="$PROJECT_DIR$/spec/controllers/jobadder_controller_spec.rb" />
         <option value="$PROJECT_DIR$/spec/workers/jobadder_application_worker_spec.rb" />
         <option value="$PROJECT_DIR$/app/services/jobadder/authentication_service.rb" />
+        <option value="$PROJECT_DIR$/spec/services/jobadder_client_service_spec.rb" />
         <option value="$PROJECT_DIR$/app/services/jobadder/client_service.rb" />
+        <option value="$PROJECT_DIR$/app/views/jobadder/index.html.haml" />
       </list>
     </option>
   </component>
@@ -654,7 +653,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="IRB console.Rails console: volcanic-apps">
+  <component name="RunManager" selected="RSpec.Run spec 'jobadder_client_service_spec': volcanic-apps">
     <configuration name="Shoryuken" type="CommandRunConfigurationType" factoryName="Gem Command">
       <module name="volcanic-apps" />
       <COMMAND_RUN_CONFIGURATION NAME="RUBY_ARGS" VALUE="" />
@@ -796,7 +795,7 @@
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="FULL_BACKTRACE" VALUE="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Jobadder::ClientService When testing the Jobadder::ClientService should pass  construct custom fields answers: volcanic-apps" type="RSpecRunConfigurationType" factoryName="RSpec" temporary="true">
+    <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" type="RSpecRunConfigurationType" factoryName="RSpec" temporary="true">
       <predefined_log_file id="RUBY_RSPEC" enabled="true" />
       <module name="volcanic-apps" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="" />
@@ -815,11 +814,11 @@
           <PATTERN REGEXPS="/.rvm/" INCLUDED="false" />
         </COVERAGE_PATTERN>
       </EXTENSION>
-      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="$MODULE_DIR$/spec" />
+      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/spec/services/jobadder_client_service_spec.rb" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="SPEC_RUNNER_PATH" VALUE="" />
-      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="**/*_spec.rb" />
-      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="SPEC_EXAMPLE_NAME" VALUE="Jobadder::ClientService When testing the Jobadder::ClientService should pass  construct custom fields answers" />
+      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="'**/*_spec.rb'" />
+      <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="SPEC_EXAMPLE_NAME" VALUE="" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="SPEC_ARGS" VALUE="" />
       <RSPEC_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_VERSION" VALUE="" />
@@ -960,18 +959,18 @@
       <item itemvalue="Rake.test: volcanic-apps" />
       <item itemvalue="Rake.spec: volcanic-apps" />
       <item itemvalue="RSpec.All specs in spec: volcanic-apps" />
-      <item itemvalue="RSpec.Jobadder::ClientService When testing the Jobadder::ClientService should pass  construct custom fields answers: volcanic-apps" />
       <item itemvalue="RSpec.JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" />
       <item itemvalue="RSpec.JobadderApplicationWorker When testing the JobadderApplicationWorker: volcanic-apps" />
       <item itemvalue="IRB console.Rails console: volcanic-apps" />
+      <item itemvalue="RSpec.Run spec 'jobadder_client_service_spec': volcanic-apps" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="IRB console.Rails console: volcanic-apps" />
+        <item itemvalue="RSpec.Run spec 'jobadder_client_service_spec': volcanic-apps" />
         <item itemvalue="RSpec.All specs in spec: volcanic-apps" />
+        <item itemvalue="IRB console.Rails console: volcanic-apps" />
         <item itemvalue="RSpec.JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" />
         <item itemvalue="RSpec.JobadderApplicationWorker When testing the JobadderApplicationWorker: volcanic-apps" />
-        <item itemvalue="RSpec.Jobadder::ClientService When testing the Jobadder::ClientService should pass  construct custom fields answers: volcanic-apps" />
       </list>
     </recent_temporary>
   </component>
@@ -1040,29 +1039,11 @@
       <workItem from="1539686970494" duration="2162000" />
       <workItem from="1539693762854" duration="83416000" />
       <workItem from="1540644601888" duration="971000" />
-      <workItem from="1540804387078" duration="21656000" />
+      <workItem from="1540804387078" duration="22728000" />
     </task>
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 15h 51m 33s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 15h 54m 30s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 15h 56m 24s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker__volcanic-apps - 2018.10.29 at 15h 57m 30s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 15h 57m 45s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
-    <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 15h 58m 44s.xml">
-      <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
-    </history-entry>
     <history-entry file="JobadderApplicationWorker_When_testing_the_JobadderApplicationWorker_should_pass_perform_sqs_message_send_new_attachments__volcanic-apps - 2018.10.29 at 16h 04m 30s.xml">
       <configuration name="JobadderApplicationWorker When testing the JobadderApplicationWorker should pass perform sqs message send new attachments: volcanic-apps" configurationId="RSpecRunConfigurationType" />
     </history-entry>
@@ -1075,9 +1056,27 @@
     <history-entry file="All_specs_in_spec__volcanic-apps - 2018.10.30 at 10h 23m 24s.xml">
       <configuration name="All specs in spec: volcanic-apps" configurationId="RSpecRunConfigurationType" />
     </history-entry>
+    <history-entry file="All_specs_in_spec__volcanic-apps - 2018.10.30 at 14h 31m 46s.xml">
+      <configuration name="All specs in spec: volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_spec_'jobadder_client_service_spec'__volcanic-apps - 2018.10.30 at 14h 34m 55s.xml">
+      <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_spec_'jobadder_client_service_spec'__volcanic-apps - 2018.10.30 at 14h 35m 26s.xml">
+      <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_spec_'jobadder_client_service_spec'__volcanic-apps - 2018.10.30 at 14h 38m 37s.xml">
+      <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_spec_'jobadder_client_service_spec'__volcanic-apps - 2018.10.30 at 14h 38m 59s.xml">
+      <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_spec_'jobadder_client_service_spec'__volcanic-apps - 2018.10.30 at 14h 39m 22s.xml">
+      <configuration name="Run spec 'jobadder_client_service_spec': volcanic-apps" configurationId="RSpecRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="949457000" />
+    <option name="totallyTimeSpent" value="950529000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1098,13 +1097,13 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32908162" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6228656" weight="0.5102041" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.53303635" visible="true" weight="0.52678573" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.53303635" weight="0.52678573" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4996288" weight="0.32908162" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" weight="0.32908162" />
-      <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.49740162" weight="0.4885204" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" sideWeight="0.49740162" visible="true" weight="0.4885204" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.5522959" />
       <window_info anchor="bottom" id="Messages" order="11" weight="0.32908162" />
       <window_info anchor="bottom" id="Database Console" order="12" sideWeight="0.499631" weight="0.33545917" />
@@ -1197,16 +1196,6 @@
           <url>file://$USER_HOME$/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/capybara-2.18.0/lib/capybara/node/actions.rb</url>
           <line>59</line>
           <option name="timeStamp" value="132" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/app/services/jobadder/client_service.rb</url>
-          <line>422</line>
-          <option name="timeStamp" value="208" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/app/services/jobadder/client_service.rb</url>
-          <line>446</line>
-          <option name="timeStamp" value="210" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1562,13 +1551,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/jobadder/index.html.haml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="23" selection-start-line="4" selection-start-column="23" selection-end-line="4" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/jobadder/_ja_form.html.haml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -1637,13 +1619,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/spec/services/jobadder_client_service_spec.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="87" selection-start-line="87" selection-end-line="87" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/rspec-core-3.8.0/lib/rspec/core/hooks.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="141">
@@ -1686,31 +1661,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/workers/jobadder_application_worker.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="470">
-          <caret line="33" column="10" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rbenv/versions/2.0.0-p353/lib/ruby/gems/2.0.0/gems/activerecord-4.0.1/lib/active_record/attribute_methods/read.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="110">
           <caret line="58" selection-start-line="58" selection-end-line="58" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="das://72cba864-70c5-47dc-8bd7-e17bf87ef039/schema/apps_development/table/jobadder_field_mappings">
-      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state>
-          <filtering enabled="true" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/services/jobadder/authentication_service.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="46" column="5" selection-start-line="46" selection-start-column="5" selection-end-line="46" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -1721,13 +1675,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="das://72cba864-70c5-47dc-8bd7-e17bf87ef039/schema/apps_development/table/jobadder_field_mappings">
+      <provider selected="true" editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
+        <state>
+          <filtering enabled="true" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/workers/jobadder_application_worker.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="470">
+          <caret line="33" column="10" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spec/services/jobadder_client_service_spec.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2365">
+          <caret line="115" column="4" selection-start-line="115" selection-start-column="4" selection-end-line="115" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/services/jobadder/authentication_service.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="34" column="114" selection-start-line="34" selection-start-column="114" selection-end-line="34" selection-end-column="114" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/services/jobadder/client_service.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="361" column="41" lean-forward="true" selection-start-line="361" selection-start-column="41" selection-end-line="361" selection-end-column="41" />
+        <state relative-caret-position="232">
+          <caret line="428" column="9" lean-forward="true" selection-start-line="428" selection-start-column="9" selection-end-line="428" selection-end-column="9" />
           <folding>
             <element signature="e#10187#10269#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/jobadder/index.html.haml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="8" lean-forward="true" selection-end-line="16" selection-end-column="39" />
         </state>
       </provider>
     </entry>
