@@ -36,7 +36,6 @@ class Jobadder::AuthenticationService < BaseService
       return @response
     rescue => e
       Rails.logger.info "--- jobadder refresh_token exception ----- : #{e.message}"
-
     end
 
     private
