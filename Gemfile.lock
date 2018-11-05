@@ -70,6 +70,10 @@ GEM
       timers (>= 4.1.1)
     celluloid-supervision (0.20.5)
       timers (>= 4.1.1)
+    childprocess (0.9.0)
+      ffi (~> 1.0, >= 1.0.11)
+    chromedriver-helper (0.0.7)
+      nokogiri
     clockwork (0.7.7)
       activesupport
       tzinfo
@@ -84,10 +88,19 @@ GEM
     columnize (0.9.0)
     commonjs (0.2.7)
     connection_pool (2.2.1)
+    countries (2.1.4)
+      i18n_data (~> 0.8.0)
+      money (~> 6.9)
+      sixarm_ruby_unaccent (~> 1.1)
+      unicode_utils (~> 1.4)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     crass (0.2.0)
     daemons (1.1.9)
+    database_cleaner (1.7.0)
+    debase (0.2.2)
+      debase-ruby_core_source (>= 0.10.2)
+    debase-ruby_core_source (0.10.3)
     debugger-linecache (1.2.0)
     devise (3.5.10)
       bcrypt (~> 3.0)
@@ -96,6 +109,8 @@ GEM
       responders
       thread_safe (~> 0.1)
       warden (~> 1.2.3)
+    diff-lcs (1.3)
+    docile (1.3.1)
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
     dragonfly (1.0.12)
@@ -119,6 +134,7 @@ GEM
       i18n (~> 0.5)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
+    ffi (1.9.25)
     figaro (0.7.0)
       bundler (~> 1.0)
       rails (>= 3, < 5)
@@ -169,6 +185,7 @@ GEM
     httpi (2.4.1)
       rack
     i18n (0.7.0)
+    i18n_data (0.8.0)
     inflecto (0.0.2)
     ipaddress (0.8.3)
     jbuilder (1.5.3)
@@ -201,6 +218,8 @@ GEM
     mime-types (1.25.1)
     mimemagic (0.3.1)
     minitest (4.7.5)
+    money (6.12.0)
+      i18n (>= 0.6.4, < 1.1)
     multi_json (1.12.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
@@ -261,6 +280,30 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
+    rspec (3.8.0)
+      rspec-core (~> 3.8.0)
+      rspec-expectations (~> 3.8.0)
+      rspec-mocks (~> 3.8.0)
+    rspec-core (3.8.0)
+      rspec-support (~> 3.8.0)
+    rspec-expectations (3.8.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.8.0)
+    rspec-mocks (3.8.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.8.0)
+    rspec-rails (3.8.0)
+      actionpack (>= 3.0)
+      activesupport (>= 3.0)
+      railties (>= 3.0)
+      rspec-core (~> 3.8.0)
+      rspec-expectations (~> 3.8.0)
+      rspec-mocks (~> 3.8.0)
+      rspec-support (~> 3.8.0)
+    rspec-support (3.8.0)
+    ruby-debug-ide (0.7.0.beta4)
+      rake (>= 0.8.1)
+    rubyzip (1.2.2)
     safe_yaml (1.0.3)
     sanitize (3.0.0)
       crass (~> 0.2.0)
@@ -280,11 +323,21 @@ GEM
       nokogiri (>= 1.4.0)
       nori (~> 2.4)
       wasabi (~> 3.4)
+    selenium-webdriver (3.14.0)
+      childprocess (~> 0.5)
+      rubyzip (~> 1.2)
     semrush (3.0.18)
       activesupport (>= 3.2.0)
     shoryuken (2.0.3)
+      activesupport (>= 4.0.0)
       aws-sdk-core (~> 2)
       celluloid (~> 0.16)
+    shoulda (3.5.0)
+      shoulda-context (~> 1.0, >= 1.0.1)
+      shoulda-matchers (>= 1.4.1, < 3.0)
+    shoulda-context (1.2.2)
+    shoulda-matchers (2.8.0)
+      activesupport (>= 3.0.0)
     sidekiq (3.5.4)
       celluloid (~> 0.17.2)
       connection_pool (~> 2.2, >= 2.2.0)
@@ -295,10 +348,16 @@ GEM
       actionpack (~> 4.0)
       activemodel (~> 4.0)
     simple_oauth (0.2.0)
+    simplecov (0.16.1)
+      docile (~> 1.1)
+      json (>= 1.8, < 3)
+      simplecov-html (~> 0.10.0)
+    simplecov-html (0.10.2)
     sinatra (1.4.8)
       rack (~> 1.5)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
+    sixarm_ruby_unaccent (1.2.0)
     slop (3.6.0)
     sprockets (2.11.0)
       hike (~> 1.2)
@@ -344,12 +403,14 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.2)
+    unicode_utils (1.4.0)
     unicorn (4.8.3)
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
     unicorn-worker-killer (0.4.2)
       unicorn (~> 4)
+    vcr (4.0.0)
     warden (1.2.7)
       rack (>= 1.0)
     wasabi (3.5.0)
@@ -376,9 +437,13 @@ DEPENDENCIES
   attr_encrypted (~> 1.3.4)
   bootstrap-sass
   bullhorn-rest!
+  chromedriver-helper
   clockwork
   coffee-rails (~> 4.0.0)
+  countries (~> 2.1, >= 2.1.4)
   daemons
+  database_cleaner
+  debase
   devise
   dragonfly (~> 1.0.10)
   dragonfly-s3_data_store
@@ -397,6 +462,7 @@ DEPENDENCIES
   jquery-rails
   mandrill-api (~> 1.0.51)
   mimemagic (~> 0.3.1)
+  minitest
   mysql2 (= 0.3.18)
   newrelic_rpm (~> 3.7.2.195)
   nokogiri
@@ -405,13 +471,20 @@ DEPENDENCIES
   rails (= 4.0.1)
   remotipart (~> 1.2)
   rest-client (~> 1.8)
+  rspec
+  rspec-rails
+  ruby-debug-ide (~> 0.7.0.beta4)
   sanitize (= 3.0.0)
   sass-rails (~> 4.0.0)
   savon (~> 2.0)
+  selenium-webdriver
   semrush
   shoryuken (~> 2.0.3)
+  shoulda (~> 3.5)
+  shoulda-matchers (~> 2.0)
   sidekiq (~> 3.3)
   simple_form
+  simplecov
   sinatra
   sqlite3
   stringex
@@ -421,7 +494,9 @@ DEPENDENCIES
   uglifier (>= 1.3.0)
   unicorn
   unicorn-worker-killer
+  vcr
+  webmock
   youtube_it
 
 BUNDLED WITH
-   1.13.7
+   1.16.5

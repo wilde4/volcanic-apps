@@ -1,7 +1,5 @@
 require 'faker'
-
 FactoryGirl.define do
-
   factory :bullhorn_app_setting do
     dataset_id 123
     bh_username ENV["BH_USERNAME"]

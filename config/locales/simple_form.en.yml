@@ -33,6 +33,11 @@ en:
         bullhorn_field_name: Bullhorn Field Name
         registration_question_reference: Registration Question Reference
         sync_from_bullhorn: Sync from Bullhorn
+      jobadder_app_setting:
+              ja_username: JobAdder Username
+              ja_password: JobAdder Password
+              ja_client_id: JobAdder Client ID
+              ja_client_secret: JobAdder Client Secret
     # Examples
     # labels:
     #   defaults:

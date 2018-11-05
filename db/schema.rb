@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180427152245) do
+ActiveRecord::Schema.define(version: 20180830102813) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -330,6 +330,54 @@ ActiveRecord::Schema.define(version: 20180427152245) do
     t.string  "job_token_title"
     t.text    "job_token_description"
     t.integer "job_duration"
+  end
+
+  create_table "jobadder_app_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.string   "encrypted_ja_client_id"
+    t.string   "encrypted_ja_client_secret"
+    t.boolean  "import_jobs",                default: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.boolean  "authorised",                 default: false
+    t.boolean  "custom_job_mapping",         default: false
+    t.boolean  "expire_closed_jobs",         default: false
+    t.string   "refresh_token"
+    t.string   "access_token"
+    t.string   "app_url"
+    t.datetime "access_token_expires_at"
+  end
+
+  create_table "jobadder_field_mappings", force: true do |t|
+    t.integer  "jobadder_app_setting_id"
+    t.string   "jobadder_field_name"
+    t.string   "registration_question_reference"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "job_attribute"
+  end
+
+  create_table "jobadder_request_bodies", force: true do |t|
+    t.string   "request_type"
+    t.string   "endpoint"
+    t.string   "name"
+    t.text     "json"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "jobadder_users", force: true do |t|
+    t.integer  "user_id"
+    t.string   "email"
+    t.text     "user_data"
+    t.text     "user_profile"
+    t.text     "registration_answers"
+    t.integer  "jobadder_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "linkedin_profile"
+    t.string   "sent_upload_ids"
+    t.text     "legal_documents"
   end
 
   create_table "keys", force: true do |t|

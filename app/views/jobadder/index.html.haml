@@ -1,0 +1,17 @@
+= image_tag(image_url('job_adder.png'), class: 'pull-right')
+
+.volcanic_apps
+  .row
+    .col-lg-3.col-md-14
+    .col-lg-6.col-md-14
+      %h4 Your website is able to post to JobAdder.
+
+      %p
+        You can contact JobAdder AUS Support on the following number:
+      %p
+        +61 2 8011 3477
+      #flash_messages
+      .row
+        .col-md-14
+          #ja_settings_form
+            = render partial: 'ja_form'

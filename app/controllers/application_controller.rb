@@ -92,6 +92,7 @@ protected
     render nothing: true, status: 401 and return if @key.blank?
   end
 
+
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false)
     log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal
     log.id

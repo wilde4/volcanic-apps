@@ -1,0 +1,47 @@
+- @url_post = Rails.env.development? ? 'http://localhost:3001/jobadder/update' : " https://#{ENV['DOMAIN_NAME']}/jobadder/update"
+= simple_form_for @ja_setting, url: @url_post, method: :post, remote: true do |f|
+
+  = f.input :dataset_id, as: :hidden
+  .panel{class: @ja_setting.authorised? ? 'panel-success' : 'panel-danger'}
+    .panel-heading
+      %h5.panel-title
+        1. Authentication Settings
+        - if @ja_setting.authorised?
+          %i.icon-checkmark
+        - else
+          %i.icon-info22
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :ja_client_id, input_html: { class: 'form-control' }
+          = f.input :ja_client_secret, as: :password, input_html: { class: 'form-control', value: @ja_setting.ja_client_secret}
+
+
+  -# JOBADDER MAPPINGS AND OPTIONS IF THE CLIENT IS AUTHENTICATED
+  - if @ja_setting.authorised
+    -# CANDIDATE SETTINGS
+    = render partial: 'candidate_settings', locals: {f: f}
+
+
+  = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
+
+:css
+  .select2-dropdown {
+    border: 1px solid #ddd !important;
+    border-radius: 3px !important;
+  }
+:javascript
+
+  $("#submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#ja_settings_form form").submit();
+  });
+
+  $("#submit-btn").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
+
+  $(document).ready(function() {
+    $('.select2').select2({width: '100%', placeholder: ' ', allowClear: true});
+  });
