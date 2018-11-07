@@ -11,8 +11,6 @@ class ArithonUser < ActiveRecord::Base
 
   after_initialize :initialize_legal_documents
 
-  attr_accessor :changed_consents
-
   def initialize_legal_documents
     self.legal_documents ||= []
   end
