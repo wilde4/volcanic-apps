@@ -4,8 +4,17 @@ class ArithonUser < ActiveRecord::Base
   serialize :user_profile, JSON
   serialize :registration_answers, JSON
   serialize :linkedin_profile, JSON
+  serialize :legal_documents, JSON
 
   validate :user_id, :email, presence: true
   validates :user_id, uniqueness: true
+
+  after_initialize :initialize_legal_documents
+
+  attr_accessor :changed_consents
+
+  def initialize_legal_documents
+    self.legal_documents ||= []
+  end
 
 end
