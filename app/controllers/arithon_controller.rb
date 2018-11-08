@@ -22,6 +22,7 @@ class ArithonController < ApplicationController
     @user_attributes[:user_profile]         = params[:user_profile]
     @user_attributes[:linkedin_profile]     = params[:linkedin_profile]
     @user_attributes[:registration_answers] = params[:registration_answer_hash]
+    @user_attributes[:legal_documents]      = params[:legal_documents]
 
     @user = ArithonUser.find_by(user_id: params[:user][:id])
 
@@ -31,13 +32,7 @@ class ArithonController < ApplicationController
         @arithon_id = Arithon::UserService.new(@user, @settings, @key).get_arithon_uid
         if @arithon_id.present?
           Rails.logger.info "--- EXISTING ARITHON USER"
-          if @user.arithon_uid != @arithon_id.to_i
-            Rails.logger.info "--- NEW arithon_id: #{@arithon_id}"
-            @user.update(arithon_uid: @arithon_id)
-          else
-            Rails.logger.info "--- SAME arithon_id: #{@arithon_id}"
-          end
-
+          @user.update(arithon_uid: @arithon_id)
           Arithon::UserService.new(@user, @settings, @key).update_user
         else
           Rails.logger.info "--- NEW ARITHON USER"

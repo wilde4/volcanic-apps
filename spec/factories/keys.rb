@@ -5,4 +5,11 @@ FactoryGirl.define do
     protocol 'http://'
     host 'test.localhost.volcanic.co'
   end
+
+  factory :arithon_app_key, class: Key do
+    app_dataset_id 3
+    app_name 'arithon'
+    protocol 'http://'
+    host 'test.localhost.volcanic.co'
+  end
 end
