@@ -234,12 +234,12 @@ class Jobadder::ClientService < BaseService
     url = "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
     response = HTTParty.get(url, headers: {'User-Agent' => 'VolcanicJobadderApp'})
     @volcanic_fields = {}
-    # response = JSON.parse(response) if Rails.env.test?
+     response = JSON.parse(response) if Rails.env.test?
 
     response.select {|f| f['default'] == true}.each {|r|
       r['registration_question_groups'].each {|rg|
         rg['registration_questions'].each {|q|
-          @volcanic_fields[q["reference"]] = q["label"] unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
+          @volcanic_fields[q["reference"]] = q["label"] unless %w(password password_confirmation terms_and_conditions covering_letter upload_cv).include?(q['core_reference'])
         }
       }
     }
