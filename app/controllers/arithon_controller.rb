@@ -22,6 +22,7 @@ class ArithonController < ApplicationController
     @user_attributes[:user_profile]         = params[:user_profile]
     @user_attributes[:linkedin_profile]     = params[:linkedin_profile]
     @user_attributes[:registration_answers] = params[:registration_answer_hash]
+    @user_attributes[:legal_documents]      = params[:legal_documents]
 
     @user = ArithonUser.find_by(user_id: params[:user][:id])
 
