@@ -36,7 +36,7 @@ class JobadderApplicationWorker
           @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].empty?
           volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
           reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.nil?
-          upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array)
+          upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array, @ja_setting)
         end
         sqs_msg.delete
       end
@@ -52,9 +52,13 @@ class JobadderApplicationWorker
 
   private
 
-  def upload_attachments(msg, ja_user, application_id, ja_service, reg_answers_files)
+  def upload_attachments(msg, ja_user, application_id, ja_service, reg_answers_files, ja_setting)
 
     attachments = %w(cover_letter cv)
+
+    cv_mapping = ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
+
+    cover_letter_mapping = ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%covering-letter%' ").first
 
     attachments.each do |attachment|
 
@@ -72,7 +76,12 @@ class JobadderApplicationWorker
             id = msg['application']['covering_letter_upload_id']
           end
 
-          if add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, msg['job']['job_reference']) == true
+
+          if (attachment_type = 'Resume' && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == 'Send') || (attachment_type = 'CoverLetter' && cover_letter_mapping.nil? === false && cover_letter_mapping.jobadder_field_name == 'Send')
+            success = add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, msg['job']['job_reference'])
+          end
+
+          if success == true
             if ja_user.sent_upload_ids.nil?
               ja_user.sent_upload_ids = [id]
             else

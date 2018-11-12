@@ -236,10 +236,15 @@ class JobadderController < ApplicationController
     @volcanic_candidate_fields = @ja_service.get_volcanic_candidate_fields
     @volcanic_fields = @volcanic_candidate_fields['volcanic_fields']
     @volcanic_upload_file_fields = @volcanic_candidate_fields['volcanic_upload_file_fields']
+    @volcanic_upload_file_fields_core = @volcanic_candidate_fields['volcanic_upload_file_fields_core']
+
     @fields = []
-
-
     @files = []
+
+    @volcanic_upload_file_fields_core.each do |reference, label|
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+
     @volcanic_upload_file_fields.each do |reference, label|
       @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
     end
@@ -248,6 +253,10 @@ class JobadderController < ApplicationController
     end
 
     @ja_setting.jobadder_field_mappings.each do |m|
+
+      @volcanic_upload_file_fields_core.each do |reference, label|
+        @files << m if m.registration_question_reference == reference
+      end
       @volcanic_upload_file_fields.each do |reference, label|
         @files << m if m.registration_question_reference == reference
       end
