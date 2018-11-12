@@ -1,0 +1,7 @@
+%html
+  %body
+    - @keys.each do |key|
+      %p
+        - Array(params[key]).each do |k,v|             
+          == #{key}[#{k}]: #{v}
+          %br

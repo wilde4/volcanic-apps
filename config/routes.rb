@@ -410,6 +410,12 @@ Apps::Application.routes.draw do
     get  "index"            => 'recruitics#index'
   end
 
+  scope :json_as_email do
+    post "email_data"     => 'json_as_email#email_data'
+    post "activate_app"     => 'json_as_email#activate_app'
+    post "deactivate_app"   => 'json_as_email#deactivate_app'
+  end
+
   resources :app_logs
   
   devise_for :profiles
