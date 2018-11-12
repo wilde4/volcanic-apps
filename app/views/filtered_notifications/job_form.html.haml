@@ -15,6 +15,10 @@
 
 
 :javascript
+  $('#filtered-notifications-modal-submit').on('click', function(){
+    $('#filtered-notifications-modal-submit').attr("disabled", true);
+  });
+
   $("#filtered-notifications-modal").closest("form").submit(function(e){
     e.preventDefault();
     $("#filtered-notifications-modal .modal-body").html("<h3><i class='fa fa-spin fa-spinner'></i> Fetching Companies</h3>");
