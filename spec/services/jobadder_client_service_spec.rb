@@ -397,6 +397,30 @@ describe Jobadder::ClientService do
 
     end
 
+    # it 'should construct volcanic fields - ignore upload CV and covering letter registration questions' do
+    #
+    #   stub_request(:get, "http://test.localhost.volcanic.co/api/v1/user_groups.json").
+    #       with(:headers => {'User-Agent' => 'VolcanicJobadderApp'}).
+    #       to_return(:status => 200, :body => get_volcanic_registration_questions, :headers => {})
+    #
+    #   volcanic_fields = @ja_service.send(:get_volcanic_candidate_fields)
+    #   expect(volcanic_fields.length).to eq(4)
+    #   expect(volcanic_fields['covering-letter']).to be_nil
+    #   expect(volcanic_fields['upload-cv']).to be_nil
+    #
+    # end
+
+    it 'should get volcanic user' do
+
+      stub_request(:get, "#{@key.protocol}#{@key.host}/api/v1/users/#{@user.user_id}.json?api_key=#{@key.api_key}").
+          with(:headers => {'User-Agent' => 'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "{hello}", :headers => {})
+      volcanic_user = @ja_service.send(:get_volcanic_user, @user.user_id)
+
+      expect(volcanic_user.body).not_to eql(nil)
+
+    end
+
     puts 'Jobadder::ClientService spec passed!'
 
   end
@@ -471,5 +495,428 @@ describe Jobadder::ClientService do
                       employment_ideal_salary_rateLow employment_ideal_salary_ratePer employment_ideal_workType firstName lastName mobile phone
                       rating recruiterUserId salutation seeking skillTags social_facebook social_googleplus social_linkedin social_other social_twitter
                       social_youtube source statusId}
+  end
+
+  def get_volcanic_registration_questions
+    return '[
+        {
+            "id" : 1,
+            "name" : "Candidate",
+            "role" : "candidate",
+            "allow_registrations" : true,
+            "created_at" : "2016-10-14T11:29:36.000+01:00",
+            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+            "default" : true,
+            "users_count" : 3,
+            "searchable" : false,
+            "cached_slug" : "candidate",
+            "registration_question_groups" : [
+                {
+                    "label" : "Registration",
+                    "page_title" : "Registration",
+                    "page_body" : "",
+                    "submit_text" : "Register",
+                    "id" : 1,
+                    "created_at" : "2016-10-14T11:29:36.000+01:00",
+                    "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                    "permalink" : "registration",
+                    "next_path" : "/users",
+                    "user_type" : "candidate",
+                    "user_group_id" : 1,
+                    "for_applications" : false,
+                    "registration_questions" : [
+                        {
+                            "label" : "First Name",
+                            "id" : 1,
+                            "required" : true,
+                            "question_type" : "Text",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "first-name",
+                            "core_reference" : "first_name",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Last Name",
+                            "id" : 2,
+                            "required" : true,
+                            "question_type" : "Text",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "last-name",
+                            "core_reference" : "last_name",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Email",
+                            "id" : 3,
+                            "required" : true,
+                            "question_type" : "Text",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "email",
+                            "core_reference" : "email",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Password",
+                            "id" : 4,
+                            "required" : true,
+                            "question_type" : "Text",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "password",
+                            "core_reference" : "password",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Password Confirmation",
+                            "id" : 5,
+                            "required" : true,
+                            "question_type" : "Text",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "password-confirmation",
+                            "core_reference" : "password_confirmation",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Terms and Conditions",
+                            "id" : 6,
+                            "required" : true,
+                            "question_type" : "Checkbox",
+                            "created_at" : "2016-10-14T11:29:36.000+01:00",
+                            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+                            "reference" : "terms-and-conditions",
+                            "core_reference" : "terms_and_conditions",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        }
+                    ]
+                },
+                {
+                    "label" : "Apply for job",
+                    "page_title" : "Apply",
+                    "page_body" : "",
+                    "submit_text" : "Apply Now!",
+                    "id" : 72,
+                    "created_at" : "2017-07-31T11:18:40.000+01:00",
+                    "updated_at" : "2017-07-31T11:18:40.000+01:00",
+                    "permalink" : "apply-for-job",
+                    "next_path" : "/users",
+                    "user_type" : "candidate",
+                    "user_group_id" : 1,
+                    "for_applications" : true,
+                    "registration_questions" : [
+                        {
+                            "label" : "Upload CV",
+                            "id" : 447,
+                            "required" : true,
+                            "question_type" : "File Upload",
+                            "created_at" : "2017-07-31T11:19:12.000+01:00",
+                            "updated_at" : "2017-07-31T11:19:12.000+01:00",
+                            "reference" : "upload-cv",
+                            "core_reference" : "upload_cv",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "extra_settings" : {},
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "Covering Letter",
+                            "id" : 448,
+                            "required" : true,
+                            "question_type" : "File Upload",
+                            "created_at" : "2017-07-31T11:19:18.000+01:00",
+                            "updated_at" : "2017-07-31T11:19:18.000+01:00",
+                            "reference" : "covering-letter",
+                            "core_reference" : "covering_letter",
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard" : false,
+                            "full_hide_on_recruiter_dashboard" : false
+                        },
+                        {
+                            "label" : "State I reside in",
+                            "options" : "a,b,c",
+                            "id" : 449,
+                            "required" : true,
+                            "question_type" : "Drop Down",
+                            "created_at" : "2017-07-31T11:21:13.000+01:00",
+                            "updated_at" : "2017-07-31T11:21:13.000+01:00",
+                            "reference" : "state-i-reside-in",
+                            "job_search" : false,
+                            "geocodable" : false,
+                            "filter_exclude" : false,
+                            "column_width" : 12,
+                            "hide_label" : false,
+                            "show_on_dashboard"  : false,
+                            "full_hide_on_recruiter_dashboard"  : false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id" : 2,
+            "name" : "Admin",
+            "role" : "admin",
+            "allow_registrations" : false,
+            "created_at" : "2016-10-14T11:29:36.000+01:00",
+            "updated_at" : "2016-10-14T11:29:36.000+01:00",
+            "default" : false,
+            "users_count" : 13,
+            "searchable" : false,
+            "cached_slug" : "admin",
+            "registration_question_groups" : []
+        }
+    ]'
+  end
+
+  def get_volcanic_user
+    return '{
+"delta": {
+"id": 106,
+"email": "roro@ror.com",
+"created_at": "2018-11-09T10:48:00.000+00:00",
+"updated_at": "2018-11-09T10:48:15.000+00:00",
+"role": "candidate",
+"terms_and_conditions": false,
+"user_type": null,
+"deleted_at": null,
+"user_group": "Candidate",
+"first_name": "Roro",
+"last_name": "Moro",
+"featured": null,
+"re_register_email_sent_at": null,
+"user_group_id": 1,
+"source": null,
+"client_id": null,
+"suspended": false,
+"full_registration": true,
+"invitation_token": null,
+"invitation_created_at": null,
+"invitation_sent_at": null,
+"invitation_accepted_at": null,
+"invitation_limit": null,
+"invited_by_id": null,
+"invited_by_type": null,
+"locale": null,
+"remote_id": null,
+"avatar_thumb_path": null,
+"avatar_medium_cropped_path": null,
+"avatar_medium_uncropped_path": null,
+"avatar_large_cropped_path": null,
+"avatar_large_uncropped_path": null,
+"job_alert_frequency": "Weekly",
+"google_cid": null,
+"registration_answers": [
+{
+"file-upload-1": "/s3/W1siZiIsIjIwMTgvMTEvMDkvMTAvNDgvMDAvMTEyLzEyNzdfQ1Zfc2FtcGxlLnBkZiJdXQ"
+}
+],
+"user_cvs": [
+{
+"id": 180,
+"name": "CV_sample.pdf",
+"url": "https://oliver-development.s3.amazonaws.com/candidate-uploads/documents/1/38f3c86a-6e6e-4476-8d78-18e3e5656125/CV_sample.pdf?X-Amz-Expires=3600&X-Amz-Date=20181109T110936Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIXPGQUY26ZFKX4GA/20181109/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=20939436d35949ee77f60bc6bb6b1ff71bbeeaa3f980733e8efcd24c990e366d"
+}
+],
+"user_covering_letters": [
+{
+"id": 181,
+"name": "Cover_Letter_sample_copy.pdf",
+"url": "https://oliver-development.s3.amazonaws.com/candidate-uploads/documents/1/c68b5c33-97d4-4ff1-9df5-0f57cdd97358/Cover_Letter_sample_copy.pdf?X-Amz-Expires=3600&X-Amz-Date=20181109T110936Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIXPGQUY26ZFKX4GA/20181109/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=72aabf78b08009b8844ddb896924c15594a38321c314eb255efa7cbcfa9863b5"
+}
+],
+"job_alerts": [],
+"job_applications": [
+{
+"application_id": 68,
+"application_date": "2018-11-09T10:48:09.000+00:00",
+"job_id": 6,
+"job_title": "IT Director",
+"job_reference": "1277",
+"job_location": "Sydney",
+"job_featured": false,
+"job_url": "amazing-job-6",
+"cv_id": 180,
+"covering_letter_id": 181
+}
+],
+"rumble_events": [
+{
+"id": 491,
+"visitor_uid": "2qyb1kfql7i",
+"url": "development.localhost.volcanic.co/job/amazing-job-6/apply",
+"keywords": null,
+"utm_source": null,
+"utm_medium": null,
+"utm_campaign": null,
+"source_record_id": null,
+"source_record_type": null
+}
+],
+"legal_documents": [
+{
+"key": "privacy_policy",
+"title": "Privacy",
+"version": 1,
+"consented": true,
+"consent_type": "explicit",
+"consented_at": "2018-11-09T10:48:09.000+00:00"
+}
+],
+"legal_documents_history": [
+{
+"key": "privacy_policy",
+"title": "Privacy",
+"version": 1,
+"event": "consent_given",
+"occurred_at": "2018-11-09T10:48:09.000+00:00"
+}
+]
+},
+"id": 106,
+"email": "roro@ror.com",
+"created_at": "2018-11-09T10:48:00.000+00:00",
+"updated_at": "2018-11-09T10:48:15.000+00:00",
+"role": "candidate",
+"terms_and_conditions": false,
+"user_type": null,
+"deleted_at": null,
+"user_group": "Candidate",
+"first_name": "Roro",
+"last_name": "Moro",
+"featured": null,
+"re_register_email_sent_at": null,
+"user_group_id": 1,
+"source": null,
+"client_id": null,
+"suspended": false,
+"full_registration": true,
+"invitation_token": null,
+"invitation_created_at": null,
+"invitation_sent_at": null,
+"invitation_accepted_at": null,
+"invitation_limit": null,
+"invited_by_id": null,
+"invited_by_type": null,
+"locale": null,
+"remote_id": null,
+"avatar_thumb_path": null,
+"avatar_medium_cropped_path": null,
+"avatar_medium_uncropped_path": null,
+"avatar_large_cropped_path": null,
+"avatar_large_uncropped_path": null,
+"job_alert_frequency": "Weekly",
+"google_cid": null,
+"registration_answers": [
+{
+"file-upload-1": "/s3/W1siZiIsIjIwMTgvMTEvMDkvMTAvNDgvMDAvMTEyLzEyNzdfQ1Zfc2FtcGxlLnBkZiJdXQ"
+}
+],
+"user_cvs": [
+{
+"id": 180,
+"name": "CV_sample.pdf",
+"url": "https://oliver-development.s3.amazonaws.com/candidate-uploads/documents/1/38f3c86a-6e6e-4476-8d78-18e3e5656125/CV_sample.pdf?X-Amz-Expires=3600&X-Amz-Date=20181109T110935Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIXPGQUY26ZFKX4GA/20181109/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=b28fccbc206d51648205036fa1d53dac131237423cfe0f575dee1f0582c3f359"
+}
+],
+"user_covering_letters": [
+{
+"id": 181,
+"name": "Cover_Letter_sample_copy.pdf",
+"url": "https://oliver-development.s3.amazonaws.com/candidate-uploads/documents/1/c68b5c33-97d4-4ff1-9df5-0f57cdd97358/Cover_Letter_sample_copy.pdf?X-Amz-Expires=3600&X-Amz-Date=20181109T110935Z&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIXPGQUY26ZFKX4GA/20181109/us-east-1/s3/aws4_request&X-Amz-SignedHeaders=host&X-Amz-Signature=01a5a6f30cd77a99175812ec398729716599555b0f3ef1450b3a62450b25db33"
+}
+],
+"job_alerts": [],
+"job_applications": [
+{
+"application_id": 68,
+"application_date": "2018-11-09T10:48:09.000+00:00",
+"job_id": 6,
+"job_title": "IT Director",
+"job_reference": "1277",
+"job_location": "Sydney",
+"job_featured": false,
+"job_url": "amazing-job-6",
+"cv_id": 180,
+"covering_letter_id": 181
+}
+],
+"rumble_events": [
+{
+"id": 491,
+"visitor_uid": "2qyb1kfql7i",
+"url": "development.localhost.volcanic.co/job/amazing-job-6/apply",
+"keywords": null,
+"utm_source": null,
+"utm_medium": null,
+"utm_campaign": null,
+"source_record_id": null,
+"source_record_type": null
+}
+],
+"legal_documents": [
+{
+"key": "privacy_policy",
+"title": "Privacy",
+"version": 1,
+"consented": true,
+"consent_type": "explicit",
+"consented_at": "2018-11-09T10:48:09.000+00:00"
+}
+],
+"legal_documents_history": [
+{
+"key": "privacy_policy",
+"title": "Privacy",
+"version": 1,
+"event": "consent_given",
+"occurred_at": "2018-11-09T10:48:09.000+00:00"
+}
+]
+}'
   end
 end
