@@ -1,6 +1,6 @@
 .panel.panel-default
   .panel-heading
-    %h5.panel-title 2. Candidate Settings
+    %h5.panel-title Candidate Settings
   .panel-body
     .row
       .col-xs-12
@@ -17,6 +17,27 @@
             %i.fa.fa-lg.fa-angle-down
           #collapse-candidate-fields.collapse
             .mappings
+              .legend{class: "text-semibold"} Registration & Application Form Questions
+              %table.table
+                %thead
+                  %th Volcanic Candidate Field
+                  %th
+                  %th JobAdder Candidate Field
+                %tbody
+                  = f.simple_fields_for :jobadder_field_mappings, @fields do |jfm|
+                    %tr
+                      %td
+                        - if @volcanic_fields[jfm.object.registration_question_reference].present?
+                          = @volcanic_fields[jfm.object.registration_question_reference]
+                        - else
+                          = jfm.object.registration_question_reference
+                          %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
+                        = jfm.input :registration_question_reference, as: :hidden
+                      %td.text-center
+                        %i.icon-arrow-right16
+                      %td
+                        = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
+
               .legend{class: "text-semibold"} File Attachments
               %table.table
                 %thead
@@ -47,26 +68,6 @@
 
                         -#- else
                         -#  = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
-              .legend{class: "text-semibold"} Registration & Application Form Questions
-              %table.table
-                %thead
-                  %th Volcanic Candidate Field
-                  %th
-                  %th JobAdder Candidate Field
-                %tbody
-                  = f.simple_fields_for :jobadder_field_mappings, @fields do |jfm|
-                    %tr
-                      %td
-                        - if @volcanic_fields[jfm.object.registration_question_reference].present?
-                          = @volcanic_fields[jfm.object.registration_question_reference]
-                        - else
-                          = jfm.object.registration_question_reference
-                          %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
-                        = jfm.input :registration_question_reference, as: :hidden
-                      %td.text-center
-                        %i.icon-arrow-right16
-                      %td
-                        = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
 
 
 :javascript
