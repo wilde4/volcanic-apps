@@ -77,20 +77,19 @@ class JobadderApplicationWorker
           end
 
 
-          if (attachment_type = 'Resume' && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == 'Send') || (attachment_type = 'CoverLetter' && cover_letter_mapping.nil? === false && cover_letter_mapping.jobadder_field_name == 'Send')
+          if (attachment_type === 'Resume' && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == '1') || (attachment_type === 'CoverLetter' && cover_letter_mapping.nil? === false && cover_letter_mapping.jobadder_field_name == '1')
             success = add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, msg['job']['job_reference'])
-          end
-
-          if success == true
-            if ja_user.sent_upload_ids.nil?
-              ja_user.sent_upload_ids = [id]
+            if success == true
+              if ja_user.sent_upload_ids.nil?
+                ja_user.sent_upload_ids = [id]
+              else
+                ja_user.sent_upload_ids << id
+              end
+              ja_user.save
+              ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_successfull", nil, nil, nil, false, false)
             else
-              ja_user.sent_upload_ids << id
+              ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_failed", nil, nil, nil, true, false)
             end
-            ja_user.save
-            ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_successfull", nil, nil, nil, false, false)
-          else
-            ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_failed", nil, nil, nil, true, false)
           end
         end
       end
