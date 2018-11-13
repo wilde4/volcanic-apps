@@ -235,25 +235,33 @@ class Jobadder::ClientService < BaseService
     response = HTTParty.get(url, headers: {'User-Agent' => 'VolcanicJobadderApp'})
     @volcanic_fields = {}
     @volcanic_upload_file_fields = {}
+    @volcanic_upload_file_fields_core = {}
     @fields = {}
 
     response.select {|f| f['default'] == true}.each {|r|
       r['registration_question_groups'].each {|rg|
         rg['registration_questions'].each {|q|
-          if q["question_type"] === "File Upload"
-            @volcanic_upload_file_fields[q["reference"]] = q["label"]
-          else
-            @volcanic_fields[q["reference"]] = q["label"] unless %w(password password_confirmation terms_and_conditions covering_letter upload_cv).include?(q['core_reference'])
+          unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
+            if q["question_type"] === "File Upload"
+              if %w(covering_letter upload_cv).include?(q['core_reference'])
+                @volcanic_upload_file_fields_core[q["reference"]] = q["label"]
+              else
+                @volcanic_upload_file_fields[q["reference"]] = q["label"]
+              end
+            else
+              @volcanic_fields[q["reference"]] = q["label"]
+            end
           end
-
         }
       }
     }
 
     @volcanic_upload_file_fields = Hash[@volcanic_upload_file_fields.sort]
+    @volcanic_upload_file_fields_core = Hash[@volcanic_upload_file_fields_core.sort]
     @volcanic_fields = Hash[@volcanic_fields.sort]
     @fields['volcanic_fields'] = @volcanic_fields
     @fields['volcanic_upload_file_fields'] = @volcanic_upload_file_fields
+    @fields['volcanic_upload_file_fields_core'] = @volcanic_upload_file_fields_core
     return @fields
   rescue StandardError => e
     Honeybadger.notify(e)

@@ -31,6 +31,8 @@
                         -#  = @volcanic_fields[jfm.object.registration_question_reference]
                         - if @volcanic_upload_file_fields[jfm.object.registration_question_reference].present?
                           = @volcanic_upload_file_fields[jfm.object.registration_question_reference]
+                        - if @volcanic_upload_file_fields_core[jfm.object.registration_question_reference].present?
+                          = @volcanic_upload_file_fields_core[jfm.object.registration_question_reference]
                         -#- else
                         -#  = jfm.object.registration_question_reference
                           %i.icon-alert.text-danger{ 'data-toggle' => "tooltip", 'data-placement' => "top", 'title' => "The question this reference refers to no longer exists!" }
@@ -40,9 +42,11 @@
                       %td
                         - if @volcanic_upload_file_fields[jfm.object.registration_question_reference].present?
                           = jfm.input :jobadder_field_name, collection: @ja_attachment_types, label: false, include_blank: true, input_html: { class: 'form-control select2' }
+                        - if @volcanic_upload_file_fields_core[jfm.object.registration_question_reference].present?
+                          = jfm.input :jobadder_field_name, as: :radio_buttons, collection: ['Don\'t Send', 'Send'] ,label: false, item_wrapper_class: 'inline', input_html: { class: 'form-control select2' }
+
                         -#- else
                         -#  = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
-
               .legend{class: "text-semibold"} Registration & Application Form Questions
               %table.table
                 %thead
@@ -63,7 +67,6 @@
                         %i.icon-arrow-right16
                       %td
                         = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
-
 
 
 :javascript
