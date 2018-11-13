@@ -10,12 +10,16 @@ describe JobadderApplicationWorker do
       @user = create(:jobadder_user)
       @ja_setting = create(:jobadder_app_setting)
       @key = create(:app_key)
+
     end
     after(:each) do
       JobadderFieldMapping.delete_all
     end
 
     it 'should pass upload attachment to update sent_upload_ids' do
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('1', 'covering-letter')
 
       msg = get_message(true)
 
@@ -27,7 +31,7 @@ describe JobadderApplicationWorker do
 
       allow(ja_service).to receive(:add_single_attachment).and_return(true)
 
-      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil)
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
 
       user_fetched = JobadderUser.find_by(user_id: @user.user_id)
 
@@ -53,7 +57,7 @@ describe JobadderApplicationWorker do
 
       allow(ja_service).to receive(:add_single_attachment).and_return(true)
 
-      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil)
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
 
       user_fetched = JobadderUser.find_by(user_id: @user.user_id)
 
@@ -68,6 +72,9 @@ describe JobadderApplicationWorker do
     end
 
     it 'should pass perform sqs message send new attachments' do
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('1', 'covering-letter')
 
       msg = get_message(true)
 
@@ -192,7 +199,75 @@ describe JobadderApplicationWorker do
       expect(reg_answer_files[1]['type']).to eq('Resume')
 
     end
+    it 'should not send cover letter and send CV - based on mapping' do
 
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('0', 'covering-letter')
+
+      msg = get_message(true)
+
+      worker = JobadderApplicationWorker.new
+
+      ja_service = Jobadder::ClientService.new(@ja_setting)
+
+      application_id = 1
+
+      allow(ja_service).to receive(:add_single_attachment).and_return(true)
+
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
+
+      user_fetched = JobadderUser.find_by(user_id: @user.user_id)
+
+      expect(user_fetched.sent_upload_ids.size).to eq(4)
+
+      user_fetched.sent_upload_ids.each do |item|
+
+        expect(item === 1 || item === 2 || item === 3 || item === 5).to be_truthy
+
+      end
+
+    end
+
+    it 'should not send core attachments - based on mapping' do
+
+
+      create_mapping('Don\'t send', 'upload-cv')
+      create_mapping('Don\'t send', 'covering-letter')
+
+      msg = get_message(true)
+
+      worker = JobadderApplicationWorker.new
+
+      ja_service = Jobadder::ClientService.new(@ja_setting)
+
+      application_id = 1
+
+      allow(ja_service).to receive(:add_single_attachment).and_return(true)
+
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
+
+      user_fetched = JobadderUser.find_by(user_id: @user.user_id)
+
+      expect(user_fetched.sent_upload_ids.size).to eq(3)
+
+      user_fetched.sent_upload_ids.each do |item|
+
+        expect(item === 1 || item === 2 || item === 3).to be_truthy
+
+      end
+
+    end
+
+
+  end
+
+  private
+
+  def create_mapping(ja_field_name, reg_question_reference)
+    JobadderFieldMapping.create({jobadder_app_setting_id: @ja_setting.id,
+                                 jobadder_field_name: ja_field_name,
+                                 registration_question_reference: reg_question_reference})
   end
 
 
