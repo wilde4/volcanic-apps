@@ -36,9 +36,9 @@ class JobadderController < ApplicationController
 
       #UPDATE CURRENT SETTINGS
 
-      unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
-        @ja_setting.authorised = false
-      end
+      # unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
+      #   @ja_setting.authorised = false
+      # end
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -237,16 +237,25 @@ class JobadderController < ApplicationController
     @volcanic_fields = @volcanic_candidate_fields['volcanic_fields']
     @volcanic_upload_file_fields = @volcanic_candidate_fields['volcanic_upload_file_fields']
     @fields = []
-    @volcanic_fields.each do |reference, label|
-      @fields << @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
-    end
+
 
     @files = []
     @volcanic_upload_file_fields.each do |reference, label|
-      @files << @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+    @volcanic_fields.each do |reference, label|
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+
+    @ja_setting.jobadder_field_mappings.each do |m|
+      @volcanic_upload_file_fields.each do |reference, label|
+        @files << m if m.registration_question_reference == reference
+      end
+      @volcanic_fields.each do |reference, label|
+        @fields << m if m.registration_question_reference == reference
+      end
     end
 
   end
-
 end
   
