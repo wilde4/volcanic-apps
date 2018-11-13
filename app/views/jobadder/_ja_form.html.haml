@@ -2,19 +2,20 @@
 = simple_form_for @ja_setting, url: @url_post, method: :post, remote: true do |f|
 
   = f.input :dataset_id, as: :hidden
-  .panel{class: @ja_setting.authorised? ? 'panel-success' : 'panel-danger'}
-    .panel-heading
-      %h5.panel-title
-        1. Authentication Settings
-        - if @ja_setting.authorised?
-          %i.icon-checkmark
-        - else
-          %i.icon-info22
-    .panel-body
-      .row
-        .col-md-6
-          = f.input :ja_client_id, input_html: { class: 'form-control' }
-          = f.input :ja_client_secret, as: :password, input_html: { class: 'form-control', value: @ja_setting.ja_client_secret}
+  - if !@ja_setting.authorised
+    .panel{class: @ja_setting.authorised? ? 'panel-success' : 'panel-danger'}
+      .panel-heading
+        %h5.panel-title
+          1. Authentication Settings
+          - if @ja_setting.authorised?
+            %i.icon-checkmark
+          - else
+            %i.icon-info22
+      .panel-body
+        .row
+          .col-md-6
+            = f.input :ja_client_id, input_html: { class: 'form-control' }
+            = f.input :ja_client_secret, as: :password, input_html: { class: 'form-control', value: @ja_setting.ja_client_secret}
 
 
   -# JOBADDER MAPPINGS AND OPTIONS IF THE CLIENT IS AUTHENTICATED

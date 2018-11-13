@@ -4,6 +4,7 @@ FactoryGirl.define do
     app_name 'jobadder'
     protocol 'http://'
     host 'test.localhost.volcanic.co'
+    api_key 'abc123'
   end
 
   factory :arithon_app_key, class: Key do

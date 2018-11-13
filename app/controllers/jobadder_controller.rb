@@ -232,11 +232,20 @@ class JobadderController < ApplicationController
   def get_fields
 
     @ja_candidate_fields = @ja_service.get_jobadder_candidate_fields
+    @ja_attachment_types = JobadderHelper.attachment_types
     @volcanic_candidate_fields = @ja_service.get_volcanic_candidate_fields
-
-    @volcanic_candidate_fields.each do |reference, label|
-      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    @volcanic_fields = @volcanic_candidate_fields['volcanic_fields']
+    @volcanic_upload_file_fields = @volcanic_candidate_fields['volcanic_upload_file_fields']
+    @fields = []
+    @volcanic_fields.each do |reference, label|
+      @fields << @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
     end
+
+    @files = []
+    @volcanic_upload_file_fields.each do |reference, label|
+      @files << @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+
   end
 
 end
