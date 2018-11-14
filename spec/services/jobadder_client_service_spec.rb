@@ -28,17 +28,17 @@ describe Jobadder::ClientService do
       expect(@ja_service.nil?).to be false
       expect(@ja_service.callback_url).to eq(callback_url)
 
-      expect(@ja_service.authorize_url).to eq("#{urls[:authorize]}?access_type=offline&client_id=#{ja_setting_attr[:ja_client_id]}&redirect_uri=#{callback_url}&response_type=code&scope=read+write+offline_access&state=#{ja_setting_attr[:dataset_id]}")
+      expect(@ja_service.authorize_url).to eq("#{urls[:authorize]}?access_type=offline&client_id=#{ENV['JOBADDER_CLIENT_ID']}&redirect_uri=#{callback_url}&response_type=code&scope=read+write+offline_access&state=#{ja_setting_attr[:dataset_id]}")
 
     end
-    it 'should pass return nil client when auth settings not filled' do
+    it 'should pass return client' do
 
-      ja_setting = create(:jobadder_app_setting, ja_client_id: '', ja_client_secret: '')
+      ja_setting = create(:jobadder_app_setting)
 
       ja_service = Jobadder::ClientService.new(ja_setting)
 
       expect(ja_service.nil?).to be false
-      expect(ja_service.client).to be_nil
+      expect(ja_service.client).not_to be_nil
 
     end
 
@@ -47,7 +47,7 @@ describe Jobadder::ClientService do
       ja_setting = build(:jobadder_app_setting, access_token_expires_at: 1.hour.ago.to_s, dataset_id: 3)
 
       stub_request(:post, "https://id.jobadder.com/connect/token").
-          with(:body => {"client_id" => "s4voea33fvrepcbzgtil2yt3di", "client_secret" => "n2hna72abr6uxf4y6mpz7od7pqubnu4bkte5oexb34w4ulnrwbtq", "grant_type" => "refresh_token", "refresh_token" => "12499b75ab67dd226ad82ea8e8558b44"},
+          with(:body => {"client_id" => ENV['JOBADDER_CLIENT_ID'], "client_secret" => ENV['JOBADDER_CLIENT_SECRET'], "grant_type" => "refresh_token", "refresh_token" => "12499b75ab67dd226ad82ea8e8558b44"},
                :headers => {'Accept' => '*/*', 'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'Content-Type' => 'application/x-www-form-urlencoded', 'User-Agent' => 'Faraday v0.9.1'}).
           to_return(:status => 200, :body => {:access_token => 'd2534958b2d3b9e3b0e16c98f91f0184',
                                               :expires_in => 3600,

@@ -34,7 +34,7 @@ describe Jobadder::AuthenticationService do
 
       auth_url = Jobadder::AuthenticationService.authorize_url( @ja_setting_attr[:dataset_id], @ja_setting)
 
-      expect(auth_url).to eql("#{urls[:authorize]}?access_type=offline&client_id=#{@ja_setting_attr[:ja_client_id]}&redirect_uri=#{redirect}&response_type=code&scope=read+write+offline_access&state=#{@ja_setting_attr[:dataset_id]}")
+      expect(auth_url).to eql("#{urls[:authorize]}?access_type=offline&client_id=#{ENV['JOBADDER_CLIENT_ID']}&redirect_uri=#{redirect}&response_type=code&scope=read+write+offline_access&state=#{@ja_setting_attr[:dataset_id]}")
 
     end
 

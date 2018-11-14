@@ -27,6 +27,8 @@ class JobadderController < ApplicationController
 
   def update
 
+
+
     jobadder_app_setting = params[:jobadder_app_setting]
 
     @key = Key.find_by(app_dataset_id: jobadder_app_setting[:dataset_id], app_name: params[:controller])
@@ -34,11 +36,6 @@ class JobadderController < ApplicationController
 
     if @ja_setting.present?
 
-      #UPDATE CURRENT SETTINGS
-
-      # unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
-      #   @ja_setting.authorised = false
-      # end
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -70,7 +67,7 @@ class JobadderController < ApplicationController
     @ja_service = Jobadder::ClientService.new(@ja_setting);
 
     unless @ja_setting.authorised
-      render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
+      render :text => "OK"
     end
 
     get_fields if @ja_service.present? && @ja_setting.access_token.present?
@@ -196,8 +193,6 @@ class JobadderController < ApplicationController
         :dataset_id,
         :import_jobs,
         :ja_params,
-        :ja_client_id,
-        :ja_client_secret,
         jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
     )
   end

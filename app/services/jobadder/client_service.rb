@@ -13,10 +13,6 @@ class Jobadder::ClientService < BaseService
 
   def setup_client
 
-    unless @ja_setting.auth_settings_filled
-      @client = nil
-      return
-    end
     @client = Jobadder::AuthenticationService.client(@ja_setting)
 
 

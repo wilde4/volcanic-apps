@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20181107143800) do
+ActiveRecord::Schema.define(version: 20181114144100) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -335,14 +335,12 @@ ActiveRecord::Schema.define(version: 20181107143800) do
 
   create_table "jobadder_app_settings", force: true do |t|
     t.integer  "dataset_id"
-    t.string   "encrypted_ja_client_id"
-    t.string   "encrypted_ja_client_secret"
-    t.boolean  "import_jobs",                default: false
+    t.boolean  "import_jobs",             default: false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "authorised",                 default: false
-    t.boolean  "custom_job_mapping",         default: false
-    t.boolean  "expire_closed_jobs",         default: false
+    t.boolean  "authorised",              default: false
+    t.boolean  "custom_job_mapping",      default: false
+    t.boolean  "expire_closed_jobs",      default: false
     t.string   "refresh_token"
     t.string   "access_token"
     t.string   "app_url"
