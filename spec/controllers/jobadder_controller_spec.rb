@@ -54,7 +54,7 @@ describe JobadderController, :type => :controller do
       expect(assigns(:volcanic_candidate_fields)).not_to be_nil
       expect(assigns(:ja_candidate_fields)).not_to be_nil
 
-      expect(assigns(:volcanic_candidate_fields).size).to eq(3)
+      expect(assigns(:volcanic_fields).size).to eq(3)
       expect(assigns(:ja_setting).jobadder_field_mappings.size).to eq(3)
 
       assigns(:ja_setting).jobadder_field_mappings.each do |item|
