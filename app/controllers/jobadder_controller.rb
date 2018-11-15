@@ -66,6 +66,7 @@ class JobadderController < ApplicationController
 
     @ja_service = Jobadder::ClientService.new(@ja_setting);
 
+    #This will never be executed, RSpec can't see template from update.js.erb and fails
     unless @ja_setting.authorised
       render :text => "OK"
     end

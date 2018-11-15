@@ -17,8 +17,14 @@ class JobadderApplicationWorker
       @ja_service = Jobadder::ClientService.new(@ja_setting) if @ja_setting.present?
 
       if @ja_service.present?
+
+        volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
+        if(volcanic_user_response.code == 404 )
+          return
+        end
+
         get_candidate_response = @ja_service.get_candidate_by_email(@ja_user.email)
-        if get_candidate_response['items'].empty?
+        if get_candidate_response['items'].nil? || get_candidate_response['items'].empty?
           return
         else
           @candidate_id = get_candidate_response['items'][0]['candidateId']
@@ -34,7 +40,6 @@ class JobadderApplicationWorker
         unless @candidate_applied
           add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
           @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].empty?
-          volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
           reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.nil?
           upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array, @ja_setting)
         end
