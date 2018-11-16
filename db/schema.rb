@@ -335,6 +335,8 @@ ActiveRecord::Schema.define(version: 20181116110400) do
 
   create_table "jobadder_app_settings", force: true do |t|
     t.integer  "dataset_id"
+    t.string   "encrypted_ja_client_id"
+    t.string   "encrypted_ja_client_secret"
     t.boolean  "import_jobs",                default: false
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -345,10 +347,6 @@ ActiveRecord::Schema.define(version: 20181116110400) do
     t.string   "access_token"
     t.string   "app_url"
     t.datetime "access_token_expires_at"
-    t.text     "ja_client_id"
-    t.text     "ja_client_secret"
-    t.string   "encrypted_ja_client_id"
-    t.string   "encrypted_ja_client_secret"
   end
 
   create_table "jobadder_field_mappings", force: true do |t|
