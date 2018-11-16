@@ -9,7 +9,7 @@ module JobadderHelper
     end
 
     def temporary_files_dir
-      "#{Rails.root.join}/tmp/files"
+      "#{Rails.root.join}/tmp"
     end
 
     def base_urls
