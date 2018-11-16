@@ -26,14 +26,14 @@ class JobadderApplicationWorker
 
         applicants = @ja_service.get_applications_for_job(@job_reference)
 
-        unless applicants['items'].nil? || applicants['items'].empty?
+        unless (applicants['items'].nil? || applicants['items'].empty?)
           applicants['items'].each do |item|
             item['candidate']['candidateId'] == @candidate_id ? @candidate_applied = true : @candidate_applied = false
           end
         end
         unless @candidate_applied
           add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
-          @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].nil? || add_candidate_to_job_response['items'].empty?
+          @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless (add_candidate_to_job_response['items'].nil? || add_candidate_to_job_response['items'].empty?)
           volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
           reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.nil?
           upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array, @ja_setting)
