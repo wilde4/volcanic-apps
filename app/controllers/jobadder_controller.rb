@@ -36,9 +36,9 @@ class JobadderController < ApplicationController
 
       #UPDATE CURRENT SETTINGS
 
-      unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
-        @ja_setting.authorised = false
-      end
+      # unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
+      #   @ja_setting.authorised = false
+      # end
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -117,8 +117,6 @@ class JobadderController < ApplicationController
 
     @cv = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
 
-    # @cover_letter = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
-
     if @ja_user.present?
       @ja_user.update(
           {
@@ -145,7 +143,7 @@ class JobadderController < ApplicationController
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
 
-    @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
+    @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].blank?
     if @candidate_id
       update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, @candidate_id)
       render json: update_response
@@ -155,7 +153,9 @@ class JobadderController < ApplicationController
       render json: create_response
     end
 
-    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present?
+    cv_mapping = @ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
+
+    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == '1'
       # unless @ja_user.user_profile['upload_path'] === @cv[:upload_path]
       #
       # end
@@ -232,12 +232,39 @@ class JobadderController < ApplicationController
   def get_fields
 
     @ja_candidate_fields = @ja_service.get_jobadder_candidate_fields
+    @ja_attachment_types = JobadderHelper.attachment_types
     @volcanic_candidate_fields = @ja_service.get_volcanic_candidate_fields
+    @volcanic_fields = @volcanic_candidate_fields['volcanic_fields']
+    @volcanic_upload_file_fields = @volcanic_candidate_fields['volcanic_upload_file_fields']
+    @volcanic_upload_file_fields_core = @volcanic_candidate_fields['volcanic_upload_file_fields_core']
 
-    @volcanic_candidate_fields.each do |reference, label|
+    @fields = []
+    @files = []
+
+    @volcanic_upload_file_fields_core.each do |reference, label|
       @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
     end
-  end
 
+    @volcanic_upload_file_fields.each do |reference, label|
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+    @volcanic_fields.each do |reference, label|
+      @ja_setting.jobadder_field_mappings.build(registration_question_reference: reference) unless @ja_setting.jobadder_field_mappings.find_by(registration_question_reference: reference)
+    end
+
+    @ja_setting.jobadder_field_mappings.each do |m|
+
+      @volcanic_upload_file_fields_core.each do |reference, label|
+        @files << m if m.registration_question_reference == reference
+      end
+      @volcanic_upload_file_fields.each do |reference, label|
+        @files << m if m.registration_question_reference == reference
+      end
+      @volcanic_fields.each do |reference, label|
+        @fields << m if m.registration_question_reference == reference
+      end
+    end
+
+  end
 end
   

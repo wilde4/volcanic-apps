@@ -9,7 +9,7 @@ module JobadderHelper
     end
 
     def temporary_files_dir
-      "#{Rails.root.join}/tmp/files"
+      "#{Rails.root.join}/tmp"
     end
 
     def base_urls
@@ -32,6 +32,10 @@ module JobadderHelper
 
     def callback_url
       (Rails.env.development? || Rails.env.test?) ? 'http://127.0.0.1:3001/jobadder/callback' : "https://#{ENV['DOMAIN_NAME']}/jobadder/callback"
+    end
+
+    def attachment_types
+      %w(Resume FormattedResume CoverLetter Screening Check Reference License Other)
     end
 
   end

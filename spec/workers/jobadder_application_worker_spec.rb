@@ -9,9 +9,17 @@ describe JobadderApplicationWorker do
     before(:each) do
       @user = create(:jobadder_user)
       @ja_setting = create(:jobadder_app_setting)
+      @key = create(:app_key)
+
+    end
+    after(:each) do
+      JobadderFieldMapping.delete_all
     end
 
     it 'should pass upload attachment to update sent_upload_ids' do
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('1', 'covering-letter')
 
       msg = get_message(true)
 
@@ -23,7 +31,7 @@ describe JobadderApplicationWorker do
 
       allow(ja_service).to receive(:add_single_attachment).and_return(true)
 
-      worker.send(:upload_attachments, msg, @user, application_id, ja_service)
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
 
       user_fetched = JobadderUser.find_by(user_id: @user.user_id)
 
@@ -49,7 +57,7 @@ describe JobadderApplicationWorker do
 
       allow(ja_service).to receive(:add_single_attachment).and_return(true)
 
-      worker.send(:upload_attachments, msg, @user, application_id, ja_service)
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
 
       user_fetched = JobadderUser.find_by(user_id: @user.user_id)
 
@@ -64,6 +72,9 @@ describe JobadderApplicationWorker do
     end
 
     it 'should pass perform sqs message send new attachments' do
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('1', 'covering-letter')
 
       msg = get_message(true)
 
@@ -95,6 +106,10 @@ describe JobadderApplicationWorker do
 
       stub_request(:get, "https://api.jobadder.com/v2/worktypes").
           with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/1.json?api_key=abc123").
+          with(:headers => {'User-Agent' => 'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "", :headers => {})
 
       allow(worker).to receive(:add_single_attachment).and_return(true)
@@ -162,6 +177,97 @@ describe JobadderApplicationWorker do
 
     end
 
+    it 'should get registration answer files' do
+
+      worker = JobadderApplicationWorker.new
+
+      JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Other', :registration_question_reference => 'file-upload-1')
+      JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Resume', :registration_question_reference => 'file-upload-2')
+      JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'First Name', :registration_question_reference => 'first-name')
+      JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Last Name', :registration_question_reference => 'last-name')
+
+
+      reg_answer_files = worker.send(:get_reg_answer_files, get_reg_answers, @ja_setting, @key)
+
+      expect(reg_answer_files.length).to eq(2)
+
+      expect(reg_answer_files[0]['name']).to eq('file-upload-1')
+      expect(reg_answer_files[1]['name']).to eq('file-upload-2')
+      expect(reg_answer_files[0]['url']).to eq('http://test.localhost.volcanic.co/s3/abc123')
+      expect(reg_answer_files[1]['url']).to eq('http://test.localhost.volcanic.co/s3/def456')
+      expect(reg_answer_files[0]['type']).to eq('Other')
+      expect(reg_answer_files[1]['type']).to eq('Resume')
+
+    end
+    it 'should not send cover letter and send CV - based on mapping' do
+
+
+      create_mapping('1', 'upload-cv')
+      create_mapping('0', 'covering-letter')
+
+      msg = get_message(true)
+
+      worker = JobadderApplicationWorker.new
+
+      ja_service = Jobadder::ClientService.new(@ja_setting)
+
+      application_id = 1
+
+      allow(ja_service).to receive(:add_single_attachment).and_return(true)
+
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
+
+      user_fetched = JobadderUser.find_by(user_id: @user.user_id)
+
+      expect(user_fetched.sent_upload_ids.size).to eq(4)
+
+      user_fetched.sent_upload_ids.each do |item|
+
+        expect(item === 1 || item === 2 || item === 3 || item === 5).to be_truthy
+
+      end
+
+    end
+
+    it 'should not send core attachments - based on mapping' do
+
+
+      create_mapping('Don\'t send', 'upload-cv')
+      create_mapping('Don\'t send', 'covering-letter')
+
+      msg = get_message(true)
+
+      worker = JobadderApplicationWorker.new
+
+      ja_service = Jobadder::ClientService.new(@ja_setting)
+
+      application_id = 1
+
+      allow(ja_service).to receive(:add_single_attachment).and_return(true)
+
+      worker.send(:upload_attachments, msg, @user, application_id, ja_service, nil, @ja_setting)
+
+      user_fetched = JobadderUser.find_by(user_id: @user.user_id)
+
+      expect(user_fetched.sent_upload_ids.size).to eq(3)
+
+      user_fetched.sent_upload_ids.each do |item|
+
+        expect(item === 1 || item === 2 || item === 3).to be_truthy
+
+      end
+
+    end
+
+
+  end
+
+  private
+
+  def create_mapping(ja_field_name, reg_question_reference)
+    JobadderFieldMapping.create({jobadder_app_setting_id: @ja_setting.id,
+                                 jobadder_field_name: ja_field_name,
+                                 registration_question_reference: reg_question_reference})
   end
 
 
@@ -174,7 +280,8 @@ describe JobadderApplicationWorker do
       # return files which weren't uploaded previously
       msg = {'site' => 1,
              'user' => {
-                 'id' => @user.user_id
+                 'id' => @user.user_id,
+                 'dataset_id' => @ja_setting.dataset_id
              },
 
              'job' => {
@@ -234,6 +341,16 @@ describe JobadderApplicationWorker do
       }
       return msg
     end
+  end
+
+  def get_reg_answers
+    return [
+        {"file-upload-1" => "/s3/abc123"},
+        {"file-upload-2" => "/s3/def456"},
+        {"first-name" => "Johny"},
+        {"last-name" => "Apple"}
+    ]
+
   end
 
 end
