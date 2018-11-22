@@ -161,6 +161,11 @@ describe JobadderApplicationWorker do
           with(:headers => {'Authorization' => "Bearer #{@ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/1.json?api_key=abc123").
+          with(:headers => {'User-Agent'=>'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
+
       allow(worker).to receive(:add_single_attachment).and_return(true)
 
       worker.send(:perform, sqs_msg, msg)
@@ -177,9 +182,8 @@ describe JobadderApplicationWorker do
 
     end
 
-    it 'should get registration answer files' do
+    it 'should get registration answer files from helper' do
 
-      worker = JobadderApplicationWorker.new
 
       JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Other', :registration_question_reference => 'file-upload-1')
       JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Resume', :registration_question_reference => 'file-upload-2')
@@ -187,7 +191,7 @@ describe JobadderApplicationWorker do
       JobadderFieldMapping.create(:jobadder_app_setting_id => @ja_setting.id, :jobadder_field_name => 'Last Name', :registration_question_reference => 'last-name')
 
 
-      reg_answer_files = worker.send(:get_reg_answer_files, get_reg_answers, @ja_setting, @key)
+      reg_answer_files = JobadderHelper.send(:get_reg_answer_files, get_reg_answers, @ja_setting, @key)
 
       expect(reg_answer_files.length).to eq(2)
 

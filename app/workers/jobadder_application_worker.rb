@@ -9,7 +9,7 @@ class JobadderApplicationWorker
 
     @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
     @job_reference = msg['job']['job_reference']
-    @key = Key.find_by(app_dataset_id: msg['dataset_id'])
+    @key = Key.find_by(app_name: 'jobadder')
 
     if @ja_user.present? && @job_reference.present?
 
@@ -41,7 +41,7 @@ class JobadderApplicationWorker
           add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
           @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].blank?
           volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
-          reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.blank?
+          reg_answers_files_array = volcanic_user_response['registration_answers'] unless volcanic_user_response.blank?
           upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array, @ja_setting)
         end
         sqs_msg.delete
@@ -101,7 +101,7 @@ class JobadderApplicationWorker
       end
     end
 
-    reg_answer_files = get_reg_answer_files(reg_answers_files, @ja_setting, @key)
+    reg_answer_files = JobadderHelper.get_reg_answer_files(reg_answers_files, @ja_setting, @key)
 
     if reg_answer_files.length > 0
       reg_answer_files.each do |f|
@@ -115,29 +115,29 @@ class JobadderApplicationWorker
     ja_service.add_single_attachment(application_id, attachment_url, attachment_name, attachment_type, 'application', job_reference)
   end
 
-  def get_reg_answer_files(reg_answers, ja_setting, key)
-
-    files = []
-    attachment_types = JobadderHelper.attachment_types
-
-    if !reg_answers.nil? && reg_answers.length > 0
-      ja_setting.jobadder_field_mappings.each do |m|
-        attachment_types.each do |a|
-          if m.jobadder_field_name === a
-            reg_answers.each do |r|
-              unless r[m.registration_question_reference].nil?
-                file = {}
-                file['name'] = m.registration_question_reference
-                file['url'] = "#{key.protocol}#{key.host}#{r[m.registration_question_reference]}"
-                file['type'] = a
-
-                files << file
-              end
-            end
-          end
-        end
-      end
-    end
-    return files
-  end
+  # def get_reg_answer_files(reg_answers, ja_setting, key)
+  #
+  #   files = []
+  #   attachment_types = JobadderHelper.attachment_types
+  #
+  #   if !reg_answers.nil? && reg_answers.length > 0
+  #     ja_setting.jobadder_field_mappings.each do |m|
+  #       attachment_types.each do |a|
+  #         if m.jobadder_field_name === a
+  #           reg_answers.each do |r|
+  #             unless r[m.registration_question_reference].nil?
+  #               file = {}
+  #               file['name'] = m.registration_question_reference
+  #               file['url'] = "#{key.protocol}#{key.host}#{r[m.registration_question_reference]}"
+  #               file['type'] = a
+  #
+  #               files << file
+  #             end
+  #           end
+  #         end
+  #       end
+  #     end
+  #   end
+  #   return files
+  # end
 end

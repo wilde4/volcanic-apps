@@ -9,7 +9,7 @@ class JobadderController < ApplicationController
   def index
     app_url = params[:data][:original_url]
     app_url.slice! "/app_html"
-    @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
+    @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
 
@@ -27,15 +27,12 @@ class JobadderController < ApplicationController
 
   def update
 
-
-
     jobadder_app_setting = params[:jobadder_app_setting]
 
     @key = Key.find_by(app_dataset_id: jobadder_app_setting[:dataset_id], app_name: params[:controller])
     @ja_setting = JobadderAppSetting.find_by(dataset_id: jobadder_app_setting[:dataset_id])
 
     if @ja_setting.present?
-      git
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -106,6 +103,7 @@ class JobadderController < ApplicationController
   end
 
   def save_candidate
+    @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
@@ -153,11 +151,26 @@ class JobadderController < ApplicationController
 
     cv_mapping = @ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
 
+
     if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == '1'
       # unless @ja_user.user_profile['upload_path'] === @cv[:upload_path]
       #
       # end
       upload_cv_response = @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
+    end
+
+    # upload registration files
+
+    volcanic_user_response = @ja_service.get_volcanic_user(params[:user][:id])
+    reg_answers_files_array = volcanic_user_response['registration_answers'] unless volcanic_user_response.blank?
+
+    reg_answer_files = JobadderHelper.get_reg_answer_files(reg_answers_files_array, @ja_setting, @key)
+
+    if reg_answer_files.length > 0
+      reg_answer_files.each do |f|
+        @ja_service.add_single_attachment(@candidate_id, f['url'], f['name'], f['type'], 'candidate','original')
+
+      end
     end
 
   end

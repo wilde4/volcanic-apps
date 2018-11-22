@@ -261,6 +261,10 @@ describe JobadderController, :type => :controller do
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/#{user['id']}.json?api_key=abc123").
+          with(:headers => {'User-Agent'=>'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
 
       user_fetched_before = JobadderUser.find_by(user_id: user['id'])
 
@@ -317,6 +321,10 @@ describe JobadderController, :type => :controller do
 
       stub_request(:get, "https://api.jobadder.com/v2/worktypes").
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/#{user['user_id']}.json?api_key=abc123").
+          with(:headers => {'User-Agent'=>'VolcanicJobadderApp'}).
           to_return(:status => 200, :body => "", :headers => {})
 
 

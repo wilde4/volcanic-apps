@@ -130,7 +130,7 @@ class Jobadder::ClientService < BaseService
 
     # Receiving different forms of url in the development
     if Rails.env.development?
-      receiver == 'candidate' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+      receiver == 'candidate' &&  prefix!= 'original'  ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
