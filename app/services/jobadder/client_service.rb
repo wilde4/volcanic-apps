@@ -130,7 +130,7 @@ class Jobadder::ClientService < BaseService
 
     # Receiving different forms of url in the development
     if Rails.env.development?
-      receiver == 'candidate' &&  prefix!= 'original'  ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+      receiver == 'candidate' && prefix == 'original' && attachment_type == 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
@@ -199,7 +199,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true,  @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true, @ja_setting.access_token)
     {error: "Error getting JobAdder candidate by email - #{candidate_email}"}
 
   end
@@ -330,6 +330,13 @@ class Jobadder::ClientService < BaseService
     file = File.open(file.path(), 'r')
 
     return file
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service', nil, e.message, true, true, @ja_setting.access_token)
+    {error: "Error writing file with name : #{file_name} from url: #{file_url}"}
+
+    delete_file(file)
+
 
   end
 
