@@ -24,7 +24,7 @@ class JobadderApplicationWorker
         end
 
         get_candidate_response = @ja_service.get_candidate_by_email(@ja_user.email)
-        if get_candidate_response['items'].nil? || get_candidate_response['items'].empty?
+        if get_candidate_response['items'].blank?
           return
         else
           @candidate_id = get_candidate_response['items'][0]['candidateId']
@@ -32,15 +32,21 @@ class JobadderApplicationWorker
 
         applicants = @ja_service.get_applications_for_job(@job_reference)
 
-        unless applicants['items'].empty?
+        unless applicants['items'].blank?
           applicants['items'].each do |item|
             item['candidate']['candidateId'] == @candidate_id ? @candidate_applied = true : @candidate_applied = false
           end
         end
         unless @candidate_applied
           add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
+<<<<<<< HEAD
           @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].empty?
           reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.nil?
+=======
+          @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].blank?
+          volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
+          reg_answers_files_array = volcanic_user_response['delta']['registration_answers'] unless volcanic_user_response.blank?
+>>>>>>> 5ad49959aa0d4def47ad47b5fb2175b06e6bfd6e
           upload_attachments(msg, @ja_user, @application_id, @ja_service, reg_answers_files_array, @ja_setting)
         end
         sqs_msg.delete

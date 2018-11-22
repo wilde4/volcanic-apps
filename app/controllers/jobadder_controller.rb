@@ -35,7 +35,7 @@ class JobadderController < ApplicationController
     @ja_setting = JobadderAppSetting.find_by(dataset_id: jobadder_app_setting[:dataset_id])
 
     if @ja_setting.present?
-
+      git
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -141,7 +141,7 @@ class JobadderController < ApplicationController
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
 
-    @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].empty?
+    @candidate_id = get_candidate_response['items'][0]['candidateId'] unless get_candidate_response['items'].blank?
     if @candidate_id
       update_response = @ja_service.update_candidate(params[:user][:dataset_id], @ja_user.user_id, @candidate_id)
       render json: update_response

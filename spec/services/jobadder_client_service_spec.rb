@@ -388,7 +388,7 @@ describe Jobadder::ClientService do
       file = @ja_service.send(:create_file, prefix, file_name, test_file.path())
 
       expect(File.exist?(file.path())).to be_truthy
-      expect(file.path().to_s.include?("tmp/files/#{prefix}_#{file_name}")).to be_truthy
+      expect(file.path().to_s.include?("tmp/#{prefix}_#{file_name}")).to be_truthy
       expect(file.size()).to be > 0
 
       @ja_service.send(:delete_file, file)
