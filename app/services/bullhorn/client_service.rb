@@ -250,9 +250,9 @@ class Bullhorn::ClientService < BaseService
         # UPDATE CANDIDATE AFTER CREATION
       else
         if answer == 'Ticked'
-          answer = 1
+          answer = true
         elsif answer == 'Unticked'
-          answer = 0
+          answer = false
         end
         attributes[fm.bullhorn_field_name] = answer if answer.present?
       end
