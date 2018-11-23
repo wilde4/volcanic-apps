@@ -1,4 +1,4 @@
-- @url_post = Rails.env.development? ? 'http://localhost:3001/jobadder/update' : " https://#{ENV['DOMAIN_NAME']}/jobadder/update'"
+- @url_post = Rails.env.development? ? 'http://localhost:3001/jobadder/update' : "https://#{ENV['DOMAIN_NAME']}/jobadder/update"
 = simple_form_for @ja_setting, url: @url_post, method: :post, remote: true do |f|
 
   = f.input :dataset_id, as: :hidden
