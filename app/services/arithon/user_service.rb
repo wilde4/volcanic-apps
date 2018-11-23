@@ -208,7 +208,7 @@ class Arithon::UserService < BaseService
     #Find GDPR legal document in array
     legal_document = @user.legal_documents.find {|ld| ld['key'] == 'privacy_policy'}
     unless legal_document.nil?
-      legal_document['consented'] === true ? @attributes[:gdprAccept] = 'Yes' : @attributes[:gdprAccept] = 'No'
+      legal_document['consented'] == true ? @attributes[:gdprAccept] = 'Yes' : @attributes[:gdprAccept] = 'No'
     end
 
     @attributes = @attributes

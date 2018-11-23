@@ -39,7 +39,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3 || item === 4 || item === 5).to be_truthy
+        expect(item ==1 || item ==2 || item == 3 || item == 4 || item == 5).to be_truthy
 
       end
 
@@ -65,7 +65,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3).to be_truthy
+        expect(item == 1 || item == 2 || item == 3).to be_truthy
 
       end
 
@@ -122,7 +122,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3 || item === 4 || item === 5).to be_truthy
+        expect(item == 1 || item == 2 || item == 3 || item == 4 || item == 5).to be_truthy
 
       end
 
@@ -176,7 +176,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3).to be_truthy
+        expect(item == 1 || item == 2 || item == 3).to be_truthy
 
       end
 
@@ -227,7 +227,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3 || item === 5).to be_truthy
+        expect(item == 1 || item == 2 || item == 3 || item == 5).to be_truthy
 
       end
 
@@ -257,7 +257,7 @@ describe JobadderApplicationWorker do
 
       user_fetched.sent_upload_ids.each do |item|
 
-        expect(item === 1 || item === 2 || item === 3).to be_truthy
+        expect(item == 1 || item == 2 || item == 3).to be_truthy
 
       end
 

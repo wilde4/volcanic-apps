@@ -46,7 +46,7 @@ module JobadderHelper
       if reg_answers.present?
         ja_setting.jobadder_field_mappings.each do |m|
           attachment_types.each do |a|
-            if m.jobadder_field_name === a
+            if m.jobadder_field_name == a
               reg_answers.each do |r|
                 unless r[m.registration_question_reference].nil?
                   file = {}

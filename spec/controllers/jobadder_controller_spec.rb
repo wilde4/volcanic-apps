@@ -61,9 +61,9 @@ describe JobadderController, :type => :controller do
 
         item.registration_question_reference
 
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
+        expect(item.registration_question_reference=='email' ||
+                   item.registration_question_reference =='last-name' ||
+                   item.registration_question_reference =='first-name').to be_truthy
 
       end
 
@@ -126,9 +126,9 @@ describe JobadderController, :type => :controller do
 
       mappings.each do |item|
 
-        expect(item.jobadder_field_name === 'email' ||
-                   item.jobadder_field_name === 'lastName' ||
-                   item.jobadder_field_name === 'firstName').to be_truthy
+        expect(item.jobadder_field_name =='email' ||
+                   item.jobadder_field_name =='lastName' ||
+                   item.jobadder_field_name =='firstName').to be_truthy
 
       end
 
@@ -368,9 +368,9 @@ describe JobadderController, :type => :controller do
 
         item.registration_question_reference
 
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
+        expect(item.registration_question_reference =='email' ||
+                   item.registration_question_reference =='last-name' ||
+                   item.registration_question_reference =='first-name').to be_truthy
 
       end
 

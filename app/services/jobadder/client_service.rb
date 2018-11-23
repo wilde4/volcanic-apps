@@ -130,7 +130,7 @@ class Jobadder::ClientService < BaseService
 
     # Receiving different forms of url in the development
     if Rails.env.development?
-      receiver === 'candidate' && prefix === 'original' && attachment_type === 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+      receiver == 'candidate' && prefix == 'original' && attachment_type == 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
@@ -213,7 +213,7 @@ class Jobadder::ClientService < BaseService
     response = HTTParty.get(url,
                             headers: {'User-Agent' => 'VolcanicJobadderApp',
                                       "Authorization" => "Bearer " + @ja_setting.access_token})
-    response.code === 200 ? response.body : {}
+    response.code == 200 ? response.body : {}
 
     return response
 
@@ -234,11 +234,11 @@ class Jobadder::ClientService < BaseService
     @volcanic_upload_file_fields_core = {}
     @fields = {}
 
-    response.select {|f| f['default'] === true}.each {|r|
+    response.select {|f| f['default'] == true}.each {|r|
       r['registration_question_groups'].each {|rg|
         rg['registration_questions'].each {|q|
           unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
-            if q["question_type"] === "File Upload"
+            if q["question_type"] == "File Upload"
               if %w(covering_letter upload_cv).include?(q['core_reference'])
                 @volcanic_upload_file_fields_core[q["reference"]] = q["label"]
               else
@@ -353,7 +353,7 @@ class Jobadder::ClientService < BaseService
     if candidate_custom_fields.present? && registration_answers.present? && candidate_custom_fields['items'].present?
       ja_setting.jobadder_field_mappings.each do |m|
         candidate_custom_fields['items'].each do |i|
-          if m.jobadder_field_name === i['name']
+          if m.jobadder_field_name == i['name']
             custom_fields_answer = Hash.new
             custom_fields_answer["fieldId"] = i['fieldId']
             custom_fields_answer["value"] = registration_answers[m.registration_question_reference]
@@ -436,7 +436,7 @@ class Jobadder::ClientService < BaseService
               employment_history['description'] = reg_answer if field.include? 'description'
             end
           elsif field.include?('availability')
-            availability['immediate'] = reg_answer if field.include?('immediate') && !!reg_answer === reg_answer
+            availability['immediate'] = reg_answer if field.include?('immediate') && !!reg_answer == reg_answer
             availability['date'] = reg_answer if field.include? 'date'
             if field.include?('relative')
               availability_relative['period'] = Integer(reg_answer) if field.include?('period') && is_number?(reg_answer)
@@ -527,7 +527,7 @@ class Jobadder::ClientService < BaseService
 
     salary['currency'] = reg_answer if jobadder_field_name.include?('currency')
 
-    if current === true
+    if current == true
       salary['rate'] = Integer(reg_answer) if jobadder_field_name.include?('rate') && is_number?(reg_answer)
     else
       salary['rateLow'] = Integer(reg_answer) if jobadder_field_name.include?('rateLow') && is_number?(reg_answer)
@@ -541,7 +541,7 @@ class Jobadder::ClientService < BaseService
     id = nil
     if work_types && work_types['items'].size > 0
       work_types['items'].each do |item|
-        id = item['workTypeId'] if item['name'].casecmp(reg_answer) === 0
+        id = item['workTypeId'] if item['name'].casecmp(reg_answer) == 0
       end
     end
     return id

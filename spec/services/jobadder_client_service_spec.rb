@@ -430,8 +430,8 @@ describe Jobadder::ClientService do
   def construct_registration_answers
     registration_answers = {}
     get_field_mapping_names.each do |name|
-      unless name === 'custom_fieldId' || name === 'custom_value'
-        if name.include?('Id') || name.include?('rateHigh') || name.include?('rateLow') || name === ('employment_current_salary_rate') || name.include?('period')
+      unless name=='custom_fieldId' || name=='custom_value'
+        if name.include?('Id') || name.include?('rateHigh') || name.include?('rateLow') || name==('employment_current_salary_rate') || name.include?('period')
           registration_answers["ref_#{name}"] = '0'
         elsif name.include?('immediate')
           registration_answers["ref_#{name}"] = true

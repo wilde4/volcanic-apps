@@ -19,7 +19,7 @@ class JobadderApplicationWorker
       if @ja_service.present?
 
         volcanic_user_response = @ja_service.get_volcanic_user(msg['user']['id'])
-        if(volcanic_user_response.code === 404 )
+        if(volcanic_user_response.code == 404 )
           return
         end
 
@@ -34,7 +34,7 @@ class JobadderApplicationWorker
 
         unless applicants['items'].blank?
           applicants['items'].each do |item|
-            item['candidate']['candidateId'] === @candidate_id ? @candidate_applied = true : @candidate_applied = false
+            item['candidate']['candidateId'] == @candidate_id ? @candidate_applied = true : @candidate_applied = false
           end
         end
         unless @candidate_applied
@@ -83,9 +83,9 @@ class JobadderApplicationWorker
           end
 
 
-          if (attachment_type === 'Resume' && cv_mapping.nil? === false && cv_mapping.jobadder_field_name === '1') || (attachment_type === 'CoverLetter' && cover_letter_mapping.nil? === false && cover_letter_mapping.jobadder_field_name === '1')
+          if (attachment_type == 'Resume' && cv_mapping.nil? == false && cv_mapping.jobadder_field_name == '1') || (attachment_type == 'CoverLetter' && cover_letter_mapping.nil? == false && cover_letter_mapping.jobadder_field_name == '1')
             success = add_single_attachment(ja_service, application_id, uploads["#{attachment}_url"], uploads["#{attachment}_name"], attachment_type, msg['job']['job_reference'])
-            if success === true
+            if success == true
               if ja_user.sent_upload_ids.nil?
                 ja_user.sent_upload_ids = [id]
               else
