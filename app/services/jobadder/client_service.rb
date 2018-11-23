@@ -130,7 +130,7 @@ class Jobadder::ClientService < BaseService
 
     # Receiving different forms of url in the development
     if Rails.env.development?
-      receiver == 'candidate' && prefix == 'original' && attachment_type == 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+      receiver === 'candidate' && prefix === 'original' && attachment_type === 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
@@ -213,7 +213,7 @@ class Jobadder::ClientService < BaseService
     response = HTTParty.get(url,
                             headers: {'User-Agent' => 'VolcanicJobadderApp',
                                       "Authorization" => "Bearer " + @ja_setting.access_token})
-    response.code == 200 ? response.body : {}
+    response.code === 200 ? response.body : {}
 
     return response
 
@@ -234,7 +234,7 @@ class Jobadder::ClientService < BaseService
     @volcanic_upload_file_fields_core = {}
     @fields = {}
 
-    response.select {|f| f['default'] == true}.each {|r|
+    response.select {|f| f['default'] === true}.each {|r|
       r['registration_question_groups'].each {|rg|
         rg['registration_questions'].each {|q|
           unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
@@ -436,7 +436,7 @@ class Jobadder::ClientService < BaseService
               employment_history['description'] = reg_answer if field.include? 'description'
             end
           elsif field.include?('availability')
-            availability['immediate'] = reg_answer if field.include?('immediate') && !!reg_answer == reg_answer
+            availability['immediate'] = reg_answer if field.include?('immediate') && !!reg_answer === reg_answer
             availability['date'] = reg_answer if field.include? 'date'
             if field.include?('relative')
               availability_relative['period'] = Integer(reg_answer) if field.include?('period') && is_number?(reg_answer)

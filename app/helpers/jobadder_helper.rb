@@ -43,7 +43,7 @@ module JobadderHelper
       files = []
       attachment_types = JobadderHelper.attachment_types
 
-      if !reg_answers.nil? && reg_answers.length > 0
+      if reg_answers.present?
         ja_setting.jobadder_field_mappings.each do |m|
           attachment_types.each do |a|
             if m.jobadder_field_name === a

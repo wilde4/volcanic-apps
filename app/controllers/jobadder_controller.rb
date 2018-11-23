@@ -152,7 +152,7 @@ class JobadderController < ApplicationController
     cv_mapping = @ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
 
 
-    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == '1'
+    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? === false && cv_mapping.jobadder_field_name === '1'
       # unless @ja_user.user_profile['upload_path'] === @cv[:upload_path]
       #
       # end
