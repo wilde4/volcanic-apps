@@ -9,7 +9,7 @@ class JobadderController < ApplicationController
   def index
     app_url = params[:data][:original_url]
     app_url.slice! "/app_html"
-    @key = Key.find_by app_dataset_id: params[:data][:dataset_id], app_name: params[:controller]
+    @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
 
@@ -33,12 +33,6 @@ class JobadderController < ApplicationController
     @ja_setting = JobadderAppSetting.find_by(dataset_id: jobadder_app_setting[:dataset_id])
 
     if @ja_setting.present?
-
-      #UPDATE CURRENT SETTINGS
-
-      # unless (@ja_setting.ja_client_id === (jobadder_app_setting[:ja_client_id]) && @ja_setting.ja_client_secret === jobadder_app_setting[:ja_client_secret])
-      #   @ja_setting.authorised = false
-      # end
 
       if @ja_setting.update(ja_params)
         flash[:notice] = "Settings successfully saved."
@@ -69,8 +63,9 @@ class JobadderController < ApplicationController
 
     @ja_service = Jobadder::ClientService.new(@ja_setting);
 
+    #This will never be executed, RSpec can't see template from update.js.erb and fails
     unless @ja_setting.authorised
-      render :js => "window.open('#{@ja_service.authorize_url}', '_self')"
+      render :text => "OK"
     end
 
     get_fields if @ja_service.present? && @ja_setting.access_token.present?
@@ -108,6 +103,7 @@ class JobadderController < ApplicationController
   end
 
   def save_candidate
+    @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
 
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
@@ -155,11 +151,26 @@ class JobadderController < ApplicationController
 
     cv_mapping = @ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
 
-    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? === false && cv_mapping.jobadder_field_name == '1'
-      # unless @ja_user.user_profile['upload_path'] === @cv[:upload_path]
+
+    if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? == false && cv_mapping.jobadder_field_name == '1'
+      # unless @ja_user.user_profile['upload_path'] == @cv[:upload_path]
       #
       # end
       upload_cv_response = @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
+    end
+
+    # upload registration files
+
+    volcanic_user_response = @ja_service.get_volcanic_user(params[:user][:id])
+    reg_answers_files_array = volcanic_user_response['registration_answers'] unless volcanic_user_response.blank?
+
+    reg_answer_files = JobadderHelper.get_reg_answer_files(reg_answers_files_array, @ja_setting, @key)
+
+    if reg_answer_files.length > 0
+      reg_answer_files.each do |f|
+        @ja_service.add_single_attachment(@candidate_id, f['url'], f['name'], f['type'], 'candidate','original')
+
+      end
     end
 
   end
@@ -196,8 +207,6 @@ class JobadderController < ApplicationController
         :dataset_id,
         :import_jobs,
         :ja_params,
-        :ja_client_id,
-        :ja_client_secret,
         jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
     )
   end

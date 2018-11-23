@@ -13,10 +13,6 @@ class Jobadder::ClientService < BaseService
 
   def setup_client
 
-    unless @ja_setting.auth_settings_filled
-      @client = nil
-      return
-    end
     @client = Jobadder::AuthenticationService.client(@ja_setting)
 
 
@@ -134,7 +130,7 @@ class Jobadder::ClientService < BaseService
 
     # Receiving different forms of url in the development
     if Rails.env.development?
-      receiver == 'candidate' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
+      receiver == 'candidate' && prefix == 'original' && attachment_type == 'Resume' ? @file_url = 'http://' + @key.host + upload_path : @file_url = upload_path
     else
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
@@ -203,7 +199,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true,  @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true, @ja_setting.access_token)
     {error: "Error getting JobAdder candidate by email - #{candidate_email}"}
 
   end
@@ -242,7 +238,7 @@ class Jobadder::ClientService < BaseService
       r['registration_question_groups'].each {|rg|
         rg['registration_questions'].each {|q|
           unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
-            if q["question_type"] === "File Upload"
+            if q["question_type"] == "File Upload"
               if %w(covering_letter upload_cv).include?(q['core_reference'])
                 @volcanic_upload_file_fields_core[q["reference"]] = q["label"]
               else
@@ -334,6 +330,13 @@ class Jobadder::ClientService < BaseService
     file = File.open(file.path(), 'r')
 
     return file
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service', nil, e.message, true, true, @ja_setting.access_token)
+    {error: "Error writing file with name : #{file_name} from url: #{file_url}"}
+
+    delete_file(file)
+
 
   end
 
@@ -350,7 +353,7 @@ class Jobadder::ClientService < BaseService
     if candidate_custom_fields.present? && registration_answers.present? && candidate_custom_fields['items'].present?
       ja_setting.jobadder_field_mappings.each do |m|
         candidate_custom_fields['items'].each do |i|
-          if m.jobadder_field_name === i['name']
+          if m.jobadder_field_name == i['name']
             custom_fields_answer = Hash.new
             custom_fields_answer["fieldId"] = i['fieldId']
             custom_fields_answer["value"] = registration_answers[m.registration_question_reference]
@@ -524,7 +527,7 @@ class Jobadder::ClientService < BaseService
 
     salary['currency'] = reg_answer if jobadder_field_name.include?('currency')
 
-    if current === true
+    if current == true
       salary['rate'] = Integer(reg_answer) if jobadder_field_name.include?('rate') && is_number?(reg_answer)
     else
       salary['rateLow'] = Integer(reg_answer) if jobadder_field_name.include?('rateLow') && is_number?(reg_answer)
@@ -538,7 +541,7 @@ class Jobadder::ClientService < BaseService
     id = nil
     if work_types && work_types['items'].size > 0
       work_types['items'].each do |item|
-        id = item['workTypeId'] if item['name'].casecmp(reg_answer) === 0
+        id = item['workTypeId'] if item['name'].casecmp(reg_answer) == 0
       end
     end
     return id

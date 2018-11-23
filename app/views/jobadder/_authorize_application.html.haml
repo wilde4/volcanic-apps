@@ -1,0 +1,13 @@
+.panel{class: @ja_setting.authorised? ? 'panel-success' : 'panel-danger'}
+  .panel-heading
+    - if @ja_setting.authorised?
+      %h5.panel-title
+        Application Authorized
+        %i.icon-checkmark
+    - else
+      %h5.panel-title
+        Application is not authorized
+        %i.icon-info22
+  - if @ja_setting.authorised?==false
+    .panel-body
+      = link_to 'Authorize', @ja_service.authorize_url, id: 'authorize-btn', class: 'btn btn-primary'

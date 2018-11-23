@@ -61,152 +61,13 @@ describe JobadderController, :type => :controller do
 
         item.registration_question_reference
 
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
+        expect(item.registration_question_reference=='email' ||
+                   item.registration_question_reference =='last-name' ||
+                   item.registration_question_reference =='first-name').to be_truthy
 
       end
 
     end
-
-    it 'should pass POST #update client_id only ' do
-
-      ja_setting_init = create(:jobadder_app_setting)
-
-      ja_setting_upd = {:ja_client_id => 'abcdef123456',
-                        :ja_client_secret => ja_setting_init.ja_client_secret,
-                        :dataset_id => ja_setting_init.dataset_id}
-
-
-      create_json
-      stub_get_fields
-
-
-      post :update, :jobadder_app_setting => ja_setting_upd
-
-      expect(response.status).to eq(200)
-
-      expect(assigns(:ja_setting).authorised).to be_falsey
-
-      expect(assigns(:ja_setting).ja_client_id).to eq(ja_setting_upd[:ja_client_id])
-
-      expect(assigns(:ja_setting).ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      ja_settig_fetched = JobadderAppSetting.find_by(dataset_id: ja_setting_upd[:dataset_id])
-
-      expect(ja_settig_fetched.ja_client_id).to eq(ja_setting_upd[:ja_client_id])
-
-      expect(ja_settig_fetched.ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      expect(flash[:notice]).to eq "Settings successfully saved."
-
-      expect(response.body).to eq ("window.open('#{assigns(:ja_service).authorize_url}', '_self')")
-
-      expect(assigns(:ja_setting).jobadder_field_mappings.size).to eq(3)
-
-      assigns(:ja_setting).jobadder_field_mappings.each do |item|
-
-        item.registration_question_reference
-
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
-
-      end
-
-    end
-
-
-    it 'should pass POST #update client_secret only ' do
-
-      ja_setting_init = create(:jobadder_app_setting)
-
-      ja_setting_upd = {:ja_client_id => ja_setting_init.ja_client_id,
-                        :ja_client_secret => '123456abcdef',
-                        :dataset_id => ja_setting_init.dataset_id}
-
-      create_json
-      stub_get_fields
-
-      post :update, :jobadder_app_setting => ja_setting_upd
-
-      expect(response.status).to eq(200)
-
-      expect(assigns(:ja_setting).authorised).to be_falsey
-
-      expect(assigns(:ja_setting).ja_client_id).to eq(ja_setting_init.ja_client_id)
-
-      expect(assigns(:ja_setting).ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      ja_settig_fetched = JobadderAppSetting.find_by(dataset_id: ja_setting_upd[:dataset_id])
-
-      expect(ja_settig_fetched.ja_client_id).to eq(ja_setting_upd[:ja_client_id])
-
-      expect(ja_settig_fetched.ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      expect(flash[:notice]).to eq "Settings successfully saved."
-
-      expect(response.body).to eq ("window.open('#{assigns(:ja_service).authorize_url}', '_self')")
-
-      expect(assigns(:ja_setting).jobadder_field_mappings.size).to eq(3)
-
-      assigns(:ja_setting).jobadder_field_mappings.each do |item|
-
-        item.registration_question_reference
-
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
-
-      end
-
-    end
-
-    it 'should pass POST #update client_secret & client_id ' do
-
-      ja_setting_init = create(:jobadder_app_setting)
-
-      ja_setting_upd = {:ja_client_id => 'abcdef123456',
-                        :ja_client_secret => '123456abcdef',
-                        :dataset_id => ja_setting_init.dataset_id}
-
-      create_json
-      stub_get_fields
-
-      post :update, :jobadder_app_setting => ja_setting_upd
-
-      expect(response.status).to eq(200)
-
-      expect(assigns(:ja_setting).authorised).to be_falsey
-
-      expect(assigns(:ja_setting).ja_client_id).to eq(ja_setting_upd[:ja_client_id])
-
-      expect(assigns(:ja_setting).ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      ja_settig_fetched = JobadderAppSetting.find_by(dataset_id: ja_setting_upd[:dataset_id])
-
-      expect(ja_settig_fetched.ja_client_id).to eq(ja_setting_upd[:ja_client_id])
-
-      expect(ja_settig_fetched.ja_client_secret).to eq(ja_setting_upd[:ja_client_secret])
-
-      expect(flash[:notice]).to eq "Settings successfully saved."
-
-      expect(response.body).to eq ("window.open('#{assigns(:ja_service).authorize_url}', '_self')")
-
-      expect(assigns(:ja_setting).jobadder_field_mappings.size).to eq(3)
-
-      assigns(:ja_setting).jobadder_field_mappings.each do |item|
-
-        item.registration_question_reference
-
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
-
-      end
-
-    end
-
 
     it 'should pass POST #update field mappings only' do
 
@@ -265,9 +126,9 @@ describe JobadderController, :type => :controller do
 
       mappings.each do |item|
 
-        expect(item.jobadder_field_name === 'email' ||
-                   item.jobadder_field_name === 'lastName' ||
-                   item.jobadder_field_name === 'firstName').to be_truthy
+        expect(item.jobadder_field_name =='email' ||
+                   item.jobadder_field_name =='lastName' ||
+                   item.jobadder_field_name =='firstName').to be_truthy
 
       end
 
@@ -400,6 +261,10 @@ describe JobadderController, :type => :controller do
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/#{user['id']}.json?api_key=abc123").
+          with(:headers => {'User-Agent'=>'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
 
       user_fetched_before = JobadderUser.find_by(user_id: user['id'])
 
@@ -458,6 +323,10 @@ describe JobadderController, :type => :controller do
           with(:headers => {'Authorization' => "Bearer #{ja_setting.access_token}", 'Content-Type' => 'application/json'}).
           to_return(:status => 200, :body => "", :headers => {})
 
+      stub_request(:get, "http://test.localhost.volcanic.co/api/v1/users/#{user['user_id']}.json?api_key=abc123").
+          with(:headers => {'User-Agent'=>'VolcanicJobadderApp'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
 
       user_fetched_before = JobadderUser.find_by(user_id: user['user_id'])
 
@@ -499,9 +368,9 @@ describe JobadderController, :type => :controller do
 
         item.registration_question_reference
 
-        expect(item.registration_question_reference === 'email' ||
-                   item.registration_question_reference === 'last-name' ||
-                   item.registration_question_reference === 'first-name').to be_truthy
+        expect(item.registration_question_reference =='email' ||
+                   item.registration_question_reference =='last-name' ||
+                   item.registration_question_reference =='first-name').to be_truthy
 
       end
 

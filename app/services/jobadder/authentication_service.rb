@@ -5,8 +5,8 @@ class Jobadder::AuthenticationService < BaseService
 
     def client(jobadder_setting)
       client = OAuth2::Client.new(
-          jobadder_setting.ja_client_id,
-          jobadder_setting.ja_client_secret,
+          ENV['JOBADDER_CLIENT_ID'],
+          ENV['JOBADDER_CLIENT_SECRET'],
           {authorize_url: JobadderHelper.authentication_urls[:authorize],
            token_url: JobadderHelper.authentication_urls[:token], }
       )

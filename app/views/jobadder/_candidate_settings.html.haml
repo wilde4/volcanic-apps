@@ -65,8 +65,9 @@
                           = jfm.input :jobadder_field_name, collection: @ja_attachment_types, label: false, include_blank: true, input_html: { class: 'form-control select2' }
                         - if @volcanic_upload_file_fields_core[jfm.object.registration_question_reference].present?
                           = jfm.input :jobadder_field_name, as: :boolean,label: 'Send To JobAdder', input_html: { class: 'form-control select2' }
-
-                        -#- else
+              .save-button
+                = link_to 'Save', '#', id: 'submit-btn', class: 'btn btn-primary'
+                -#- else
                         -#  = jfm.input :jobadder_field_name, collection: @ja_candidate_fields, label: false, include_blank: true, input_html: { class: 'form-control select2' }
 
 
@@ -79,6 +80,16 @@
     }
 
   });
+  $("#submit-btn").click(function(e) {
+    e.preventDefault();
+    $("#ja_settings_form form").submit();
+  });
+
+  $("#submit-btn").click(function(e){
+    $(this).addClass("disabled");
+    $(this).prepend('<i class="icon-spinner4 spinner position-left"></i>');
+  });
+
 :scss
   .legend{
     display: block;

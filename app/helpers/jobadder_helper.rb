@@ -38,5 +38,33 @@ module JobadderHelper
       %w(Resume FormattedResume CoverLetter Screening Check Reference License Other)
     end
 
+    def get_reg_answer_files(reg_answers, ja_setting, key)
+
+      files = []
+      attachment_types = JobadderHelper.attachment_types
+
+      if reg_answers.present?
+        ja_setting.jobadder_field_mappings.each do |m|
+          attachment_types.each do |a|
+            if m.jobadder_field_name == a
+              reg_answers.each do |r|
+                unless r[m.registration_question_reference].nil?
+                  file = {}
+                  file['name'] = m.registration_question_reference
+                  file['url'] = "#{key.protocol}#{key.host}#{r[m.registration_question_reference]}"
+                  file['type'] = a
+
+                  files << file
+                end
+              end
+            end
+          end
+        end
+      end
+
+      return files
+
+    end
+
   end
 end
