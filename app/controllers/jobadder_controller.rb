@@ -78,24 +78,26 @@ class JobadderController < ApplicationController
 
   def callback
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:state])
-    @attributes = Hash.new
-    @attributes[:authorization_code] = params[:code]
-    @attributes[:response] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
-    unless !@attributes[:response].token.present?
+    unless params[:error].present?
+      @attributes = Hash.new
+      @attributes[:authorization_code] = params[:code]
+      @attributes[:response] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
+      unless !@attributes[:response].token.present?
 
-      if @ja_setting.present?
-        if update_ja_params_token(@ja_setting, @attributes[:response])
-          flash[:notice] = "App successfully authorised."
-          @ja_setting.update_attribute(:authorised, true)
+        if @ja_setting.present?
+          if update_ja_params_token(@ja_setting, @attributes[:response])
+            flash[:notice] = "App successfully authorised."
+            @ja_setting.update_attribute(:authorised, true)
+          else
+            flash[:alert] = "App could not be authorised."
+          end
         else
-          flash[:alert] = "App could not be authorised."
-        end
-      else
-        @ja_setting = JobadderAppSetting.new(@attributes)
-        if @ja_setting.save
-          flash[:notice] = "App successfully authorised."
-        else
-          flash[:alert] = "App could not be authorised."
+          @ja_setting = JobadderAppSetting.new(@attributes)
+          if @ja_setting.save
+            flash[:notice] = "App successfully authorised."
+          else
+            flash[:alert] = "App could not be authorised."
+          end
         end
       end
     end
@@ -111,7 +113,7 @@ class JobadderController < ApplicationController
 
     @ja_user = JobadderUser.find_by(user_id: params[:user][:id])
 
-    @cv = {upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path]} if params[:user_profile][:upload_path].present?
+    @cv = { upload_name: params[:user_profile][:upload_name], upload_path: params[:user_profile][:upload_path] } if params[:user_profile][:upload_path].present?
 
     if @ja_user.present?
       @ja_user.update(
@@ -168,7 +170,7 @@ class JobadderController < ApplicationController
 
     if reg_answer_files.length > 0
       reg_answer_files.each do |f|
-        @ja_service.add_single_attachment(@candidate_id, f['url'], f['name'], f['type'], 'candidate','original')
+        @ja_service.add_single_attachment(@candidate_id, f['url'], f['name'], f['type'], 'candidate', 'original')
 
       end
     end
@@ -178,13 +180,13 @@ class JobadderController < ApplicationController
   def job_application
 
     JobadderApplicationWorker.perform_async params
-    render json: {success: true, status: 'Application has been queued for submission to JobAdder'}
+    render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
 
   rescue StandardError => e
     Honeybadger.notify(e)
     @ja_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
     log_id = create_log(@ja_setting, @key, 'job_application', nil, nil, e.message, true, true)
-    render json: {success: false, status: "Error ID: #{log_id}"}
+    render json: { success: false, status: "Error ID: #{log_id}" }
   end
 
   def deactivate_app
@@ -193,9 +195,9 @@ class JobadderController < ApplicationController
       if key
         ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:app_dataset_id])
         ja_setting.destroy if ja_setting
-        format.json {render json: {success: key.destroy}}
+        format.json { render json: { success: key.destroy } }
       else
-        format.json {render json: {error: 'Key not found.'}}
+        format.json { render json: { error: 'Key not found.' } }
       end
     end
   end
@@ -276,4 +278,3 @@ class JobadderController < ApplicationController
 
   end
 end
-  
