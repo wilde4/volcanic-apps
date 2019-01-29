@@ -83,7 +83,6 @@ class JobadderController < ApplicationController
       @attributes[:authorization_code] = params[:code]
       @attributes[:response] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
       unless !@attributes[:response].token.present?
-
         if @ja_setting.present?
           if update_ja_params_token(@ja_setting, @attributes[:response])
             flash[:notice] = "App successfully authorised."
@@ -100,6 +99,10 @@ class JobadderController < ApplicationController
           end
         end
       end
+    else
+      flash[:alert] = "App could not be authorised."
+      @key = Key.find_by(app_dataset_id: params[:state])
+      @ja_setting.app_logs.create key: @key, endpoint: '/callback', name: 'callback', message: 'Could not authorize', response: params[:error], error: params[:error], internal: false
     end
     redirect_to @ja_setting.app_url
   end
@@ -184,7 +187,7 @@ class JobadderController < ApplicationController
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    @ja_setting = BullhornAppSetting.find_by(dataset_id: params[:dataset_id])
+    @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:dataset_id])
     log_id = create_log(@ja_setting, @key, 'job_application', nil, nil, e.message, true, true)
     render json: { success: false, status: "Error ID: #{log_id}" }
   end
