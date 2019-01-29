@@ -18,6 +18,7 @@ class TwitterController < ApplicationController
       @setting.destroy
       @setting = nil
     end
+    Honeybadger.notify(e, force: true)
     render layout: false
   end
   
@@ -44,7 +45,7 @@ class TwitterController < ApplicationController
     end
 
   rescue Twitter::Error::Forbidden => e
-
+    Honeybadger.notify(e, force: true)
   ensure
     render nothing: true, status: 200 and return
   end
