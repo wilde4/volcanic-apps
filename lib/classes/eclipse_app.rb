@@ -1,6 +1,6 @@
 # EclipseApp.poll_jobs_feed
 class EclipseApp
-  def self.poll_jobs_feed
+  def poll_jobs_feed
     puts '- BEGIN poll_jobs_feed'
 
     # Find who has registered to use TR:
@@ -20,7 +20,7 @@ class EclipseApp
     puts '- END poll_jobs_feed'
   end
 
-  def self.parse_jobs
+  def parse_jobs
     @job_data = get_xml
     jobs = @job_data.xpath("//item")
     
@@ -37,7 +37,7 @@ class EclipseApp
 
 private
 
-  def self.austin_andrews_payload(job)
+  def austin_andrews_payload(job)
     # GET WHAT WE CAN FROM XML
     # puts "--- job.xpath('author') = #{job.xpath("author").inspect}"
     disciplines = []
@@ -94,12 +94,12 @@ private
     end
   end
 
-  def self.get_xml
+  def get_xml
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
   end
 
-  def self.post_payload(payload)
+  def post_payload(payload)
     # net = Net::HTTP.new(@key.host, 80)
     # # net = Net::HTTP.new(@key.host, 3000)
     # request = Net::HTTP::Post.new("/api/v1/jobs.json")

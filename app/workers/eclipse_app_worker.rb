@@ -6,7 +6,7 @@ class EclipseAppWorker
   shoryuken_options queue: queue, body_parser: :json, auto_visibility_timeout: true
 
   def perform(sqs_msg, msg)
-    EclipseApp.poll_jobs_feed
+    EclipseApp.new.poll_jobs_feed
     sqs_msg.delete
   rescue StandardError => e
     sqs_msg.delete
