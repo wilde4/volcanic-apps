@@ -1,7 +1,7 @@
 class BullhornApplicationWorker
   include Shoryuken::Worker
 
-  queue = Rails.env.development? ? 'apps-default-dev' : 'apps-default'
+  queue = Rails.env.development? ? 'apps-high-dev' : 'apps-high'
 
   shoryuken_options queue: queue, body_parser: :json, auto_visibility_timeout: true
 

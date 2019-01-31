@@ -2,3 +2,4 @@ concurrency: 25  # The number of allocated threads to process messages. Default 
 delay: 0        # The delay in seconds to pause a queue when it's empty. Default 0
 queues:
   - [<%=  Rails.env.development? ? 'apps-default-dev' : 'apps-default' %>, 1]
+  - [<%=  Rails.env.development? ? 'apps-high-dev' : 'apps-high' %>, 3]
