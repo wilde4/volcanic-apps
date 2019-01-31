@@ -6,7 +6,7 @@ class TalentRoverWorker
   shoryuken_options queue: queue, body_parser: :json, auto_visibility_timeout: true
 
   def perform(sqs_msg, msg)
-    TalentRoverApp.poll_jobs_feed
+    TalentRoverApp.new.poll_jobs_feed
     sqs_msg.delete
   rescue StandardError => e
     sqs_msg.delete

@@ -1,6 +1,6 @@
 # TalentRoverApp.poll_jobs_feed
 class TalentRoverApp
-  def self.poll_jobs_feed
+  def poll_jobs_feed
     puts '- BEGIN poll_jobs_feed'
 
     # Find who has registered to use TR:
@@ -26,7 +26,7 @@ class TalentRoverApp
     puts '- END poll_jobs_feed'
   end
 
-  def self.parse_jobs
+  def parse_jobs
     jobs = @job_data.xpath("//job")
 
     # Has a Posting Language been defined?
@@ -79,7 +79,7 @@ class TalentRoverApp
     end
   end
 
-  def self.prune_jobs
+  def prune_jobs
     puts '- START pruning jobs'
     jobs = @job_data.xpath("//job")
     posting_language = get_posting_language.downcase
@@ -117,24 +117,24 @@ class TalentRoverApp
   end
 
 private
-  def self.get_xml
+  def get_xml
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     doc = Nokogiri::XML(open(settings.settings["Feed URL"]))
   rescue StandardError => e
     false
   end
 
-  def self.get_posting_language
+  def get_posting_language
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     settings.settings["Posting Language"] || ""
   end
 
-  def self.get_prune_jobs_setting
+  def get_prune_jobs_setting
     settings = AppSetting.find_by(dataset_id: @key.app_dataset_id)
     settings.settings["Prune Jobs"] && settings.settings["Prune Jobs"].downcase == "yes"
   end
 
-  def self.post_payload(payload)
+  def post_payload(payload)
     # net = Net::HTTP.new(@key.host)
     # request = Net::HTTP::Post.new("/api/v1/jobs.json")
     # request.set_form_data( payload )
@@ -154,7 +154,7 @@ private
     end
   end
 
-  def self.attribute_mapping
+  def attribute_mapping
      {
       title: 'job_title',
       referencenumber: 'job_reference',
