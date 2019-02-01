@@ -223,6 +223,24 @@ describe JobadderController, :type => :controller do
 
     end
 
+    it 'should pass POST #callback permission not granted' do
+
+      ja_setting = create(:jobadder_app_setting, access_token: '', refresh_token: '', access_token_expires_at: '')
+
+      state = ja_setting.dataset_id
+
+      post :callback, :error => 'access_denied', :state => state
+
+      expect(flash[:alert]).to eq "App could not be authorised."
+
+      expect(response).to redirect_to(ja_setting.app_url)
+
+      expect(ja_setting.app_logs.first.endpoint).to eq "/callback"
+      expect(ja_setting.app_logs.first.message).to eq "Could not authorize"
+      expect(ja_setting.app_logs.first.response).to eq "access_denied"
+
+    end
+
     it 'should pass POST #save_candidate create new user' do
 
       ja_setting = create(:jobadder_app_setting)
