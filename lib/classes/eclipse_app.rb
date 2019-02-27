@@ -28,7 +28,7 @@ class EclipseApp
       @job_payload = Hash.new
       @job_payload["job[api_key]"] = @key.api_key
 
-      EclipseApp.austin_andrews_payload(job) if @key.app_dataset_id == 83
+      austin_andrews_payload(job) if @key.app_dataset_id == 83
 
       puts "--- @job_payload = #{@job_payload.inspect}"
       post_payload(@job_payload) unless @job_payload["job[discipline]"].blank?
