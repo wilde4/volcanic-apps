@@ -141,6 +141,10 @@ class JobadderController < ApplicationController
 
     end
 
+    create_log(@ja_user, @key, 'ja_user', "jobadder_controller/save_candidate", { attributes: params }.to_s, @ja_user
+                                                                                                           .as_json
+                                                                                                     .to_s)
+
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
 
@@ -183,6 +187,10 @@ class JobadderController < ApplicationController
   def job_application
 
     JobadderApplicationWorker.perform_async params
+
+    create_log(params, @key, 'job_application', "jobadder_controller/job_application", { attributes: params }.to_s, nil)
+
+
     render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
 
   rescue StandardError => e
@@ -280,4 +288,12 @@ class JobadderController < ApplicationController
     end
 
   end
+
+  def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
+    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: (@client.errors || response), error: error, internal: internal, uid: uid || @client.access_token
+    log.id
+  rescue StandardError => e
+    Honeybadger.notify(e)
+  end
+
 end
