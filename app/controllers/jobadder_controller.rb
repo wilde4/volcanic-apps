@@ -120,30 +120,30 @@ class JobadderController < ApplicationController
 
     if @ja_user.present?
       @ja_user.update(
-          {
-              email: params[:user][:email],
-              user_data: params[:user],
-              user_profile: params[:user_profile],
-              linkedin_profile: params[:linkedin_profile],
-              registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
-          }
+        {
+          email: params[:user][:email],
+          user_data: params[:user],
+          user_profile: params[:user_profile],
+          linkedin_profile: params[:linkedin_profile],
+          registration_answers: (params[:registration_answer_hash].present? ? format_reg_answer(params[:registration_answer_hash]) : nil)
+        }
       )
 
     else
       @ja_user = JobadderUser.create(user_id: params[:user][:id],
-                                     email: params[:user][:email],
-                                     user_data: params[:user],
-                                     user_profile: params[:user_profile],
-                                     linkedin_profile: params[:linkedin_profile],
-                                     registration_answers: params[:registration_answer_hash].present? ?
-                                                               format_reg_answer(params[:registration_answer_hash]) : nil)
+        email: params[:user][:email],
+        user_data: params[:user],
+        user_profile: params[:user_profile],
+        linkedin_profile: params[:linkedin_profile],
+        registration_answers: params[:registration_answer_hash].present? ?
+                                format_reg_answer(params[:registration_answer_hash]) : nil)
 
 
     end
 
-    create_log(@ja_user, @key, 'ja_user', "jobadder_controller/save_candidate", { attributes: params }.to_s, @ja_user
-                                                                                                           .as_json
-                                                                                                     .to_s)
+    create_log(@ja_user, @key, 'ja_user', "jobadder_controller/save_candidate",
+      { attributes: params }.to_s,
+      @ja_user.as_json.to_s)
 
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
@@ -217,10 +217,10 @@ class JobadderController < ApplicationController
 
   def ja_params
     params.require(:jobadder_app_setting).permit(
-        :dataset_id,
-        :import_jobs,
-        :ja_params,
-        jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
+      :dataset_id,
+      :import_jobs,
+      :ja_params,
+      jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
     )
   end
 
