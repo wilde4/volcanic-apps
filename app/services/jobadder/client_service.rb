@@ -43,7 +43,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'add_candidate_to_job', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'add_candidate_to_job', url, e.message, response, true, true, @ja_setting.access_token)
     {error: 'Error adding candidate to a job'}
   end
 
@@ -61,7 +61,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_submissions_for_job', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_submissions_for_job', url, e.message, response, true, true, @ja_setting.access_token)
     {error: "Error getting submissions for a job id - #{job_id}"}
   end
 
@@ -80,7 +80,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_worktypes', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_worktypes', url, e.message, response, true, true, @ja_setting.access_token)
     {error: "Error getting worktypes"}
 
   end
@@ -112,7 +112,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(ja_setting, @key, 'add_candidate', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(ja_setting, @key, 'add_candidate', url, e.message, add_candidate_response, true, true, @ja_setting.access_token)
     {error: 'Error adding candidate'}
 
   end
@@ -140,7 +140,7 @@ class Jobadder::ClientService < BaseService
 
     check_token_expiration(@ja_setting)
 
-    @response = RestClient.post url, {:fileData => file},
+    response = RestClient.post url, {:fileData => file},
                                 {:Authorization => "Bearer " + @ja_setting.access_token}
     delete_file(file)
 
@@ -149,7 +149,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
 
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'upload_single_attachment', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'upload_single_attachment', url, e.message, response, true, true, @ja_setting.access_token)
     {error: "Error uploading single attachment - #{file_name}"}
 
     return false
@@ -179,7 +179,7 @@ class Jobadder::ClientService < BaseService
     return update_candidate_response
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(ja_setting, @key, 'update_candidate', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(ja_setting, @key, 'update_candidate', url, e.message, update_candidate_response, true, true, @ja_setting.access_token)
     {error: "Error updating JobAdder candidate with user_id - #{user_id}"}
 
 
@@ -199,7 +199,8 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_candidate_by_email', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_candidate_by_email', url, e.message, response, true, true, @ja_setting
+                                                                                                  .access_token)
     {error: "Error getting JobAdder candidate by email - #{candidate_email}"}
 
   end
@@ -219,7 +220,7 @@ class Jobadder::ClientService < BaseService
 
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_candidate_custom_fields', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_candidate_custom_fields', url, e.message, response, true, true, @ja_setting.access_token)
     {error: "Error getting JobAdder candidate custom fields"}
 
 
@@ -261,7 +262,7 @@ class Jobadder::ClientService < BaseService
     return @fields
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_volcanic_candidate_fields', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_volcanic_candidate_fields', url, e.message, response, true, true, @ja_setting.access_token)
     {error: 'Error retrieving volcanic candidate fields'}
   end
 
@@ -289,7 +290,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     puts e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_jobadder_candidate_fields', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_jobadder_candidate_fields', url, e.message, @ja_candidate_fields, true, true, @ja_setting.access_token)
     {error: 'Error retrieving JobAdder candidate fields'}
   end
 
@@ -304,7 +305,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     puts e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_get_volcanic_user', url, nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'get_get_volcanic_user', url, e.message, response, true, true, @ja_setting.access_token)
     {error: 'Error retrieving Volcanic User Details'}
   end
 
@@ -332,7 +333,8 @@ class Jobadder::ClientService < BaseService
     return file
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service', nil, e.message, true, true, @ja_setting.access_token)
+    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service', e.message, file, true, true, @ja_setting
+                                                                                                        .access_token)
     {error: "Error writing file with name : #{file_name} from url: #{file_url}"}
 
     delete_file(file)
