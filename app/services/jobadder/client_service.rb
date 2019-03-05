@@ -10,7 +10,6 @@ class Jobadder::ClientService < BaseService
     setup_client
   end
 
-
   def setup_client
 
     @client = Jobadder::AuthenticationService.client(@ja_setting)
@@ -33,18 +32,18 @@ class Jobadder::ClientService < BaseService
 
 
     response = HTTParty.post(url,
-                             :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
-                                          "Content-type" => "application/json"},
-                             :body => {'candidateId' => candidate_ids,
-                                       'source' => 'VolcanicApp'
+      :headers => { "Authorization" => "Bearer " + @ja_setting.access_token,
+        "Content-type" => "application/json" },
+      :body => { 'candidateId' => candidate_ids,
+        'source' => 'VolcanicApp'
 
-                             }.to_json)
+      }.to_json)
     return response
 
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'add_candidate_to_job', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: 'Error adding candidate to a job'}
+    { error: 'Error adding candidate to a job' }
   end
 
   def get_applications_for_job(job_id)
@@ -55,14 +54,14 @@ class Jobadder::ClientService < BaseService
 
 
     response = HTTParty.get(url,
-                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
-                                         "Content-type" => "application/json"})
+      :headers => { "Authorization" => "Bearer " + @ja_setting.access_token,
+        "Content-type" => "application/json" })
     return response
 
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_submissions_for_job', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: "Error getting submissions for a job id - #{job_id}"}
+    { error: "Error getting submissions for a job id - #{job_id}" }
   end
 
   def get_worktypes
@@ -72,8 +71,8 @@ class Jobadder::ClientService < BaseService
     url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:worktypes]
 
     response = HTTParty.get(url,
-                            :headers => {"Authorization" => "Bearer " + @ja_setting.access_token,
-                                         "Content-type" => "application/json"})
+      :headers => { "Authorization" => "Bearer " + @ja_setting.access_token,
+        "Content-type" => "application/json" })
 
 
     return response
@@ -81,7 +80,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_worktypes', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: "Error getting worktypes"}
+    { error: "Error getting worktypes" }
 
   end
 
@@ -104,16 +103,16 @@ class Jobadder::ClientService < BaseService
     check_token_expiration(ja_setting)
     # Add candidate
     add_candidate_response = HTTParty.post(url,
-                                           :headers => {"Authorization" => "Bearer " + ja_setting.access_token,
-                                                        "Content-type" => "application/json"},
-                                           :body => request_body.to_json)
+      :headers => { "Authorization" => "Bearer " + ja_setting.access_token,
+        "Content-type" => "application/json" },
+      :body => request_body.to_json)
 
     return add_candidate_response
 
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(ja_setting, @key, 'add_candidate', url, e.message, add_candidate_response, true, true, @ja_setting.access_token)
-    {error: 'Error adding candidate'}
+    { error: 'Error adding candidate' }
 
   end
 
@@ -140,8 +139,8 @@ class Jobadder::ClientService < BaseService
 
     check_token_expiration(@ja_setting)
 
-    response = RestClient.post url, {:fileData => file},
-                                {:Authorization => "Bearer " + @ja_setting.access_token}
+    response = RestClient.post url, { :fileData => file },
+      { :Authorization => "Bearer " + @ja_setting.access_token }
     delete_file(file)
 
     return true
@@ -150,7 +149,7 @@ class Jobadder::ClientService < BaseService
 
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'upload_single_attachment', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: "Error uploading single attachment - #{file_name}"}
+    { error: "Error uploading single attachment - #{file_name}" }
 
     return false
 
@@ -171,16 +170,16 @@ class Jobadder::ClientService < BaseService
     check_token_expiration(ja_setting)
 
     update_candidate_response = HTTParty.put(url,
-                                             :headers => {'User-Agent' => 'VolcanicJobadderApp',
-                                                          'Content-Type' => 'application/json',
-                                                          "Authorization" => "Bearer " + ja_setting.access_token},
-                                             :body => request_body.to_json
+      :headers => { 'User-Agent' => 'VolcanicJobadderApp',
+        'Content-Type' => 'application/json',
+        "Authorization" => "Bearer " + ja_setting.access_token },
+      :body => request_body.to_json
     )
     return update_candidate_response
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(ja_setting, @key, 'update_candidate', url, e.message, update_candidate_response, true, true, @ja_setting.access_token)
-    {error: "Error updating JobAdder candidate with user_id - #{user_id}"}
+    { error: "Error updating JobAdder candidate with user_id - #{user_id}" }
 
 
   end
@@ -192,16 +191,16 @@ class Jobadder::ClientService < BaseService
     check_token_expiration(@ja_setting)
 
     response = HTTParty.get(url,
-                            :headers => {'User-Agent' => 'VolcanicJobadderApp',
-                                         "Authorization" => "Bearer " + @ja_setting.access_token}
+      :headers => { 'User-Agent' => 'VolcanicJobadderApp',
+        "Authorization" => "Bearer " + @ja_setting.access_token }
     )
     return response
 
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_candidate_by_email', url, e.message, response, true, true, @ja_setting
-                                                                                                  .access_token)
-    {error: "Error getting JobAdder candidate by email - #{candidate_email}"}
+                                                                                                    .access_token)
+    { error: "Error getting JobAdder candidate by email - #{candidate_email}" }
 
   end
 
@@ -212,8 +211,8 @@ class Jobadder::ClientService < BaseService
     check_token_expiration(@ja_setting)
 
     response = HTTParty.get(url,
-                            headers: {'User-Agent' => 'VolcanicJobadderApp',
-                                      "Authorization" => "Bearer " + @ja_setting.access_token})
+      headers: { 'User-Agent' => 'VolcanicJobadderApp',
+        "Authorization" => "Bearer " + @ja_setting.access_token })
     response.code == 200 ? response.body : {}
 
     return response
@@ -221,7 +220,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_candidate_custom_fields', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: "Error getting JobAdder candidate custom fields"}
+    { error: "Error getting JobAdder candidate custom fields" }
 
 
   end
@@ -229,15 +228,15 @@ class Jobadder::ClientService < BaseService
   # GETS VOLCANIC CANDIDATES FIELDS VIA API
   def get_volcanic_candidate_fields
     url = "#{@key.protocol}#{@key.host}/api/v1/user_groups.json"
-    response = HTTParty.get(url, headers: {'User-Agent' => 'VolcanicJobadderApp'})
+    response = HTTParty.get(url, headers: { 'User-Agent' => 'VolcanicJobadderApp' })
     @volcanic_fields = {}
     @volcanic_upload_file_fields = {}
     @volcanic_upload_file_fields_core = {}
     @fields = {}
 
-    response.select {|f| f['default'] == true}.each {|r|
-      r['registration_question_groups'].each {|rg|
-        rg['registration_questions'].each {|q|
+    response.select { |f| f['default'] == true }.each { |r|
+      r['registration_question_groups'].each { |rg|
+        rg['registration_questions'].each { |q|
           unless %w(password password_confirmation terms_and_conditions).include?(q['core_reference'])
             if q["question_type"] == "File Upload"
               if %w(covering_letter upload_cv).include?(q['core_reference'])
@@ -263,7 +262,7 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_volcanic_candidate_fields', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: 'Error retrieving volcanic candidate fields'}
+    { error: 'Error retrieving volcanic candidate fields' }
   end
 
   def get_jobadder_candidate_fields
@@ -291,24 +290,22 @@ class Jobadder::ClientService < BaseService
     puts e
     Honeybadger.notify(e)
     create_log(@ja_setting, @key, 'get_jobadder_candidate_fields', url, e.message, @ja_candidate_fields, true, true, @ja_setting.access_token)
-    {error: 'Error retrieving JobAdder candidate fields'}
+    { error: 'Error retrieving JobAdder candidate fields' }
   end
 
   def get_volcanic_user(user_id)
 
     url = "#{@key.protocol}#{@key.host}/api/v1/users/#{user_id}.json?api_key=#{@key.api_key}"
 
-    response = HTTParty.get(url, headers: {'User-Agent' => 'VolcanicJobadderApp'})
+    response = HTTParty.get(url, headers: { 'User-Agent' => 'VolcanicJobadderApp' })
 
     return response
 
   rescue StandardError => e
     puts e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'get_get_volcanic_user', url, e.message, response, true, true, @ja_setting.access_token)
-    {error: 'Error retrieving Volcanic User Details'}
+    create_log(@ja_setting, @key, 'get_get_volcanic_user', url, e.message, response, { error: 'Error retrieving Volcanic User Details' }, true, @ja_setting.access_token)
   end
-
 
   private
 
@@ -318,7 +315,6 @@ class Jobadder::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
   end
-
 
   def create_file(prefix, file_name, file_url)
 
@@ -333,9 +329,10 @@ class Jobadder::ClientService < BaseService
     return file
   rescue StandardError => e
     Honeybadger.notify(e)
-    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service', e.message, file, true, true, @ja_setting
-                                                                                                        .access_token)
-    {error: "Error writing file with name : #{file_name} from url: #{file_url}"}
+    create_log(@ja_setting, @key, 'create_file', 'jobadder-client-service',
+      { message: e.message, details: { error: "Error writing file with name : #{file_name} from url: #{file_url}" } },
+      file, true, true,
+      @ja_setting.access_token)
 
     delete_file(file)
 
@@ -494,7 +491,7 @@ class Jobadder::ClientService < BaseService
   # extract all keys from deep nested JSON
   # nested key will have parent key name as prefix
   def get_all_keys(target_hash, field = '', array = [])
-    target_hash.each {|k, v|
+    target_hash.each { |k, v|
       if k.is_a?(String)
         @field = field + '_' + k
       end
@@ -525,7 +522,7 @@ class Jobadder::ClientService < BaseService
 
   def salary(reg_answer, jobadder_field_name, salary, current)
     salary['ratePer'] = reg_answer if jobadder_field_name.include?('ratePer') && (reg_answer.casecmp('hour').zero? || reg_answer.casecmp('day').zero? ||
-        reg_answer.casecmp('week').zero? || reg_answer.casecmp('month').zero? || reg_answer.casecmp('year').zero?)
+      reg_answer.casecmp('week').zero? || reg_answer.casecmp('month').zero? || reg_answer.casecmp('year').zero?)
 
     salary['currency'] = reg_answer if jobadder_field_name.include?('currency')
 
@@ -554,8 +551,8 @@ class Jobadder::ClientService < BaseService
     if ja_setting.access_token_expires_at.present?
       if DateTime.current > ja_setting.access_token_expires_at
         response = Jobadder::AuthenticationService.refresh_token(ja_setting)
-        ja_setting.update({access_token: response.token,
-                           access_token_expires_at: Time.at(response.expires_at)})
+        ja_setting.update({ access_token: response.token,
+          access_token_expires_at: Time.at(response.expires_at) })
       end
     end
   end
