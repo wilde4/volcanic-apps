@@ -7,7 +7,7 @@ class JobadderApplicationWorker
 
   def perform(sqs_msg, msg)
 
-    @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
+     @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
     @job_reference = msg['job']['job_reference']
     @key = Key.find_by(app_name: 'jobadder')
 
