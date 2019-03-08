@@ -15,6 +15,7 @@ class JobadderApplicationWorker
 
       @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
       @ja_service = Jobadder::ClientService.new(@ja_setting) if @ja_setting.present?
+      @client = @ja_service.client
 
       if @ja_service.present?
 

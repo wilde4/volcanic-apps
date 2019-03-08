@@ -15,8 +15,9 @@ class JobadderController < ApplicationController
 
     if @ja_setting.present?
       @ja_service = Jobadder::ClientService.new(@ja_setting)
+      @client = @ja_service.client
 
-      if @ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
+      if @ja_service.present? && @client && @ja_setting.access_token.present?
         get_fields
       end
     end
@@ -113,6 +114,7 @@ class JobadderController < ApplicationController
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:user][:dataset_id])
 
     @ja_service = Jobadder::ClientService.new(@ja_setting)
+    @client = @ja_service.client
 
     @ja_user = JobadderUser.find_by(user_id: params[:user][:id])
 
@@ -187,8 +189,6 @@ class JobadderController < ApplicationController
   def job_application
 
     JobadderApplicationWorker.perform_async params
-
-    create_log(params, @key, 'job_application', "jobadder_controller/job_application", { attributes: params }.to_s, nil)
 
 
     render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
