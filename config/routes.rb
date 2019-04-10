@@ -11,6 +11,8 @@ Apps::Application.routes.draw do
 
   scope :mercury_xrm do
     get   "mercury_xrm_dashboard"  => 'mercury_xrm#mercury_xrm_dashboard'
+    get   "index"  => 'mercury_xrm#index'
+    post  "update"  => "mercury_xrm#update"
   end
 
   scope :trisys do

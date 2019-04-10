@@ -1,0 +1,24 @@
+- @url_post = Rails.env.development? ? 'http://localhost:3001/mercury_xrm/update' : " https://#{ENV['DOMAIN_NAME']}/mercury_xrm/update"
+
+= simple_form_for :mercury, url: @url_post, method: :post, remote: true do |f|
+
+  = f.input :dataset_id, as: :hidden, input_html: {value: @dataset_id}
+  .panel
+    .panel-heading
+      %h5.panel-title Mercury XRM Settings
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :integration_url, input_html: {class: "form-control", value: @mercury_xrm_url}
+          %span.hint Please enter the URL which hosts the Mercury XRM integration
+
+      .row
+        .col-md-6
+          = f.input :encryption_key, input_html: {class: "form-control", value: @mercury_xrm_key}
+          %span.hint Please enter the Encryption Key which encrypts the users email for authentication
+
+        .col-md-6
+          = f.input :encryption_cipher, input_html: {class: "form-control", value: @mercury_xrm_cipher}
+          %span.hint Please enter the Encryption Cipher which encrypts the users email for authentication
+
+        = f.submit 'Save', class: 'btn btn-primary', data: { disable_with: 'Saving...' }
