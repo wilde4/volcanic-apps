@@ -1,0 +1,11 @@
+.panel-group#advanced
+  .panel.panel-default
+    .panel-heading
+      %h5.panel-title
+        = link_to 'Job Board Settings', '#job-board-settings', data: { toggle: 'collapse', parent: '#advanced' }
+    .panel-collapse.collapse#job-board-settings
+      .panel-body
+        = f.input :job_board_id, :label => "Job Board ID", :placeholder => "e.g. 1277",
+        input_html: {class:'form-control', value: @ja_setting.job_board_id },
+        hint: 'Provide Job Board ID or leave it blank'
+        = f.button :submit, "Save", :class => "btn btn-primary mt10"

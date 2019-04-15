@@ -220,7 +220,9 @@ class JobadderController < ApplicationController
       :dataset_id,
       :import_jobs,
       :ja_params,
-      jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name, :registration_question_reference, :job_attribute]
+      :job_board_id,
+      jobadder_field_mappings_attributes: [:id, :jobadder_app_setting_id, :jobadder_field_name,
+        :registration_question_reference, :job_attribute]
     )
   end
 

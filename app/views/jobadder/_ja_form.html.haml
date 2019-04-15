@@ -6,6 +6,8 @@
 
   -# JOBADDER MAPPINGS AND OPTIONS IF THE CLIENT IS AUTHENTICATED
   - if @ja_setting.authorised
+    -# Job Board SETTINGS
+    = render partial: 'job_board_settings', locals: {f: f}
     -# CANDIDATE SETTINGS
     = render partial: 'candidate_settings', locals: {f: f}
 

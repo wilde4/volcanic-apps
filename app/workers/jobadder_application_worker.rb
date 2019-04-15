@@ -7,7 +7,7 @@ class JobadderApplicationWorker
 
   def perform(sqs_msg, msg)
 
-     @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
+    @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
     @job_reference = msg['job']['job_reference']
     @key = Key.find_by(app_name: 'jobadder')
 
@@ -29,7 +29,13 @@ class JobadderApplicationWorker
         else
           @candidate_id = get_candidate_response['items'][0]['candidateId']
         end
-
+        # If job board id provided, get job id
+        if @ja_setting.job_board_id.present?
+          job_ad_id = @ja_service.get_job_ad_id(@ja_setting.job_board_id, @job_reference)
+          job_ad = @ja_service.get_job_ad(job_ad_id) if job_ad_id.present?
+          job_id = job_ad.try(:[], 'job').try(:[], 'jobId')
+          @job_reference = job_id if job_id.present?
+        end
         applicants = @ja_service.get_applications_for_job(@job_reference)
 
         unless applicants['items'].blank?

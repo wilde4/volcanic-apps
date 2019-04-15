@@ -3,8 +3,8 @@ module JobadderHelper
 
     def authentication_urls
       {
-          authorize: 'https://id.jobadder.com/connect/authorize',
-          token: 'https://id.jobadder.com/connect/token'
+        authorize: 'https://id.jobadder.com/connect/authorize',
+        token: 'https://id.jobadder.com/connect/token'
       }
     end
 
@@ -14,19 +14,21 @@ module JobadderHelper
 
     def base_urls
       {
-          job_adder: 'https://api.jobadder.com/v2',
-          volcanic: 'https://www.volcanic.co.uk/api/v1'
+        job_adder: 'https://api.jobadder.com/v2',
+        volcanic: 'https://www.volcanic.co.uk/api/v1'
       }
     end
 
     def endpoints
       {
-          jobs: '/jobs',
-          candidates: '/candidates',
-          applications: '/applications',
-          users: '/users',
-          candidate_custom_fields: '/candidates/fields/custom',
-          worktypes: '/worktypes'
+        jobs: '/jobs',
+        candidates: '/candidates',
+        applications: '/applications',
+        users: '/users',
+        candidate_custom_fields: '/candidates/fields/custom',
+        worktypes: '/worktypes',
+        job_boards: '/jobboards'
+
       }
     end
 
