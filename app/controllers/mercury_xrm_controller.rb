@@ -1,5 +1,5 @@
 class MercuryXrmController < ApplicationController
-
+  protect_from_forgery with: :null_session
   layout "no_jquery_application"
 
   def index
@@ -41,11 +41,11 @@ class MercuryXrmController < ApplicationController
     return "" if dataset_id.blank?
     return "" if email.blank?
 
-    # _ms = MercuryXrmSetting.find_by(dataset_id: dataset_id)
-    # return "" if _ms.nil?
-    # [:integration_url, :encryption_key, :encryption_cipher].each do |_k|
-    #   return "" if _ms.settings[_k].blank?
-    # end
+    _ms = MercuryXrmSetting.find_by(dataset_id: dataset_id)
+    return "" if _ms.nil?
+    [:integration_url, :encryption_key, :encryption_cipher].each do |_k|
+      return "" if _ms.settings[_k].blank?
+    end
     _k = "12FAECC2BF96963967CF77BD8BB117B1B184BB0BDC1E746B0D1FE8A160623A4E"
     _c = "1F3B7D1F98CCF4A240FBAB3F0466E4F1"
 
@@ -60,3 +60,8 @@ class MercuryXrmController < ApplicationController
   # once VA receives this request: then it performs some logic
   # and renders/returns a view which is then displayed on the user dashboard
 end
+
+
+# https://red-portals.azurewebsites.net/mercury.candidateportal/app/portalwidget.js
+# 12FAECC2BF96963967CF77BD8BB117B1B184BB0BDC1E746B0D1FE8A160623A4E
+# 1F3B7D1F98CCF4A240FBAB3F0466E4F1
