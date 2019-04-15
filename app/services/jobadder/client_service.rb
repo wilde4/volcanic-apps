@@ -84,6 +84,66 @@ class Jobadder::ClientService < BaseService
 
   end
 
+  def get_job_ad_id(board_id, reference)
+
+    url = "#{JobadderHelper.base_urls[:job_adder]}#{JobadderHelper
+                                                      .endpoints[:job_boards]}/#{board_id}/ads?reference=#{reference}"
+
+    check_token_expiration(@ja_setting)
+
+    response = HTTParty.get(url,
+      headers: { 'User-Agent' => 'VolcanicJobadderApp',
+        "Authorization" => "Bearer " + @ja_setting.access_token })
+    response.code == 200 ? response.body : {}
+
+    return response.try(:[], 'items').first.try(:[],'adId')
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_job_ad_id', url, e.message, response, true, true, @ja_setting.access_token)
+    { error: "Error getting JobAdder job ad with reference #{reference} from job board #{board_id}" }
+
+  end
+
+  def get_job_ad(ad_id)
+
+    url = "#{JobadderHelper.base_urls[:job_adder]}/jobads/#{ad_id}"
+
+    check_token_expiration(@ja_setting)
+
+    response = HTTParty.get(url,
+      headers: { 'User-Agent' => 'VolcanicJobadderApp',
+        "Authorization" => "Bearer " + @ja_setting.access_token })
+    response.code == 200 ? response.body : {}
+
+    return response
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_job_ad', url, e.message, response, true, true, @ja_setting.access_token)
+    { error: "Error getting JobAdder job ad with id #{ad_id}" }
+
+  end
+
+  def get_job_boards
+    url = "#{JobadderHelper.base_urls[:job_adder]}#{JobadderHelper.endpoints[:job_boards]}"
+
+    check_token_expiration(@ja_setting)
+
+    response = HTTParty.get(url,
+      headers: { 'User-Agent' => 'VolcanicJobadderApp',
+        "Authorization" => "Bearer " + @ja_setting.access_token })
+    response.code == 200 ? response.body : {}
+
+    return response
+
+  rescue StandardError => e
+    Honeybadger.notify(e)
+    create_log(@ja_setting, @key, 'get_job_ad_id', url, e.message, response, true, true, @ja_setting.access_token)
+    { error: "Error getting JobAdder job boards" }
+
+  end
+
+
   def add_candidate(dataset_id, user_id)
 
     ja_setting = JobadderAppSetting.find_by(dataset_id: dataset_id)
