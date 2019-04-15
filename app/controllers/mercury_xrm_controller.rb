@@ -25,7 +25,8 @@ class MercuryXrmController < ApplicationController
         encryption_cipher:  params[:mercury][:encryption_cipher],
       })
     end
-    render nothing: true, status: :success and return
+    head :ok, content_type: "text/html"
+    return
   end
 
   def mercury_xrm_dashboard
@@ -46,12 +47,15 @@ class MercuryXrmController < ApplicationController
     [:integration_url, :encryption_key, :encryption_cipher].each do |_k|
       return "" if _ms.settings[_k].blank?
     end
+
+    # RED SAP - encryption key
     _k = "12FAECC2BF96963967CF77BD8BB117B1B184BB0BDC1E746B0D1FE8A160623A4E"
+    # RED SAP - encryption cipher
     _c = "1F3B7D1F98CCF4A240FBAB3F0466E4F1"
 
     # Pull in the values we need here...
-    # return AesEncryptionService.encrypt_email(email, _ms.settings[:encryption_key], _ms.settings[:encryption_cipher])
-    return AesEncryptionService.encrypt_email(email, _k, _c)
+    return AesEncryptionService.encrypt_email(email, _ms.settings[:encryption_key], _ms.settings[:encryption_cipher])
+    # return AesEncryptionService.encrypt_email(email, _k, _c)
   end
 
   # user dashboard, checks to see if the Mercury XRM App is enabled
@@ -60,8 +64,3 @@ class MercuryXrmController < ApplicationController
   # once VA receives this request: then it performs some logic
   # and renders/returns a view which is then displayed on the user dashboard
 end
-
-
-# https://red-portals.azurewebsites.net/mercury.candidateportal/app/portalwidget.js
-# 12FAECC2BF96963967CF77BD8BB117B1B184BB0BDC1E746B0D1FE8A160623A4E
-# 1F3B7D1F98CCF4A240FBAB3F0466E4F1
