@@ -10,10 +10,10 @@ class JobadderApplicationWorker
     @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
     @job_reference = msg['job']['job_reference']
     @key = Key.find_by(app_name: 'jobadder')
+    @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
 
     if @ja_user.present? && @job_reference.present?
 
-      @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
       @ja_service = Jobadder::ClientService.new(@ja_setting) if @ja_setting.present?
 
       if @ja_service.present?
@@ -52,9 +52,6 @@ class JobadderApplicationWorker
         end
         sqs_msg.delete
       end
-
-    else
-      create_log(@ja_user, @key, 'ja_user', "jobadder_application_worker/perform", { attributes: msg }.to_s, @ja_user.as_json.to_s)
     end
 
   rescue StandardError => e
@@ -121,13 +118,6 @@ class JobadderApplicationWorker
 
   def add_single_attachment(ja_service, application_id, attachment_url, attachment_name, attachment_type, job_reference)
     ja_service.add_single_attachment(application_id, attachment_url, attachment_name, attachment_type, 'application', job_reference)
-  end
-
-  def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
-    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: (@client.errors || response), error: error, internal: internal, uid: uid || @client.access_token
-    log.id
-  rescue StandardError => e
-    Honeybadger.notify(e)
   end
 
 end
