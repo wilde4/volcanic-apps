@@ -10,10 +10,10 @@ class JobadderApplicationWorker
     @ja_user = JobadderUser.find_by(user_id: msg['user']['id'])
     @job_reference = msg['job']['job_reference']
     @key = Key.find_by(app_name: 'jobadder')
-    @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
 
     if @ja_user.present? && @job_reference.present?
 
+      @ja_setting = JobadderAppSetting.find_by(dataset_id: msg['dataset_id'])
       @ja_service = Jobadder::ClientService.new(@ja_setting) if @ja_setting.present?
 
       if @ja_service.present?
