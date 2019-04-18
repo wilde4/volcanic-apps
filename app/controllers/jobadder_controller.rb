@@ -292,7 +292,7 @@ class JobadderController < ApplicationController
   end
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
-    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: (@client.errors || response), error: error, internal: internal, uid: uid || @client.access_token
+    log = loggable.app_logs.create key: key, endpoint: endpoint, name: name, message: message, response: response, error: error, internal: internal, uid: uid || @ja_setting.access_token
     log.id
   rescue StandardError => e
     Honeybadger.notify(e)
