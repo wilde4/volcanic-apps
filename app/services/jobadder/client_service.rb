@@ -3,6 +3,7 @@ class Jobadder::ClientService < BaseService
   require 'net/http'
   require 'rest_client'
 
+
   def initialize(ja_setting)
     @ja_setting = ja_setting
     @callback_url = JobadderHelper.callback_url
@@ -96,7 +97,7 @@ class Jobadder::ClientService < BaseService
         "Authorization" => "Bearer " + @ja_setting.access_token })
     response.code == 200 ? response.body : {}
 
-    return response.try(:[], 'items').first.try(:[],'adId')
+    return response.try(:[], 'items').first.try(:[], 'adId')
 
   rescue StandardError => e
     Honeybadger.notify(e)
@@ -142,7 +143,6 @@ class Jobadder::ClientService < BaseService
     { error: "Error getting JobAdder job boards" }
 
   end
-
 
   def add_candidate(dataset_id, user_id)
 
@@ -246,7 +246,9 @@ class Jobadder::ClientService < BaseService
 
   def get_candidate_by_email(candidate_email)
 
-    url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates] + "?email=#{candidate_email}"
+    candidate_email_encoded = CGI.escape(candidate_email)
+
+    url = JobadderHelper.base_urls[:job_adder] + JobadderHelper.endpoints[:candidates] + "?email=#{candidate_email_encoded}"
 
     check_token_expiration(@ja_setting)
 
