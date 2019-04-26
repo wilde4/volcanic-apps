@@ -188,8 +188,6 @@ class JobadderController < ApplicationController
 
     JobadderApplicationWorker.perform_async params
 
-    create_log(params, @key, 'job_application', "jobadder_controller/job_application", { attributes: params }.to_s, nil)
-
 
     render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
 
