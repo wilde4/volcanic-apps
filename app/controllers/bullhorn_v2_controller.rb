@@ -446,6 +446,7 @@ class BullhornV2Controller < ApplicationController
         :full_candidate_registrations_only,
         :existing_candidate_registrations_only,
         :send_cover_letter,
+        :poll_frequency,
         bullhorn_field_mappings_attributes: [:id, :bullhorn_app_setting_id, :bullhorn_field_name, :registration_question_reference, :job_attribute]
         )
     end

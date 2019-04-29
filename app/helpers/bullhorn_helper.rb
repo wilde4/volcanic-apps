@@ -19,4 +19,16 @@ module BullhornHelper
     end
   end
 
+  def poll_collection
+    [
+      ['Every Hour', 1],
+      ['Every 2 hours', 2],
+      ['Every 3 hours', 3],
+      ['Every 4 hours', 4],
+      ['Every 6 hours', 6],
+      ['Every 12 hours', 12],
+      ['Every 24 hours', 24],
+    ]
+  end
+
 end
