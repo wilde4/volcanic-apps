@@ -17,6 +17,7 @@
           %p Job imports are usually triggered on an hourly schedule, however if you wish to start a job import now you may use the button below. This can be useful if you have just changed some job mappings and wish to put them into effect immediatley.
           - import_url = Rails.env.development? ? "http://localhost:3001/bullhorn_v2/import_jobs/#{@key.id}" : "https://#{ENV['DOMAIN_NAME']}/bullhorn_v2/import_jobs/#{@key.id}"
           %p= link_to 'Start job import now', import_url, remote: true, id: 'import-btn', class: 'btn btn-warning', data: { confirm: 'Are you sure you want to start a job import?' }
+          %p= f.input :poll_frequency, collection: poll_collection, hint: 'Poll jobs less frequently than the default of hourly', input_html: { class: 'form-control'}
 
           %hr
           %h6 Published Vacancies Filter

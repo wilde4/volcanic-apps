@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190409094750) do
+ActiveRecord::Schema.define(version: 20190429142029) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -99,6 +99,9 @@ ActiveRecord::Schema.define(version: 20190409094750) do
     t.boolean  "send_cover_letter",                     default: false
     t.boolean  "existing_candidate_registrations_only", default: false
     t.string   "cached_consent_object_name"
+    t.string   "bbo_domain"
+    t.integer  "poll_frequency",                        default: 1
+    t.integer  "poll_count",                            default: 1
   end
 
   create_table "bullhorn_field_mappings", force: true do |t|
