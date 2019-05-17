@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190429142029) do
+ActiveRecord::Schema.define(version: 20190517050227) do
 
   create_table "achievements", force: true do |t|
     t.integer "user_id"
@@ -99,7 +99,6 @@ ActiveRecord::Schema.define(version: 20190429142029) do
     t.boolean  "send_cover_letter",                     default: false
     t.boolean  "existing_candidate_registrations_only", default: false
     t.string   "cached_consent_object_name"
-    t.string   "bbo_domain"
     t.integer  "poll_frequency",                        default: 1
     t.integer  "poll_count",                            default: 1
   end
@@ -338,14 +337,12 @@ ActiveRecord::Schema.define(version: 20190429142029) do
 
   create_table "jobadder_app_settings", force: true do |t|
     t.integer  "dataset_id"
-    t.string   "encrypted_ja_client_id"
-    t.string   "encrypted_ja_client_secret"
-    t.boolean  "import_jobs",                default: false
+    t.boolean  "import_jobs",             default: false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "authorised",                 default: false
-    t.boolean  "custom_job_mapping",         default: false
-    t.boolean  "expire_closed_jobs",         default: false
+    t.boolean  "authorised",              default: false
+    t.boolean  "custom_job_mapping",      default: false
+    t.boolean  "expire_closed_jobs",      default: false
     t.string   "refresh_token"
     t.string   "access_token"
     t.string   "app_url"
@@ -475,6 +472,13 @@ ActiveRecord::Schema.define(version: 20190429142029) do
   end
 
   add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
+
+  create_table "mercury_xrm_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.text     "settings"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "pages_created_per_months", force: true do |t|
     t.string   "url"

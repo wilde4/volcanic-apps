@@ -378,7 +378,7 @@ describe JobadderController, :type => :controller do
       controller.instance_variable_set('@ja_setting', ja_setting)
       controller.instance_variable_set('@ja_service', ja_service)
 
-      controller.send(:get_fields)
+      controller.send(:fget_fields)
 
       expect(ja_setting.jobadder_field_mappings.size).to eq(3)
 

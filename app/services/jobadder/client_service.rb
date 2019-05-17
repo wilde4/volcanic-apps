@@ -3,7 +3,6 @@ class Jobadder::ClientService < BaseService
   require 'net/http'
   require 'rest_client'
 
-
   def initialize(ja_setting)
     @ja_setting = ja_setting
     @callback_url = JobadderHelper.callback_url
@@ -12,9 +11,7 @@ class Jobadder::ClientService < BaseService
   end
 
   def setup_client
-
     @client = Jobadder::AuthenticationService.client(@ja_setting)
-
 
     if @callback_url.present?
       @authorize_url = Jobadder::AuthenticationService.authorize_url(@ja_setting.dataset_id, @ja_setting)
@@ -178,6 +175,7 @@ class Jobadder::ClientService < BaseService
 
   def add_single_attachment(id, upload_path, file_name, attachment_type, receiver, prefix)
 
+    # check where to send attachment
     case receiver
     when 'candidate'
       endpoint = JobadderHelper.endpoints[:candidates]
@@ -194,13 +192,14 @@ class Jobadder::ClientService < BaseService
       # UPLOAD PATHS USE CLOUDFRONT URL
       @file_url = upload_path
     end
-
+    # create temporary file
     file = create_file(prefix, file_name, @file_url)
 
     check_token_expiration(@ja_setting)
 
     response = RestClient.post url, { :fileData => file },
       { :Authorization => "Bearer " + @ja_setting.access_token }
+    # remove temporary file
     delete_file(file)
 
     return true
@@ -328,7 +327,8 @@ class Jobadder::ClientService < BaseService
   end
 
   def get_jobadder_candidate_fields
-
+    # JobAdder add candidate JSON body is stored in db,
+    # JSON was taken from https://api.jobadder.com/v2/docs#operation/AddCandidate
     request_body = JSON.parse(JobadderRequestBody.find_by(name: 'add_candidate')[:json])
 
     custom_fields = get_candidate_custom_fields
@@ -429,6 +429,7 @@ class Jobadder::ClientService < BaseService
 
   end
 
+  # Construct JSON for https://api.jobadder.com/v2/docs#operation/AddCandidate
   def construct_candidate_request_body(ja_setting, registration_answers, ja_user, custom_fields_answers, work_types)
     request_body = Hash.new
     request_body["firstName"] = ja_user.user_profile['first_name']
