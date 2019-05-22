@@ -235,14 +235,14 @@ class Bullhorn::ClientService < BaseService
         attributes['address']['countryID'] = get_country(answer) if answer.present?
       when 'category', 'categoryID'
         # FIND category ID
-        categories = @client.categories
+        bh_categories = @client.categories
        
-        category = categories.data.select{ |c| c.name == answer }.first
+        categories = bh_categories.data.select { |c| Array(answer).include? c.name }
         
-        if category.present?
+        if categories.present?
            attributes['category'] = {}
-           attributes['category']['id'] = category.id
-           @category_id = category.id
+           attributes['category']['id'] = categories.first.id
+           @category_ids = categories.map(&:id)
         end
       when 'experience'
         attributes[fm.bullhorn_field_name] = answer.to_i if answer.present?
@@ -697,8 +697,8 @@ class Bullhorn::ClientService < BaseService
   end
 
   def send_category(bullhorn_id)
-    if @category_id.present?
-      Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_id).send_category_to_bullhorn
+    if @category_ids.present?
+      Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_ids).send_category_to_bullhorn
     end
   rescue StandardError => e
     Honeybadger.notify(e)

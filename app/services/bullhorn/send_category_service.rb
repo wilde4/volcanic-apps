@@ -1,11 +1,11 @@
 class Bullhorn::SendCategoryService < BaseService
-  attr_reader :bullhorn_id, :category_id, :client
-  private :bullhorn_id, :category_id, :client
+  attr_reader :bullhorn_id, :category_ids, :client
+  private :bullhorn_id, :category_ids, :client
   
-  def initialize(bullhorn_id, client, category_id)
+  def initialize(bullhorn_id, client, category_ids)
     @bullhorn_id = bullhorn_id
     @client = client
-    @category_id = category_id
+    @category_ids = category_ids
   end
   
   def send_category_to_bullhorn
@@ -15,7 +15,7 @@ class Bullhorn::SendCategoryService < BaseService
   private
   
     def category_request
-      client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'categories', association_ids: "#{category_id}" })
+      client.create_candidate({}.to_json, { candidate_id: bullhorn_id, association: 'categories', association_ids: "#{category_ids.join(',')}" })
     end
     
     def log_response(response)
