@@ -12,7 +12,6 @@ class JobadderController < ApplicationController
     @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
-
     if @ja_setting.present?
       @ja_service = Jobadder::ClientService.new(@ja_setting)
 
@@ -21,9 +20,7 @@ class JobadderController < ApplicationController
         get_fields
       end
     end
-
     render layout: false
-
   end
 
   def update
@@ -68,7 +65,7 @@ class JobadderController < ApplicationController
     unless @ja_setting.authorised
       render :text => "OK"
     end
-
+    # get fields to show in candidate mappings view
     get_fields if @ja_service.present? && @ja_setting.access_token.present?
 
   rescue StandardError => e
@@ -226,9 +223,9 @@ class JobadderController < ApplicationController
   end
 
   def update_ja_params_token(ja_setting, token_response)
-    ja_setting.update(access_token: token_response.token)
-    ja_setting.update(refresh_token: token_response.refresh_token)
-    ja_setting.update(access_token_expires_at: Time.at(token_response.expires_at))
+    ja_setting.update(access_token: token_response.token,
+      refresh_token: token_response.refresh_token,
+      access_token_expires_at: Time.at(token_response.expires_at))
   end
 
   def check_api_access
