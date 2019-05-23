@@ -368,7 +368,7 @@ class Bullhorn::ClientService < BaseService
 
     if bullhorn_id.present?
       #category
-      send_category(bullhorn_id)
+      send_category(user, bullhorn_id)
 
       # CREATE NEW API CALL TO ADD ASSOCIATIONS TO CANDIDATE
       if user.registration_answers.present?
@@ -696,9 +696,10 @@ class Bullhorn::ClientService < BaseService
     return string
   end
 
-  def send_category(bullhorn_id)
+  def send_category(user, bullhorn_id)
     if @category_ids.present?
-      Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_ids).send_category_to_bullhorn
+      response = Bullhorn::SendCategoryService.new(bullhorn_id, @client, @category_ids).send_category_to_bullhorn
+      create_log(user, @key, 'send_category_service', "entity/candidate/#{bullhorn_id}", { attributes: { category_ids: @category_ids.join(',') } }.to_s, response.to_s, (response.errors.present? || response.errorMessage.present?))
     end
   rescue StandardError => e
     Honeybadger.notify(e)

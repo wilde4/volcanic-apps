@@ -20,5 +20,6 @@ class Bullhorn::SendCategoryService < BaseService
     
     def log_response(response)
       Rails.logger.info "--- categories_response = #{response.inspect}" 
+      response
     end
 end
