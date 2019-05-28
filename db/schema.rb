@@ -99,7 +99,6 @@ ActiveRecord::Schema.define(version: 20190429142029) do
     t.boolean  "send_cover_letter",                     default: false
     t.boolean  "existing_candidate_registrations_only", default: false
     t.string   "cached_consent_object_name"
-    t.string   "bbo_domain"
     t.integer  "poll_frequency",                        default: 1
     t.integer  "poll_count",                            default: 1
   end
@@ -302,6 +301,12 @@ ActiveRecord::Schema.define(version: 20190429142029) do
     t.string   "currency",                              default: "GBP"
   end
 
+  create_table "inventory_registration_bonuses", force: true do |t|
+    t.integer "inventory_id"
+    t.integer "registration_bonus_id"
+    t.integer "quantity"
+  end
+
   create_table "job_boards", force: true do |t|
     t.integer  "app_dataset_id"
     t.datetime "created_at"
@@ -338,14 +343,12 @@ ActiveRecord::Schema.define(version: 20190429142029) do
 
   create_table "jobadder_app_settings", force: true do |t|
     t.integer  "dataset_id"
-    t.string   "encrypted_ja_client_id"
-    t.string   "encrypted_ja_client_secret"
-    t.boolean  "import_jobs",                default: false
+    t.boolean  "import_jobs",             default: false
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "authorised",                 default: false
-    t.boolean  "custom_job_mapping",         default: false
-    t.boolean  "expire_closed_jobs",         default: false
+    t.boolean  "authorised",              default: false
+    t.boolean  "custom_job_mapping",      default: false
+    t.boolean  "expire_closed_jobs",      default: false
     t.string   "refresh_token"
     t.string   "access_token"
     t.string   "app_url"
@@ -476,6 +479,13 @@ ActiveRecord::Schema.define(version: 20190429142029) do
 
   add_index "mail_chimp_conditions", ["mail_chimp_app_settings_id"], name: "index_mail_chimp_conditions_on_mail_chimp_app_settings_id", using: :btree
 
+  create_table "mercury_xrm_settings", force: true do |t|
+    t.integer  "dataset_id"
+    t.text     "settings"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "pages_created_per_months", force: true do |t|
     t.string   "url"
     t.date     "date_added"
@@ -534,6 +544,14 @@ ActiveRecord::Schema.define(version: 20190429142029) do
     t.string   "account_number"
     t.string   "sort_code"
     t.integer  "dataset_id"
+  end
+
+  create_table "registration_bonuses", force: true do |t|
+    t.string  "name"
+    t.string  "user_group"
+    t.integer "dataset_id"
+    t.integer "quantity",    default: 0
+    t.string  "credit_type"
   end
 
   create_table "registration_questions", force: true do |t|

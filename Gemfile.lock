@@ -497,6 +497,3 @@ DEPENDENCIES
   vcr
   webmock
   youtube_it
-
-BUNDLED WITH
-   1.16.5
