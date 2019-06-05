@@ -16,12 +16,12 @@ class AesEncryptionService
     cipher.encrypt
 
     # Base64
-    cipher.key = Base64.decode64(k)
-    cipher.iv = Base64.decode64(c)
+    # cipher.key = Base64.decode64(k)
+    # cipher.iv = Base64.decode64(c)
 
     # Hexadecimal
-    # cipher.key = [ AES_KEY_HEX ].pack("H*")
-    # cipher.iv =  [ AES_IV_HEX ].pack("H*")
+    cipher.key = [k].pack("H*")
+    cipher.iv =  [c].pack("H*")
 
     clearBytes = email.encode("UTF-16LE")
     encrypted = cipher.update(clearBytes)
