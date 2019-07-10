@@ -1,0 +1,23 @@
+- @url_post = Rails.env.development? ? 'http://localhost:3001/v10_sync/update' : " https://#{ENV['DOMAIN_NAME']}/v10_sync/update"
+
+
+= simple_form_for @v10_sync_setting, url: @url_post, method: :post, remote: true do |f|
+
+  = f.input :dataset_id, as: :hidden
+  .panel
+    .panel-heading
+      %h5.panel-title V10 Sync Settings
+    .panel-body
+      .row
+        .col-md-6
+          = f.input :endpoint, input_html: {class: "form-control"}
+          %span.hint Please enter the URL of the V10 API
+
+      .row
+        .col-md-6
+          = f.input :api_key, input_html: {class: "form-control"}
+          %span.hint Please enter the API key for the V10 API
+
+      .row
+        .col-md-6
+          = f.submit 'Save', class: 'btn btn-primary', data: { disable_with: 'Saving...' }
