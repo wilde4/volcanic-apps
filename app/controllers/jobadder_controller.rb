@@ -12,17 +12,15 @@ class JobadderController < ApplicationController
     @key = Key.find_by app_dataset_id: params[:dataset_id], app_name: params[:controller]
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:data][:dataset_id]) || JobadderAppSetting.create(:dataset_id => params[:data][:dataset_id], :app_url => app_url)
 
-
     if @ja_setting.present?
       @ja_service = Jobadder::ClientService.new(@ja_setting)
 
       if @ja_service.present? && @ja_service.client && @ja_setting.access_token.present?
+        # get fields to show in candidate mappings view
         get_fields
       end
     end
-
     render layout: false
-
   end
 
   def update
@@ -63,11 +61,11 @@ class JobadderController < ApplicationController
 
     @ja_service = Jobadder::ClientService.new(@ja_setting);
 
-    #This will never be executed, RSpec can't see template from update.js.erb and fails
+    #Added for unit tests, because RSpec can't see template from update.js.erb and fails
     unless @ja_setting.authorised
       render :text => "OK"
     end
-
+    # get fields to show in candidate mappings view
     get_fields if @ja_service.present? && @ja_setting.access_token.present?
 
   rescue StandardError => e
@@ -76,11 +74,15 @@ class JobadderController < ApplicationController
 
   end
 
+  # endpoint JobAdder uses for redirection after granting permission
+  # configured at https://developers.jobadder.com
+  # using it to store access token in volcanic db
   def callback
     @ja_setting = JobadderAppSetting.find_by(dataset_id: params[:state])
     unless params[:error].present?
       @attributes = Hash.new
       @attributes[:authorization_code] = params[:code]
+      # exchange authorisation code for access token
       @attributes[:response] = Jobadder::AuthenticationService.get_access_token(params[:code], @ja_setting)
       unless !@attributes[:response].token.present?
         if @ja_setting.present?
@@ -145,6 +147,7 @@ class JobadderController < ApplicationController
       { attributes: params }.to_s,
       @ja_user.as_json.to_s)
 
+    # check if candidate exists in JA already
     get_candidate_response = @ja_service.get_candidate_by_email(params[:user][:email])
 
 
@@ -161,15 +164,12 @@ class JobadderController < ApplicationController
     cv_mapping = @ja_setting.jobadder_field_mappings.where("registration_question_reference LIKE '%upload-cv%'").first
 
 
+    # check mappings if cv was set to be sent to JA
     if @cv.present? && @cv[:upload_path].present? && @cv[:upload_name].present? && cv_mapping.nil? == false && cv_mapping.jobadder_field_name == '1'
-      # unless @ja_user.user_profile['upload_path'] == @cv[:upload_path]
-      #
-      # end
-      upload_cv_response = @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
+      @ja_service.add_single_attachment(@candidate_id, @cv[:upload_path], @cv[:upload_name], 'Resume', 'candidate', 'original')
     end
 
     # upload registration files
-
     volcanic_user_response = @ja_service.get_volcanic_user(params[:user][:id])
     reg_answers_files_array = volcanic_user_response['registration_answers'] unless volcanic_user_response.blank?
 
@@ -185,9 +185,7 @@ class JobadderController < ApplicationController
   end
 
   def job_application
-
     JobadderApplicationWorker.perform_async params
-
 
     render json: { success: true, status: 'Application has been queued for submission to JobAdder' }
 
@@ -225,9 +223,9 @@ class JobadderController < ApplicationController
   end
 
   def update_ja_params_token(ja_setting, token_response)
-    ja_setting.update(access_token: token_response.token)
-    ja_setting.update(refresh_token: token_response.refresh_token)
-    ja_setting.update(access_token_expires_at: Time.at(token_response.expires_at))
+    ja_setting.update(access_token: token_response.token,
+      refresh_token: token_response.refresh_token,
+      access_token_expires_at: Time.at(token_response.expires_at))
   end
 
   def check_api_access

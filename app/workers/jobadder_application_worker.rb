@@ -29,7 +29,7 @@ class JobadderApplicationWorker
         else
           @candidate_id = get_candidate_response['items'][0]['candidateId']
         end
-        # If job board id provided, get job id
+        # If job board id provided, get job id from job board
         if @ja_setting.job_board_id.present?
           job_ad_id = @ja_service.get_job_ad_id(@ja_setting.job_board_id, @job_reference)
           job_ad = @ja_service.get_job_ad(job_ad_id) if job_ad_id.present?
@@ -38,11 +38,13 @@ class JobadderApplicationWorker
         end
         applicants = @ja_service.get_applications_for_job(@job_reference)
 
+        # check if candidate has applied for job previously
         unless applicants['items'].blank?
           applicants['items'].each do |item|
             item['candidate']['candidateId'] == @candidate_id ? @candidate_applied = true : @candidate_applied = false
           end
         end
+        # add candidate for a job and upload attachments
         unless @candidate_applied
           add_candidate_to_job_response = @ja_service.add_candidate_to_job(@candidate_id, @job_reference)
           @application_id = add_candidate_to_job_response['items'][0]['applicationId'] unless add_candidate_to_job_response['items'].blank?
@@ -55,7 +57,6 @@ class JobadderApplicationWorker
     end
 
   rescue StandardError => e
-    puts e
     @key = Key.find_by(app_dataset_id: msg['dataset_id'])
     @ja_user.app_logs.create key: @ja_service.key, endpoint: 'meta/JobSubmission', name: 'send_job_application', message: '', response: nil, error: e.message, internal: true
     Honeybadger.notify(e, force: true)
@@ -97,7 +98,7 @@ class JobadderApplicationWorker
                 ja_user.sent_upload_ids << id
               end
               ja_user.save
-              ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_successfull", nil, nil, nil, false, false)
+              ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_successful", nil, nil, nil, false, false)
             else
               ja_service.send(:create_log, @ja_user, @key, "upload_#{attachment}_failed", nil, nil, nil, true, false)
             end
@@ -106,8 +107,9 @@ class JobadderApplicationWorker
       end
     end
 
+    # check for files uploaded while registration(other than CV and cover letter)
     reg_answer_files = JobadderHelper.get_reg_answer_files(reg_answers_files, @ja_setting, @key)
-
+    # upload files to JA
     if reg_answer_files.length > 0
       reg_answer_files.each do |f|
         add_single_attachment(ja_service, application_id, f['url'], f['name'], f['type'], msg['job']['job_reference'])
