@@ -418,6 +418,14 @@ Apps::Application.routes.draw do
     post "deactivate_app"   => 'json_as_email#deactivate_app'
   end
 
+  scope :v10_sync do
+    post "activate_app"     => 'v10_sync#activate_app'
+    post "deactivate_app"   => 'v10_sync#deactivate_app'
+    get 'index'             => 'v10_sync#index'
+    post 'update'           => 'v10_sync#update'
+    post 'jobs'             => 'v10_sync#jobs'
+  end
+
   resources :app_logs
   
   devise_for :profiles
