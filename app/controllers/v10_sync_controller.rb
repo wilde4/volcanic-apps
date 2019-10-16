@@ -42,7 +42,7 @@ class V10SyncController < ApplicationController
 
     job[:salary_currency] = job_full_hash[:currency].try(:name)
 
-    fetch_custom_catergory_option_ids(job, job_full_hash)
+    fetch_extra_data_ids(job, job_full_hash, params[:client_name])
 
     url = "#{@v10_sync_setting.endpoint}/api/v1/jobs.json"
 
@@ -57,7 +57,7 @@ class V10SyncController < ApplicationController
 
   private
 
-  def fetch_custom_catergory_option_ids(job_object, job_full_hash)
+  def fetch_extra_data_ids(job_object, job_full_hash, client_name)
     url = "#{@v10_sync_setting.endpoint}/api/v1/available_job_attributes.json"
     response = HTTParty.get(url, query: {api_key: @v10_sync_setting.api_key})
     response_json = JSON.parse(response.body)
@@ -71,6 +71,10 @@ class V10SyncController < ApplicationController
         new_ids << response_json["custom_#{x}"]["values"].select{|val| val["reference"] == v9_val[:reference]}.first["id"]
       end
       job_object[:"custom_#{x}"] = new_ids
+    end
+
+    if response_json["clients"].try("values").present? && client_name.present?
+      job_object[:client_id] = response_json["clients"]["values"].select{|val| val["name"] == client_name}.first["id"]
     end
     true
   end
