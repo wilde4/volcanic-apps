@@ -30,12 +30,19 @@ class V10SyncController < ApplicationController
     render json: { "error"=> "not configured" } and return if @v10_sync_setting.blank? || @v10_sync_setting.endpoint.blank? || @v10_sync_setting.api_key.blank?
 
     job = params[:job].except(:id, :job_type_id, :views, :retired, :retired_at, :keyword_cache, :salary_hidden, :benefits, :exclusive_until, :salary_currency, :salary_benefits, :user_id, :extra, :paid, :homepage, :image_uid, :image_name)
-
-    discipline_string = params[:disciplines].map{|d| d[:reference]}.join(',')
+    job_full_hash = params[:job_full_hash] || {}
 
     job[:job_type] = params[:job_type]
+
+    discipline_string = params[:disciplines].map{|d| d[:reference]}.join(',')
     job[:discipline] = discipline_string
 
+    job_function_string = job_full_hash[:job_functions].map{|d| d[:reference]}.join(',')
+    job[:job_functions] = job_function_string
+
+    job[:salary_currency] = job_full_hash[:currency].try(:name)
+
+    fetch_custom_catergory_option_ids(job, job_full_hash)
 
     url = "#{@v10_sync_setting.endpoint}/api/v1/jobs.json"
 
@@ -47,4 +54,25 @@ class V10SyncController < ApplicationController
       render json: { "error"=> "failed to post" } and return
     end
   end
+
+  private
+
+  def fetch_custom_catergory_option_ids(job_object, job_full_hash)
+    url = "#{@v10_sync_setting.endpoint}/api/v1/available_job_attributes.json"
+    response = HTTParty.get(url, query: {api_key: @v10_sync_setting.api_key})
+    response_json = JSON.parse(response.body)
+    # binding.pry
+    (1..6).each do |x|
+      next unless response_json["custom_#{x}"].try("values").present? && job_full_hash[:"custom_#{x}_values"].present?
+      puts "custom_#{x}"
+      new_ids = []
+      job_full_hash[:"custom_#{x}_values"].each do |v9_val|
+        puts v9_val
+        new_ids << response_json["custom_#{x}"]["values"].select{|val| val["reference"] == v9_val[:reference]}.first["id"]
+      end
+      job_object[:"custom_#{x}"] = new_ids
+    end
+    true
+  end
+
 end
