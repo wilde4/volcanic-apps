@@ -32,7 +32,7 @@ class V10SyncController < ApplicationController
     job = params[:job].except(:id, :job_type_id, :views, :retired, :retired_at, :keyword_cache, :salary_hidden, :benefits, :exclusive_until, :salary_currency, :salary_benefits, :user_id, :extra, :paid, :homepage, :image_uid, :image_name)
     job_full_hash = params[:job_full_hash] || {}
 
-    job[:job_type] = params[:job_type]
+    job[:job_type] = params[:job_type_reference]
 
     discipline_string = params[:disciplines].map{|d| d[:reference]}.join(',')
     job[:discipline] = discipline_string
