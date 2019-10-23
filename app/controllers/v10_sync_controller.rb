@@ -34,11 +34,15 @@ class V10SyncController < ApplicationController
 
     job[:job_type] = params[:job_type_reference]
 
-    discipline_string = params[:disciplines].map{|d| d[:reference]}.join(',')
-    job[:discipline] = discipline_string
+    if params[:disciplines].present?
+      discipline_string = params[:disciplines].map{|d| d[:reference]}.join(',')
+      job[:discipline] = discipline_string
+    end
 
-    job_function_string = job_full_hash[:job_functions].map{|d| d[:reference]}.join(',')
-    job[:job_functions] = job_function_string
+    if job_full_hash[:job_functions].present?
+      job_function_string = job_full_hash[:job_functions].map{|d| d[:reference]}.join(',')
+      job[:job_functions] = job_function_string
+    end
 
     job[:salary_currency] = job_full_hash[:currency].try(:name)
 
