@@ -50,7 +50,7 @@ class V10SyncController < ApplicationController
 
     url = "#{@v10_sync_setting.endpoint}/api/v1/jobs.json"
 
-    response = HTTParty.post(url, body: {job: job, api_key: @v10_sync_setting.api_key})
+    response = HTTParty.post(url, body: {job: job, api_key: @v10_sync_setting.api_key}.to_json, headers: {'Content-Type' => 'application/json', 'Accept' => 'application/json'})
 
     if response.success?
       render json: { "success"=> "true" } and return
