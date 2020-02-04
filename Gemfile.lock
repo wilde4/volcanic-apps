@@ -95,7 +95,7 @@ GEM
       unicode_utils (~> 1.4)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
-    crass (0.2.0)
+    crass (1.0.6)
     daemons (1.1.9)
     database_cleaner (1.7.0)
     debase (0.2.2)
@@ -231,7 +231,7 @@ GEM
     netrc (0.11.0)
     newrelic_rpm (3.7.2.195)
     nokogiri (1.5.11)
-    nokogumbo (1.1.9)
+    nokogumbo (1.5.0)
       nokogiri
     nori (2.6.0)
     oauth (0.4.7)
@@ -305,10 +305,10 @@ GEM
       rake (>= 0.8.1)
     rubyzip (1.2.2)
     safe_yaml (1.0.3)
-    sanitize (3.0.0)
-      crass (~> 0.2.0)
+    sanitize (4.6.3)
+      crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
-      nokogumbo (= 1.1.9)
+      nokogumbo (~> 1.4)
     sass (3.2.19)
     sass-rails (4.0.3)
       railties (>= 4.0.0, < 5.0)
@@ -474,7 +474,7 @@ DEPENDENCIES
   rspec
   rspec-rails
   ruby-debug-ide (~> 0.7.0.beta4)
-  sanitize (= 3.0.0)
+  sanitize (= 4.6.3)
   sass-rails (~> 4.0.0)
   savon (~> 2.0)
   selenium-webdriver
