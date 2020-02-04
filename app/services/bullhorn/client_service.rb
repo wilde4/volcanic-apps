@@ -33,7 +33,7 @@ class Bullhorn::ClientService < BaseService
       client_secret: @bullhorn_setting.bh_client_secret,
       refresh_token: @bullhorn_setting.refresh_token
     )
-
+    @client.conn.headers['Content-Type'] = 'application/json'
     authenticate_client
 
   end
@@ -1191,6 +1191,9 @@ class Bullhorn::ClientService < BaseService
   end
 
   def parse_cv(upload_name, content_type, cv, ct)
+    # Remove 'application/json' header so parsing CV works correctly
+    @client.conn.headers.delete 'Content-Type'
+
     # TRY UP TO 10 TIMES AS PER SUPPORT:
     # http://supportforums.bullhorn.com/viewtopic.php?t=15011
     10.times do
@@ -1214,6 +1217,9 @@ class Bullhorn::ClientService < BaseService
   rescue StandardError => e
     Honeybadger.notify(e)
     create_log(@bullhorn_setting, @key, 'parse_cv', nil, nil, e.message, true, false)
+  ensure
+    # Put 'application/json' header back
+    @client.conn.headers['Content-Type'] = 'application/json'
   end 
 
   def create_log(loggable, key, name, endpoint, message, response, error = false, internal = false, uid = nil)
