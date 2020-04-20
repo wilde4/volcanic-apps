@@ -424,6 +424,7 @@ Apps::Application.routes.draw do
     get 'index'             => 'v10_sync#index'
     post 'update'           => 'v10_sync#update'
     post 'jobs'             => 'v10_sync#jobs'
+    post 'delete'           => 'v10_sync#delete'
   end
 
   resources :app_logs

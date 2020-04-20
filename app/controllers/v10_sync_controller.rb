@@ -59,6 +59,23 @@ class V10SyncController < ApplicationController
     end
   end
 
+  def delete
+    @v10_sync_setting = V10SyncSetting.find_by(dataset_id: params[:dataset_id])
+    render json: { "error"=> "not configured" } and return if @v10_sync_setting.blank? || @v10_sync_setting.endpoint.blank? || @v10_sync_setting.api_key.blank?
+
+    job = params[:job].permit(:job_reference)
+
+    url = "#{@v10_sync_setting.endpoint}/api/v1/jobs/delete.json"
+
+    response = HTTParty.post(url, body: {job: job, api_key: @v10_sync_setting.api_key}.to_json, headers: {'Content-Type' => 'application/json', 'Accept' => 'application/json'})
+
+    if response.success?
+      render json: { "success"=> "true" } and return
+    else
+      render json: { "error"=> "failed to delete" } and return
+    end
+  end
+
   private
 
   def fetch_extra_data_ids(job_object, job_full_hash, client_name)
