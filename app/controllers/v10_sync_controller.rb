@@ -91,7 +91,7 @@ class V10SyncController < ApplicationController
         puts v9_val
         new_ids << response_json["custom_#{x}"]["values"].select{|val| val["reference"] == v9_val[:reference]}.first["id"]
       end
-      job_object[:"custom_#{x}"] = new_ids
+      job_object[:"custom_#{x}"] = new_ids.join(',')
     end
 
     if response_json["clients"].try("values").present? && client_name.present?
